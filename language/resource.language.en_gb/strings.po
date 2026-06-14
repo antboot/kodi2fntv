@@ -867,7 +867,7 @@ msgctxt "#31207"
 msgid "Codecs"
 msgstr ""
 
-#: /1080i/SkinSettings.xml /1080i/SkinSettings.xml
+#: /1080i/SkinSettings.xml
 msgctxt "#31208"
 msgid "Header"
 msgstr ""
@@ -1117,6 +1117,10 @@ msgstr ""
 #: /1080i/Includes_Search_View.xml
 msgctxt "#31272"
 msgid "Searching"
+msgstr ""
+
+msgctxt "#31273"
+msgid "Label"
 msgstr ""
 
 #: /1080i/Includes_Items.xml
