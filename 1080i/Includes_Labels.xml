@@ -223,6 +223,7 @@
         <value condition="Skin.String(Background.Image,special://skin/extras/backgrounds/blur/orange_blur.jpg)">$LOCALIZE[13342]</value>
         <value condition="Skin.String(Background.Image,special://skin/extras/backgrounds/blur/slate_blur.jpg)">$LOCALIZE[31221]</value>
         <value condition="Skin.String(Background.Image,special://skin/extras/backgrounds/blur/coal_blur.jpg)">$LOCALIZE[31222]</value>
+        <value condition="Skin.String(Background.Image,special://skin/extras/backgrounds/blur/onyx_blur.jpg)">$LOCALIZE[31146]</value>
         <value>$LOCALIZE[636]</value>
     </variable>
 
@@ -236,6 +237,7 @@
         <value condition="Skin.String(Background.DialogImage,Coal)">$LOCALIZE[31222]</value>
         <value condition="Skin.String(Background.DialogImage,Chalk)">$LOCALIZE[31225]</value>
         <value condition="Skin.String(Background.DialogImage,Blush)">$LOCALIZE[31226]</value>
+        <value condition="Skin.String(Background.DialogImage,Onyx)">$LOCALIZE[31146]</value>
         <value condition="$EXP[Exp_DialogTheme_IsAdaptive]">$LOCALIZE[31432]</value>
         <value>$LOCALIZE[571]</value>
     </variable>
