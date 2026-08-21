@@ -484,9 +484,9 @@
     <include name="Home_Switcher_Right_Buttons">
         <control type="grouplist">
             <include content="Object_Right" condition="Skin.HasSetting(HomeSwitcher.DisableSearch)">
-                <param name="right">-40</param>
+                <param name="right">-130</param>
             </include>
-            <right>-30</right>
+            <right>-40</right>
             <align>right</align>
             <height>80</height>
             <width>400</width>
