@@ -8,6 +8,7 @@
                 <template>generator/data/parts/search_item.xmltemplate</template>
                 <condition>{item_path}!=</condition>
                 <condition>{item_disabled}!=True</condition>
+                <value name="hide_overlay">true</value>
                 <value name="widget_id">$MATH[500 + {item_x} + 2]</value>
             </item>
         </items>
