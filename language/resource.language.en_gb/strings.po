@@ -832,6 +832,11 @@ msgctxt "#31171"
 msgid "On-screen keyboard size"
 msgstr ""
 
+#: /1080i/Includes_Actions.xml
+msgctxt "#31172"
+msgid "Placard"
+msgstr ""
+
 #: /1080i/SkinSettings.xml
 msgctxt "#31173"
 msgid "Scroll"
