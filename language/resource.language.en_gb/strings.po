@@ -787,6 +787,11 @@ msgctxt "#31162"
 msgid "Hide"
 msgstr ""
 
+#: /shortcuts/skinviewtypes.json
+msgctxt "#31163"
+msgid "Combined Flyer"
+msgstr ""
+
 #: /1080i/SkinSettings.xml
 msgctxt "#31165"
 msgid "Seekbar behaviour on delayed pause"
