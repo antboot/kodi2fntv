@@ -15,6 +15,13 @@
         <value>monochrome</value>
     </variable>
 
+    <variable name="Color_Medals">
+        <value condition="String.IsEqual(ListItem.Property(medal),gold)">gold</value>
+        <value condition="String.IsEqual(ListItem.Property(medal),silver)">silver</value>
+        <value condition="String.IsEqual(ListItem.Property(medal),bronze)">ffCD7F32</value>
+        <value>00ffffff</value>
+    </variable>
+
     <!-- ColorPicker -->
     <variable name="ColorPickerHex">
         <value condition="Control.HasFocus(3000)">$INFO[Container(3000).ListItem.Label]</value>

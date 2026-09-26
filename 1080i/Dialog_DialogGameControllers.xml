@@ -404,13 +404,15 @@
         <param name="items" />
         <param name="header_id">9999</param>
         <param name="header">$LOCALIZE[35331]$INFO[Window.Property(Leaderboards.GameTitle), - ,]</param>
+        <param name="itemlayout_include">List_Layout_Leaderboards</param>
+        <param name="dialog_size">Dimension_DialogFullMenu</param>
         <definition>
             <include>Part_Dim_Overlay</include>
             <control type="group">
-                <include>Dimension_DialogFullMenu</include>
+                <include>$PARAM[dialog_size]</include>
                 <include>Animation_BounceIn_Dialog</include>
                 <include content="Part_Background_Panel">
-                    <param name="dialog_size">Dimension_DialogFullMenu</param>
+                    <param name="dialog_size">$PARAM[dialog_size]</param>
                 </include>
                 <control type="group" id="8000">
                     <include>Size_Dialog_Pad</include>
@@ -425,7 +427,7 @@
                             <include>Size_Group_Body</include>
                             <include content="List_DialogSelect">
                                 <param name="id">$PARAM[id]</param>
-                                <param name="itemlayout_include">List_Layout_Leaderboards</param>
+                                <param name="itemlayout_include">$PARAM[itemlayout_include]</param>
                                 <param name="item_height">128</param>
                                 <pagecontrol>61</pagecontrol>
                                 <onright>61</onright>
@@ -446,6 +448,14 @@
                 </control>
             </control>
         </definition>
+    </include>
+
+    <include name="DialogGameControllers_GameLeaderBoardEntries">
+        <include content="DialogGameControllers_GameLeaderBoards">
+            <param name="header">$INFO[Window.Property(Leaderboards.Title)]</param>
+            <param name="itemlayout_include">List_Layout_LeaderboardEntries</param>
+            <param name="dialog_size">Dimension_DialogWideMenu</param>
+        </include>
     </include>
 
 </includes>

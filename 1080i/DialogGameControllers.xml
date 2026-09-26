@@ -5,7 +5,8 @@
         <include condition="Window.IsDialogTopMost(gameports)">DialogGameControllers_GamePorts</include>
         <include condition="Window.IsDialogTopMost(gameagents)">DialogGameControllers_GameAgents</include>
         <include condition="Window.IsDialogTopMost(gameleaderboards)">DialogGameControllers_GameLeaderBoards</include>
+        <include condition="Window.IsDialogTopMost(gameleaderboardentries)">DialogGameControllers_GameLeaderBoardEntries</include>
 
-        <include condition="!Window.IsDialogTopMost(gameports) + !Window.IsDialogTopMost(gameagents) + !Window.IsDialogTopMost(gameleaderboards)">DialogGameControllers</include>
+        <include condition="!Window.IsDialogTopMost(gameports) + !Window.IsDialogTopMost(gameagents) + !Window.IsDialogTopMost(gameleaderboards) + !Window.IsDialogTopMost(gameleaderboardentries)">DialogGameControllers</include>
     </controls>
 </window>

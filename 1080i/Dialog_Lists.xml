@@ -303,8 +303,60 @@
                     <include content="List_Layout_Dialog_FourLabels">
                         <param name="item_h">200</param>
                         <param name="selected">$PARAM[selected]</param>
-                        <param name="label3">$INFO[ListItem.Property(TotalEntries)]</param>
-                        <param name="label4">$INFO[ListItem.Property(TopUsername)]$INFO[ListItem.Property(PlayerStanding), (,)]$INFO[ListItem.Property(PlayerScore), - ,]</param>
+                        <param name="label4">$INFO[ListItem.Property(TotalEntries)]</param>
+                        <param name="label3">$INFO[ListItem.Property(TopUsername)]$INFO[ListItem.Property(PlayerStanding), (,)]$INFO[ListItem.Property(PlayerScore), - ,]</param>
+                    </include>
+                </control>
+            </control>
+        </definition>
+    </include>
+
+    <include name="List_Layout_LeaderboardEntries">
+        <param name="selected">false</param>
+        <param name="detailed">false</param>
+        <definition>
+            <include condition="$PARAM[selected]">Part_List_Highlight</include>
+            <control type="group">
+                <left>40</left>
+                <right>40</right>
+                <control type="group">
+                    <height>60</height>
+                    <width>60</width>
+                    <left>-20</left>
+                    <centertop>50%</centertop>
+                    <control type="image">
+                        <texture colordiffuse="$VAR[Color_Medals]">special://skin/extras/icons/trophy.png</texture>
+                        <bordersize>-10</bordersize>
+                        <visible>!String.IsEmpty(ListItem.Property(medal))</visible>
+                    </control>
+                    <control type="label">
+                        <include condition="$PARAM[selected]">Color_SelectedText</include>
+                        <textcolor>dialog_fg_70</textcolor>
+                        <selectedcolor>dialog_fg_70</selectedcolor>
+                        <disabledcolor>dialog_fg_30</disabledcolor>
+                        <font>font_main_bold</font>
+                        <label>$INFO[ListItem.Property(RankLabel)]</label>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <visible>String.IsEmpty(ListItem.Property(medal))</visible>
+                    </control>
+                </control>
+                <control type="group">
+                    <left>60</left>
+                    <include content="Part_List_Icon" condition="![$PARAM[selected]]">
+                        <param name="item_h">$PARAM[item_h]</param>
+                        <param name="fallback">DefaultUser.png</param>
+                    </include>
+                    <include content="Part_List_Icon" condition="$PARAM[selected]">
+                        <param name="item_h">$PARAM[item_h]</param>
+                        <param name="colordiffuse">$VAR[ColorSelected]</param>
+                        <param name="fallback">DefaultUser.png</param>
+                    </include>
+                    <include content="List_Layout_Dialog_FourLabels">
+                        <param name="item_h">$PARAM[item_h]</param>
+                        <param name="selected">$PARAM[selected]</param>
+                        <param name="label4">$INFO[ListItem.Property(Date)]</param>
+                        <param name="label3">$INFO[ListItem.Property(DateRelative)]</param>
                     </include>
                 </control>
             </control>
