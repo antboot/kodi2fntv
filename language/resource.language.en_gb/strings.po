@@ -846,6 +846,11 @@ msgctxt "#31174"
 msgid "Navigation"
 msgstr ""
 
+#: /1080i/Dialog_Lists.xml
+msgctxt "#31175"
+msgid "Player"
+msgstr ""
+
 msgctxt "#31177"
 msgid "Menus"
 msgstr ""

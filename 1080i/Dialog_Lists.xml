@@ -168,17 +168,21 @@
                 <left>40</left>
                 <right>40</right>
                 <control type="group">
-                    <width>320</width>
+                    <width>300</width>
                     <include content="List_Layout_Dialog_Labels">
+                        <param name="item_h">$PARAM[item_h]</param>
                         <param name="selected">$PARAM[selected]</param>
+                        <param name="label">$INFO[ListItem.CurrentItem,$LOCALIZE[31175] #,]</param>
+                        <param name="label2">$INFO[ListItem.Label]</param>
+                        <param name="label2_visible">true</param>
                     </include>
                 </control>
                 <control type="group">
-                    <left>280</left>
-                    <right>-20</right>
                     <include content="Part_List_GameAgents" condition="![$PARAM[selected]]">
+                        <param name="item_h">88</param>
                     </include>
                     <include content="Part_List_GameAgents" condition="$PARAM[selected]">
+                        <param name="item_h">88</param>
                         <param name="colordiffuse">$VAR[ColorSelected]</param>
                     </include>
                 </control>
