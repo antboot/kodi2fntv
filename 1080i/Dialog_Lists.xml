@@ -56,6 +56,7 @@
         <param name="label">$INFO[ListItem.Label]</param>
         <param name="label2">$INFO[ListItem.Label2]</param>
         <param name="label2_visible">!String.IsEmpty(ListItem.Label2)</param>
+        <param name="align">left</param>
         <definition>
             <control type="group">
                 <left>$PARAM[item_h]</left>
@@ -67,8 +68,9 @@
                     <textcolor>dialog_fg_70</textcolor>
                     <selectedcolor>dialog_fg_70</selectedcolor>
                     <disabledcolor>dialog_fg_30</disabledcolor>
-                    <label>$PARAM[label]</label>
+                    <label fallback="$PARAM[fallback]">$PARAM[label]</label>
                     <visible>![$PARAM[label2_visible]]</visible>
+                    <align>$PARAM[align]</align>
                 </control>
                 <control type="label">
                     <left>-10</left>
@@ -77,10 +79,11 @@
                     <selectedcolor>dialog_fg_70</selectedcolor>
                     <disabledcolor>dialog_fg_30</disabledcolor>
                     <font>font_main_bold</font>
-                    <label>$PARAM[label]</label>
+                    <label fallback="$PARAM[fallback]">$PARAM[label]</label>
                     <visible>$PARAM[label2_visible]</visible>
                     <height>30</height>
                     <top>0</top>
+                    <align>$PARAM[align]</align>
                 </control>
                 <control type="label">
                     <left>-10</left>
@@ -93,6 +96,68 @@
                     <visible>$PARAM[label2_visible]</visible>
                     <height>30</height>
                     <bottom>0</bottom>
+                    <align>$PARAM[align]</align>
+                </control>
+            </control>
+        </definition>
+    </include>
+
+    <include name="List_Layout_Dialog_FourLabels">
+        <param name="label">$INFO[ListItem.Label]</param>
+        <param name="label2">$INFO[ListItem.Label2]</param>
+        <param name="label3" />
+        <param name="label4" />
+        <definition>
+            <control type="group">
+                <left>$PARAM[item_h]</left>
+                <height>60</height>
+                <centertop>50%</centertop>
+                <control type="group">
+                    <height>30</height>
+                    <top>0</top>
+                    <left>-10</left>
+                    <control type="label">
+                        <include condition="$PARAM[selected]">Color_SelectedText</include>
+                        <textcolor>dialog_fg_70</textcolor>
+                        <selectedcolor>dialog_fg_70</selectedcolor>
+                        <disabledcolor>dialog_fg_30</disabledcolor>
+                        <font>font_main_bold</font>
+                        <label>$PARAM[label]</label>
+                        <align>left</align>
+                    </control>
+                    <control type="label">
+                        <include condition="$PARAM[selected]">Color_SelectedText</include>
+                        <textcolor>dialog_fg_70</textcolor>
+                        <selectedcolor>dialog_fg_70</selectedcolor>
+                        <disabledcolor>dialog_fg_30</disabledcolor>
+                        <font>font_main_bold</font>
+                        <label>$PARAM[label3]</label>
+                        <align>right</align>
+                    </control>
+                </control>
+
+                <control type="group">
+                    <left>-10</left>
+                    <height>30</height>
+                    <bottom>0</bottom>
+                    <control type="label">
+                        <include condition="$PARAM[selected]">Color_SelectedText</include>
+                        <textcolor>dialog_fg_70</textcolor>
+                        <selectedcolor>dialog_fg_70</selectedcolor>
+                        <disabledcolor>dialog_fg_30</disabledcolor>
+                        <font>font_tiny</font>
+                        <label>$PARAM[label2]</label>
+                        <align>left</align>
+                    </control>
+                    <control type="label">
+                        <include condition="$PARAM[selected]">Color_SelectedText</include>
+                        <textcolor>dialog_fg_70</textcolor>
+                        <selectedcolor>dialog_fg_70</selectedcolor>
+                        <disabledcolor>dialog_fg_30</disabledcolor>
+                        <font>font_tiny</font>
+                        <label>$PARAM[label4]</label>
+                        <align>right</align>
+                    </control>
                 </control>
             </control>
         </definition>
@@ -217,6 +282,35 @@
             </control>
         </definition>
     </include>
+
+    <include name="List_Layout_Leaderboards">
+        <param name="selected">false</param>
+        <param name="detailed">false</param>
+        <definition>
+            <include condition="$PARAM[selected]">Part_List_Highlight</include>
+            <control type="group">
+                <left>40</left>
+                <right>40</right>
+                <control type="group">
+                    <include content="List_Layout_Dialog_Labels">
+                        <param name="label">$INFO[ListItem.Property(TopScore)]</param>
+                        <param name="label2">$INFO[ListItem.Property(Format)]</param>
+                        <param name="label2_visible">true</param>
+                        <param name="fallback">10006</param>
+                        <param name="selected">$PARAM[selected]</param>
+                        <param name="align">left</param>
+                    </include>
+                    <include content="List_Layout_Dialog_FourLabels">
+                        <param name="item_h">200</param>
+                        <param name="selected">$PARAM[selected]</param>
+                        <param name="label3">$INFO[ListItem.Property(TotalEntries)]</param>
+                        <param name="label4">$INFO[ListItem.Property(TopUsername)]$INFO[ListItem.Property(PlayerStanding), (,)]$INFO[ListItem.Property(PlayerScore), - ,]</param>
+                    </include>
+                </control>
+            </control>
+        </definition>
+    </include>
+
 
     <include name="List_Layout_Dialog_VideoVersions">
         <param name="selected">false</param>

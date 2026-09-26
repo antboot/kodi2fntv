@@ -399,4 +399,53 @@
         </definition>
     </include>
 
+    <include name="DialogGameControllers_GameLeaderBoards">
+        <param name="id">3</param>
+        <param name="items" />
+        <param name="header_id">9999</param>
+        <param name="header">$LOCALIZE[35331]$INFO[Window.Property(Leaderboards.GameTitle), - ,]</param>
+        <definition>
+            <include>Part_Dim_Overlay</include>
+            <control type="group">
+                <include>Dimension_DialogFullMenu</include>
+                <include>Animation_BounceIn_Dialog</include>
+                <include content="Part_Background_Panel">
+                    <param name="dialog_size">Dimension_DialogFullMenu</param>
+                </include>
+                <control type="group" id="8000">
+                    <include>Size_Dialog_Pad</include>
+                    <control type="group">
+                        <!-- <include>Size_LeftGroup_Main</include> -->
+                        <include content="Part_HeaderBasic">
+                            <param name="header_id">$PARAM[header_id]</param>
+                            <param name="header">$PARAM[header]</param>
+                            <param name="id">$PARAM[id]</param>
+                        </include>
+                        <control type="group">
+                            <include>Size_Group_Body</include>
+                            <include content="List_DialogSelect">
+                                <param name="id">$PARAM[id]</param>
+                                <param name="itemlayout_include">List_Layout_Leaderboards</param>
+                                <param name="item_height">128</param>
+                                <pagecontrol>61</pagecontrol>
+                                <onright>61</onright>
+                                <include>Size_Grouplist_Pad</include>
+                            </include>
+                            <include content="Part_Scrollbar_Max">
+                                <param name="id">61</param>
+                                <param name="inset">false</param>
+                                <onleft>$PARAM[id]</onleft>
+                                <onright>9000</onright>
+                            </include>
+                        </control>
+                    </control>
+                    <!-- <include content="Part_Button_Grouplist">
+                        <param name="onleft">61</param>
+                        <param name="items">$PARAM[items]</param>
+                    </include> -->
+                </control>
+            </control>
+        </definition>
+    </include>
+
 </includes>
