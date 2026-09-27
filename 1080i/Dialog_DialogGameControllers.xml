@@ -662,4 +662,51 @@
         </include>
     </include>
 
+    <include name="DialogGameControllers_GameCheats">
+        <include content="Object_Hidden_Button">
+            <param name="control">label</param>
+            <param name="id">1083898</param>
+        </include>
+        <include content="Object_Hidden_Button">
+            <param name="control">label</param>
+            <param name="id">1083902</param>
+        </include>
+        <include content="Settings_Button">
+            <param name="id">1083903</param>
+            <param name="control">button</param>
+            <param name="dialog">true</param>
+            <description>Default Setting Button</description>
+        </include>
+        <include content="Settings_Button">
+            <param name="id">1083904</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <description>Default Setting Button</description>
+        </include>
+        <include>Part_Dim_Overlay</include>
+        <include content="DialogSettings_Main">
+            <param name="items">DialogGameControllers_GameCheats_Items</param>
+            <param name="visible">true</param>
+            <param name="grouplist_id">1083901</param>
+            <param name="header_id">1083900</param>
+            <param name="has_itemline">true</param>
+            <param name="itemline_label">$INFO[Control.GetLabel(1083898)]$INFO[Control.GetLabel(1083902),  •  ,]$INFO[Container(1083901).NumItems, (, $LOCALIZE[31178])]</param>
+        </include>
+    </include>
+
+    <include name="DialogGameControllers_GameCheats_Items">
+        <definition>
+            <include content="Button_Dialog">
+                <param name="id">1083907</param>
+                <param name="groupid">1084907</param>
+                <param name="icon">special://skin/extras/icons/boxes-stacked.png</param>
+            </include>
+            <include content="Button_Dialog">
+                <param name="id">1083905</param>
+                <param name="groupid">1084905</param>
+                <param name="icon">special://skin/extras/icons/circle-xmark.png</param>
+            </include>
+        </definition>
+    </include>
+
 </includes>

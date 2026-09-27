@@ -9,6 +9,7 @@
         <include condition="Window.IsDialogTopMost(gameleaderboardentries)">DialogGameControllers_GameLeaderBoardEntries</include>
         <include condition="Window.IsDialogTopMost(gameachievements)">DialogGameControllers_GameAchievements</include>
         <include condition="Window.IsDialogTopMost(gameindicators)">DialogGameControllers_GameIndicators</include>
+        <include condition="Window.IsDialogTopMost(gamecheats)">DialogGameControllers_GameCheats</include>
         <include condition="Window.IsDialogTopMost(gamecontrollers)">DialogGameControllers</include>
     </controls>
 </window>

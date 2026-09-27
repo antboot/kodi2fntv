@@ -1761,6 +1761,15 @@
             <onclick>ActivateWindow(gameleaderboards)</onclick>
             <visible>RetroPlayer.AchievementsLoggedIn</visible>
         </include>
+        <include content="Settings_ButtonImage">
+            <param name="id">8011</param>
+            <param name="groupid">8111</param>
+            <param name="dialog">true</param>
+            <param name="icon">special://skin/extras/icons/wand-magic-sparkles.png</param>
+            <label>$LOCALIZE[35320]</label>
+            <onclick>ActivateWindow(GameCheats)</onclick>
+            <visible>RetroPlayer.SupportsCheats</visible>
+        </include>
 
         <include content="Settings_ButtonImage">
             <param name="id">8003</param>
