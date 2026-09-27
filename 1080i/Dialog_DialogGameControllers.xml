@@ -578,4 +578,88 @@
         </definition>
     </include>
 
+    <include name="DialogGameControllers_GameIndicators_Notification">
+        <param name="minilabel">RetroPlayer Achievements</param>
+        <param name="mainlabel">$INFO[RetroPlayer.AchievementsChallengeTitle]</param>
+        <param name="visible">!String.IsEmpty(RetroPlayer.AchievementsChallengeTitle)</param>
+        <param name="icon">$INFO[RetroPlayer.AchievementsChallengeBadge]</param>
+        <param name="slide_1_condition">false</param>
+        <param name="slide_2_condition">false</param>
+        <param name="hasprogress">false</param>
+        <definition>
+            <control type="group">
+                <visible>$PARAM[visible]</visible>
+
+                <animation effect="slide" end="0,-80" time="300" tween="sine" easing="inout" condition="Window.IsVisible(DialogNotification.xml)">Conditional</animation>
+
+                <animation effect="slide" end="0,-80" time="300" tween="sine" easing="inout" condition="$PARAM[slide_1_condition]">Conditional</animation>
+
+                <animation effect="slide" end="0,-80" time="300" tween="sine" easing="inout" condition="$PARAM[slide_2_condition]">Conditional</animation>
+
+                <include content="Furniture_Busy_Main">
+                    <param name="minilabel">$PARAM[minilabel]</param>
+                    <param name="mainlabel">$PARAM[mainlabel]</param>
+                    <param name="visible_condition">$PARAM[visible]</param>
+                    <param name="windowopen_condition">$PARAM[visible]</param>
+                </include>
+
+                <include content="Furniture_ItemIcon">
+                    <param name="icon">$PARAM[icon]</param>
+                    <param name="icon_colordiffuse">white</param>
+                    <param name="bordersize">2</param>
+                    <param name="flipped">true</param>
+                    <param name="right">15</param>
+                    <param name="visible">true</param>
+                    <param name="size">50</param>
+                </include>
+
+                <include content="Object_Control" condition="$PARAM[hasprogress]">
+                    <param name="control">group</param>
+                    <width>50</width>
+                    <height>50</height>
+                    <right>15</right>
+                    <centertop>50%</centertop>
+                    <control type="group">
+                        <centerleft>50%</centerleft>
+                        <centertop>50%</centertop>
+                        <width>100</width>
+                        <height>100</height>
+                        <control type="image">
+                            <bordersize>-4</bordersize>
+                            <texture colordiffuse="$VAR[ColorHighlight]">$INFO[$PARAM[progress],progress/circle/p,.png]</texture>
+                            <aspectratio align="center" aligny="center">keep</aspectratio>
+                        </control>
+                    </control>
+                </include>
+
+            </control>
+        </definition>
+    </include>
+
+    <include name="DialogGameControllers_GameIndicators">
+        <include content="DialogGameControllers_GameIndicators_Notification">
+            <param name="minilabel">$LOCALIZE[15312]</param>
+            <param name="mainlabel">$INFO[RetroPlayer.AchievementsChallengeTitle]</param>
+            <param name="visible">!String.IsEmpty(RetroPlayer.AchievementsChallengeTitle)</param>
+            <param name="icon">$INFO[RetroPlayer.AchievementsChallengeBadge]</param>
+        </include>
+        <include content="DialogGameControllers_GameIndicators_Notification">
+            <param name="minilabel">$INFO[RetroPlayer.AchievementsIndicatorProgress]</param>
+            <param name="mainlabel">$INFO[RetroPlayer.AchievementsIndicatorTitle]</param>
+            <param name="visible">!String.IsEmpty(RetroPlayer.AchievementsIndicatorTitle)</param>
+            <param name="icon">$INFO[RetroPlayer.AchievementsIndicatorBadge]</param>
+            <param name="progress">RetroPlayer.AchievementsIndicatorPercent</param>
+            <param name="hasprogress">true</param>
+            <param name="slide_1_condition">!String.IsEmpty(RetroPlayer.AchievementsChallengeTitle)</param>
+        </include>
+        <include content="DialogGameControllers_GameIndicators_Notification">
+            <param name="minilabel">$LOCALIZE[35331]</param>
+            <param name="mainlabel">$INFO[RetroPlayer.LeaderboardTracker]</param>
+            <param name="visible">!String.IsEmpty(RetroPlayer.LeaderboardTracker)</param>
+            <param name="icon" />
+            <param name="slide_1_condition">!String.IsEmpty(RetroPlayer.AchievementsChallengeTitle)</param>
+            <param name="slide_2_condition">!String.IsEmpty(RetroPlayer.AchievementsIndicatorTitle)</param>
+        </include>
+    </include>
+
 </includes>
