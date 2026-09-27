@@ -406,6 +406,7 @@
         <param name="header">$LOCALIZE[35331]$INFO[Window.Property(Leaderboards.GameTitle), - ,]</param>
         <param name="itemlayout_include">List_Layout_Leaderboards</param>
         <param name="dialog_size">Dimension_DialogFullMenu</param>
+        <param name="has_button_grouplist">false</param>
         <definition>
             <include>Part_Dim_Overlay</include>
             <control type="group">
@@ -417,7 +418,7 @@
                 <control type="group" id="8000">
                     <include>Size_Dialog_Pad</include>
                     <control type="group">
-                        <!-- <include>Size_LeftGroup_Main</include> -->
+                        <include condition="$PARAM[has_button_grouplist]">Size_LeftGroup_Main</include>
                         <include content="Part_HeaderBasic">
                             <param name="header_id">$PARAM[header_id]</param>
                             <param name="header">$PARAM[header]</param>
@@ -441,10 +442,11 @@
                             </include>
                         </control>
                     </control>
-                    <!-- <include content="Part_Button_Grouplist">
+                    <include content="Part_Button_Grouplist" condition="$PARAM[has_button_grouplist]">
                         <param name="onleft">61</param>
                         <param name="items">$PARAM[items]</param>
-                    </include> -->
+                        <param name="include_extras">$PARAM[include_extras]</param>
+                    </include>
                 </control>
             </control>
         </definition>
@@ -456,6 +458,52 @@
             <param name="itemlayout_include">List_Layout_LeaderboardEntries</param>
             <param name="dialog_size">Dimension_DialogWideMenu</param>
         </include>
+    </include>
+
+    <include name="DialogGameControllers_GameAchievements">
+        <include content="DialogGameControllers_GameLeaderBoards">
+            <param name="header">$INFO[Window.Property(Header)]</param>
+            <param name="itemlayout_include">List_Layout_GameAchievements</param>
+            <param name="has_button_grouplist">true</param>
+            <param name="items">DialogGameControllers_GameAchievements_Items</param>
+            <param name="include_extras">DialogGameControllers_GameAchievements_HelpText</param>
+        </include>
+    </include>
+
+    <include name="DialogGameControllers_GameAchievements_Items">
+        <definition>
+            <include content="Button_Dialog">
+                <param name="id">108333</param>
+                <param name="groupid">108433</param>
+                <param name="icon">special://skin/extras/icons/trophy.png</param>
+                <label>$LOCALIZE[35331]</label>
+                <onclick>ActivateWindow(gameleaderboards)</onclick>
+            </include>
+            <include content="Button_Dialog">
+                <param name="id">108331</param>
+                <param name="groupid">108431</param>
+                <param name="control">radiobutton</param>
+                <param name="istext">true</param>
+                <param name="label">$LOCALIZE[35303]</param>
+                <selected>System.GetBool(gamesachievements.encore)</selected>
+            </include>
+            <include content="Button_Dialog">
+                <param name="id">108332</param>
+                <param name="groupid">108432</param>
+                <param name="control">radiobutton</param>
+                <param name="istext">true</param>
+                <param name="label">$LOCALIZE[35365]</param>
+                <selected>System.GetBool(gamesachievements.challengeindicator)</selected>
+            </include>
+            <include content="Button_Dialog">
+                <param name="id">9010</param>
+                <param name="groupid">9110</param>
+                <param name="icon">special://skin/extras/icons/circle-question.png</param>
+                <label>$LOCALIZE[10043]</label>
+                <onclick>RunScript(script.skinvariables,run_dialog=ok,heading=$LOCALIZE[10043],message=[B][COLOR=dialog_fg_90]$LOCALIZE[35365][/COLOR][/B][CR]$LOCALIZE[35366][CR][CR][B][COLOR=dialog_fg_90]$LOCALIZE[35303][/COLOR][/B][CR]$LOCALIZE[35304])</onclick>
+            </include>
+        </definition>
+
     </include>
 
 </includes>
