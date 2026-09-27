@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
     <defaultcontrol always="true">3</defaultcontrol>
+    <onload condition="Window.IsDialogTopMost(gameachievements) + !RetroPlayer.AchievementsLoggedIn">SetFocus(9001)</onload>
     <controls>
         <include condition="Window.IsDialogTopMost(gameports)">DialogGameControllers_GamePorts</include>
         <include condition="Window.IsDialogTopMost(gameagents)">DialogGameControllers_GameAgents</include>
