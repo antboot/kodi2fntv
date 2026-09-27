@@ -363,7 +363,19 @@
         <param name="selected">false</param>
         <param name="detailed">false</param>
         <definition>
-            <include condition="$PARAM[selected]">Part_List_Highlight</include>
+            <control type="group">
+                <animation effect="fade" start="100" end="70" condition="String.IsEmpty(ListItem.Property(achievement.earned))">Conditional</animation>
+                <include condition="$PARAM[selected]">Part_List_Highlight</include>
+            </control>
+            <control type="progress">
+                <description>Progressbar</description>
+                <info>ListItem.Property(achievement.measuredpercent)</info>
+                <texturebg colordiffuse="00ffffff" border="40,0,40,0">common/menu.png</texturebg>
+                <midtexture colordiffuse="$VAR[ColorHighlight]" border="40,40,40,40">common/menu.png</midtexture>
+                <visible>Integer.IsGreater(ListItem.Property(achievement.measuredpercent),1)</visible>
+                <visible>!String.IsEmpty(ListItem.Property(achievement.measured))</visible>
+                <visible>$PARAM[selected]</visible>
+            </control>
             <control type="group">
                 <left>40</left>
                 <right>40</right>
@@ -409,6 +421,7 @@
                     <include content="List_Layout_Dialog_FourLabels">
                         <param name="item_h">$PARAM[item_h]</param>
                         <param name="selected">$PARAM[selected]</param>
+                        <param name="label">$INFO[ListItem.Label]$INFO[ListItem.Property(achievement.measuredprogress), (,)]</param>
                         <param name="label4">$INFO[ListItem.Property(achievement.unlockeddate),, - ]$INFO[ListItem.Property(achievement.raritycategory)]</param>
                         <param name="label3">$INFO[ListItem.Property(achievement.points)]</param>
                     </include>
