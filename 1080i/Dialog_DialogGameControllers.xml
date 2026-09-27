@@ -407,7 +407,7 @@
         <param name="itemlayout_include">List_Layout_Leaderboards</param>
         <param name="dialog_size">Dimension_DialogFullMenu</param>
         <param name="has_button_grouplist">false</param>
-        <param name="visible">$PARAM[visible]</param>
+        <param name="visible">true</param>
         <definition>
             <include>Part_Dim_Overlay</include>
             <control type="group">
