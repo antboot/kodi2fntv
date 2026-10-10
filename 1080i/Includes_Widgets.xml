@@ -71,9 +71,20 @@
                 <param name="include">$PARAM[include]</param>
                 <nested />
 
+                <include content="View_Line">
+                    <param name="label">$PARAM[label]</param>
+                    <param name="label_fallback">31282</param>
+                    <param name="top">20</param>
+                    <param name="left">0</param>
+                    <param name="visible">Integer.IsEqual(Container($PARAM[categoryid]).NumItems,0) + [Container($PARAM[categoryid]).IsUpdating | Container($PARAM[id]).IsUpdating]</param>
+                    <param name="use_spinner">true</param>
+                    <param name="run_spinner">Container($PARAM[categoryid]).IsUpdating | Container($PARAM[id]).IsUpdating</param>
+                </include>
+
                 <control type="group">
                     <top>20</top>
                     <height>40</height>
+                    <visible>Integer.IsGreater(Container($PARAM[categoryid]).NumItems,0)</visible>
                     <include>View_Line_Divider</include>
                     <include content="Categories_Selector_OverlayList">
                         <param name="id">$PARAM[categoryid]</param>

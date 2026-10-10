@@ -16,7 +16,7 @@
     <param name="visible">[{widget_category_visible}] + [{widget_visible}]</param>
     <param name="altvisible">[{widget_altvisible}] | Container({widget_category_id}).IsUpdating | Integer.IsGreater(Container({widget_category_id}).NumItems,0)</param>
     <param name="busy_isupdating">{widget_busy_isupdating}</param>
-    <param name="busy_visible">[Integer.IsEqual(Container({widget_id}).NumItems,0) | [Integer.IsEqual(Container({widget_id}).NumItems,1) + String.IsEqual(Container({widget_id}).ListItemAbsolute(0).Label,$LOCALIZE[31046]) + Container({widget_id}).IsUpdating]]</param>
+    <param name="busy_visible">[Container({widget_category_id}).IsUpdating | Container({widget_id}).IsUpdating]</param>
     <param name="widgetfade_include">{widget_widgetfade_include}</param>
     <param name="widgetfade_disable">{widget_widgetfade_disable}</param>
     <param name="widgettop">widget_items_t{widgetconstants_affix}</param>
