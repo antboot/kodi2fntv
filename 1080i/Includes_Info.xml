@@ -888,24 +888,14 @@
             <visible>String.IsEqual($PARAM[container]$PARAM[listitem].DBType,episode) | $PARAM[override]</visible>
             <height>$PARAM[height]</height>
             <control type="group">
-                <visible>[!String.IsEmpty($PARAM[container]$PARAM[listitem].Season) | !String.IsEmpty($PARAM[container]$PARAM[listitem].Episode) | !String.IsEmpty($PARAM[container]$PARAM[listitem].Title)]</visible>
+                <visible>[!String.IsEmpty($PARAM[container]$PARAM[listitem].Title)]</visible>
                 <control type="label">
                     <textcolor>$PARAM[colordiffuse]_90</textcolor>
-                    <label>$INFO[$PARAM[container]$PARAM[listitem].Season,,x]$INFO[$PARAM[container]$PARAM[listitem].Episode,0,. ]$INFO[$PARAM[container]$PARAM[listitem].Title,,]</label>
+                    <label>$INFO[$PARAM[container]$PARAM[listitem].Title]</label>
                     <left>40</left>
                     <height>40</height>
                     <font>font_main_bold</font>
                     <width>$PARAM[width]</width>
-                    <visible>!Integer.IsGreater($PARAM[container]$PARAM[listitem].Episode,9)</visible>
-                </control>
-                <control type="label">
-                    <textcolor>$PARAM[colordiffuse]_90</textcolor>
-                    <label>$INFO[$PARAM[container]$PARAM[listitem].Season,,x]$INFO[$PARAM[container]$PARAM[listitem].Episode,,. ]$INFO[$PARAM[container]$PARAM[listitem].Title,,]</label>
-                    <left>40</left>
-                    <height>40</height>
-                    <font>font_main_bold</font>
-                    <width>$PARAM[width]</width>
-                    <visible>Integer.IsGreater($PARAM[container]$PARAM[listitem].Episode,9)</visible>
                 </control>
                 <include content="Info_Plot_TextBox">
                     <param name="label">$INFO[$PARAM[container]$PARAM[listitem].Plot]</param>
@@ -917,7 +907,7 @@
                 </include>
             </control>
             <control type="group">
-                <visible>![[!String.IsEmpty($PARAM[container]$PARAM[listitem].Season) | !String.IsEmpty($PARAM[container]$PARAM[listitem].Episode) | !String.IsEmpty($PARAM[container]$PARAM[listitem].Title)]]</visible>
+                <visible>![[!String.IsEmpty($PARAM[container]$PARAM[listitem].Title)]]</visible>
                 <include content="Info_Plot_TextBox">
                     <param name="label">$INFO[$PARAM[container]$PARAM[listitem].Plot]</param>
                     <param name="colordiffuse">$PARAM[colordiffuse]</param>
