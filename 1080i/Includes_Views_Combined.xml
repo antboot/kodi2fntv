@@ -16,29 +16,57 @@
     </variable>
 
     <variable name="View_530_Content">
-        <value condition="String.IsEqual(Window.Property(ViewCombined.520.Directory),Container.FolderPath)">$INFO[Window.Property(ViewCombined.520.Path)]</value>
+        <value condition="String.IsEqual(Window.Property(ViewCombined.520.Directory),Container.FolderPath) + !String.IsEmpty(Window.Property(ViewCombined.520.Path))">$INFO[Window.Property(ViewCombined.520.Path)]</value>
+        <value condition="Container(520).ListItem.IsFolder">$INFO[Container(520).ListItem.FolderPath]</value>
     </variable>
     <variable name="View_531_Content">
-        <value condition="String.IsEqual(Window.Property(ViewCombined.521.Directory),Container.FolderPath)">$INFO[Window.Property(ViewCombined.521.Path)]</value>
+        <value condition="String.IsEqual(Window.Property(ViewCombined.521.Directory),Container.FolderPath) + !String.IsEmpty(Window.Property(ViewCombined.521.Path))">$INFO[Window.Property(ViewCombined.521.Path)]</value>
+        <value condition="Container(521).ListItem.IsFolder">$INFO[Container(521).ListItem.FolderPath]</value>
     </variable>
     <variable name="View_532_Content">
-        <value condition="String.IsEqual(Window.Property(ViewCombined.522.Directory),Container.FolderPath)">$INFO[Window.Property(ViewCombined.522.Path)]</value>
+        <value condition="String.IsEqual(Window.Property(ViewCombined.522.Directory),Container.FolderPath) + !String.IsEmpty(Window.Property(ViewCombined.522.Path))">$INFO[Window.Property(ViewCombined.522.Path)]</value>
+        <value condition="Container(522).ListItem.IsFolder">$INFO[Container(522).ListItem.FolderPath]</value>
     </variable>
     <variable name="View_533_Content">
-        <value condition="String.IsEqual(Window.Property(ViewCombined.523.Directory),Container.FolderPath)">$INFO[Window.Property(ViewCombined.523.Path)]</value>
+        <value condition="String.IsEqual(Window.Property(ViewCombined.523.Directory),Container.FolderPath) + !String.IsEmpty(Window.Property(ViewCombined.523.Path))">$INFO[Window.Property(ViewCombined.523.Path)]</value>
+        <value condition="Container(523).ListItem.IsFolder">$INFO[Container(523).ListItem.FolderPath]</value>
     </variable>
     <variable name="View_534_Content">
-        <value condition="String.IsEqual(Window.Property(ViewCombined.524.Directory),Container.FolderPath)">$INFO[Window.Property(ViewCombined.524.Path)]</value>
+        <value condition="String.IsEqual(Window.Property(ViewCombined.524.Directory),Container.FolderPath) + !String.IsEmpty(Window.Property(ViewCombined.524.Path))">$INFO[Window.Property(ViewCombined.524.Path)]</value>
+        <value condition="Container(524).ListItem.IsFolder">$INFO[Container(524).ListItem.FolderPath]</value>
     </variable>
     <variable name="View_536_Content">
-        <value condition="String.IsEqual(Window.Property(ViewCombined.526.Directory),Container.FolderPath)">$INFO[Window.Property(ViewCombined.526.Path)]</value>
+        <value condition="String.IsEqual(Window.Property(ViewCombined.526.Directory),Container.FolderPath) + !String.IsEmpty(Window.Property(ViewCombined.526.Path))">$INFO[Window.Property(ViewCombined.526.Path)]</value>
+        <value condition="Container(526).ListItem.IsFolder">$INFO[Container(526).ListItem.FolderPath]</value>
     </variable>
     <variable name="View_537_Content">
-        <value condition="String.IsEqual(Window.Property(ViewCombined.527.Directory),Container.FolderPath)">$INFO[Window.Property(ViewCombined.527.Path)]</value>
+        <value condition="String.IsEqual(Window.Property(ViewCombined.527.Directory),Container.FolderPath) + !String.IsEmpty(Window.Property(ViewCombined.527.Path))">$INFO[Window.Property(ViewCombined.527.Path)]</value>
+        <value condition="Container(527).ListItem.IsFolder">$INFO[Container(527).ListItem.FolderPath]</value>
     </variable>
     <variable name="View_538_Content">
-        <value condition="String.IsEqual(Window.Property(ViewCombined.528.Directory),Container.FolderPath)">$INFO[Window.Property(ViewCombined.528.Path)]</value>
+        <value condition="String.IsEqual(Window.Property(ViewCombined.528.Directory),Container.FolderPath) + !String.IsEmpty(Window.Property(ViewCombined.528.Path))">$INFO[Window.Property(ViewCombined.528.Path)]</value>
+        <value condition="Container(528).ListItem.IsFolder">$INFO[Container(528).ListItem.FolderPath]</value>
     </variable>
+
+    <include name="View_Combined_OnUnload">
+        <!-- Clear the current library window's saved selections before it closes. -->
+        <onunload>ClearProperty(ViewCombined.520.Path)</onunload>
+        <onunload>ClearProperty(ViewCombined.520.Directory)</onunload>
+        <onunload>ClearProperty(ViewCombined.521.Path)</onunload>
+        <onunload>ClearProperty(ViewCombined.521.Directory)</onunload>
+        <onunload>ClearProperty(ViewCombined.522.Path)</onunload>
+        <onunload>ClearProperty(ViewCombined.522.Directory)</onunload>
+        <onunload>ClearProperty(ViewCombined.523.Path)</onunload>
+        <onunload>ClearProperty(ViewCombined.523.Directory)</onunload>
+        <onunload>ClearProperty(ViewCombined.524.Path)</onunload>
+        <onunload>ClearProperty(ViewCombined.524.Directory)</onunload>
+        <onunload>ClearProperty(ViewCombined.526.Path)</onunload>
+        <onunload>ClearProperty(ViewCombined.526.Directory)</onunload>
+        <onunload>ClearProperty(ViewCombined.527.Path)</onunload>
+        <onunload>ClearProperty(ViewCombined.527.Directory)</onunload>
+        <onunload>ClearProperty(ViewCombined.528.Path)</onunload>
+        <onunload>ClearProperty(ViewCombined.528.Directory)</onunload>
+    </include>
 
     <include name="View_Combined_Selector_HiddenButton_OnFocus">
         <definition>
