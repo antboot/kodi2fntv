@@ -1587,6 +1587,7 @@
                     <height>57</height>
                     <itemgap>40</itemgap>
                     <ondown>90001</ondown>
+                    <onleft>8100</onleft>
                     <onup condition="$EXP[Exp_TMDbHelper_IsData]">ActivateWindow(1113)</onup>
 
                     <!-- Play/Browse -->
@@ -1594,6 +1595,7 @@
                         <param name="id">4001</param>
                         <param name="control">button</param>
                         <label>$VAR[Label_DialogInfo_PlayButton]</label>
+                        <onfocus>ClearProperty(DialogInfo.ArtworkView)</onfocus>
                         <onclick>$VAR[Action_DialogInfo_PlayMedia]</onclick>
                     </include>
 
