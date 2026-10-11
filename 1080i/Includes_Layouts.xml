@@ -79,7 +79,7 @@
         <param name="progress">ListItem.Property(percent)</param>
         <definition>
             <control type="group">
-                <height>80</height>
+                <height>60</height>
                 <centertop>50%</centertop>
                 <control type="label">
                     <top>-25</top>
