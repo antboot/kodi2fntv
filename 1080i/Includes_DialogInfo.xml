@@ -60,7 +60,19 @@
     </include>
 
     <include name="DialogInfo_Animation_ArtworkSlide">
-        <animation effect="slide" start="0" end="infodialog_poster_slide" time="400" tween="cubic" easing="inout" reversible="true" condition="!String.IsEmpty(Window.Property(DialogInfo.ArtworkView))">Conditional</animation>
+        <animation effect="slide" start="0" end="infodialog_poster_slide" time="400" tween="cubic" easing="inout" reversible="true" condition="!String.IsEmpty(Window.Property(DialogInfo.ArtworkView)) + String.IsEmpty(Window.Property(DialogInfo.ArtworkReverse))">Conditional</animation>
+        <animation effect="slide" start="0" end="infodialog_artwork_reverse_slide" time="400" tween="cubic" easing="inout" reversible="true" condition="!String.IsEmpty(Window.Property(DialogInfo.ArtworkView)) + !String.IsEmpty(Window.Property(DialogInfo.ArtworkReverse))">Conditional</animation>
+    </include>
+
+    <!-- Wrap the hidden panel to the other side when continuing around the carousel. -->
+    <include name="DialogInfo_Animation_ArtworkReturn_Incoming">
+        <animation effect="slide" start="infodialog_artwork_wrap_offset" end="0" time="400" tween="cubic" easing="inout" reversible="false" condition="String.IsEmpty(Window.Property(DialogInfo.ArtworkView)) + !String.IsEmpty(Window.Property(DialogInfo.ArtworkWrapReturn)) + String.IsEmpty(Window.Property(DialogInfo.ArtworkReverse))">Conditional</animation>
+        <animation effect="slide" start="infodialog_artwork_reverse_offset" end="0" time="400" tween="cubic" easing="inout" reversible="false" condition="String.IsEmpty(Window.Property(DialogInfo.ArtworkView)) + !String.IsEmpty(Window.Property(DialogInfo.ArtworkWrapReturn)) + !String.IsEmpty(Window.Property(DialogInfo.ArtworkReverse))">Conditional</animation>
+    </include>
+
+    <include name="DialogInfo_Animation_ArtworkReturn_Outgoing">
+        <animation effect="slide" start="0" end="infodialog_artwork_reverse_offset" time="400" tween="cubic" easing="inout" reversible="false" condition="String.IsEmpty(Window.Property(DialogInfo.ArtworkView)) + !String.IsEmpty(Window.Property(DialogInfo.ArtworkWrapReturn)) + String.IsEmpty(Window.Property(DialogInfo.ArtworkReverse))">Conditional</animation>
+        <animation effect="slide" start="0" end="infodialog_artwork_wrap_offset" time="400" tween="cubic" easing="inout" reversible="false" condition="String.IsEmpty(Window.Property(DialogInfo.ArtworkView)) + !String.IsEmpty(Window.Property(DialogInfo.ArtworkWrapReturn)) + !String.IsEmpty(Window.Property(DialogInfo.ArtworkReverse))">Conditional</animation>
     </include>
 
     <include name="DialogInfo_Main_Group">
@@ -1593,7 +1605,9 @@
                     <height>57</height>
                     <itemgap>40</itemgap>
                     <ondown>90001</ondown>
+                    <onleft>SetProperty(DialogInfo.ArtworkReverse,true)</onleft>
                     <onleft>8100</onleft>
+                    <onright>ClearProperty(DialogInfo.ArtworkReverse)</onright>
                     <onright>8100</onright>
                     <onup condition="$EXP[Exp_TMDbHelper_IsData]">ActivateWindow(1113)</onup>
 
