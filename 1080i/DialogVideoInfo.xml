@@ -39,9 +39,12 @@
 
         <control type="group">
             <include>DialogInfo_Main_Group</include>
-            <animation effect="slide" start="0,0" end="2600,0" time="400" tween="cubic" easing="inout" condition="!String.IsEmpty(Window.Property(DialogInfo.ArtworkView))">Conditional</animation>
             <control type="group">
-                <include>DialogInfo_Body_Group</include>
+                <include>DialogInfo_Animation_ArtworkSlide</include>
+                <animation effect="fade" start="100" end="0" time="400" tween="cubic" easing="inout" reversible="true" condition="!String.IsEmpty(Window.Property(DialogInfo.ArtworkView))">Conditional</animation>
+                <include content="DialogInfo_Body_Group">
+                    <param name="showposter">false</param>
+                </include>
                 <control type="group">
                     <include content="DialogInfo_Info_Group">
                         <param name="extended_include">DialogInfo_VideoDetails</param>
@@ -76,12 +79,12 @@
             <param name="id">8100</param>
             <visible>!String.IsEqual(ListItem.Property(tmdb_type),person)</visible>
             <onfocus>SetProperty(DialogInfo.ArtworkView,true)</onfocus>
-            <onleft>8100</onleft>
-            <onright>4001</onright>
+            <onleft>9000</onleft>
+            <onright>9000</onright>
             <onup>8100</onup>
             <ondown>SetFocus(5029)</ondown>
-            <onback>4001</onback>
-            <onclick>SetFocus(4001)</onclick>
+            <onback>9000</onback>
+            <onclick>SetFocus(9000)</onclick>
         </include>
 
         <control type="group">
@@ -89,21 +92,33 @@
             <include>Dimension_Info</include>
             <include>DialogInfo_Main_Group</include>
             <control type="group">
-                <left>-2600</left>
-                <right>2600</right>
+                <right>0</right>
+                <width>infodialog_poster_w</width>
                 <height>infodialog_poster_h</height>
-                <animation effect="slide" start="0,0" end="2600,0" time="400" tween="cubic" easing="inout" condition="!String.IsEmpty(Window.Property(DialogInfo.ArtworkView))">Conditional</animation>
+                <include>DialogInfo_Animation_Right</include>
+                <include>DialogInfo_Animation_ArtworkSlide</include>
+                <include content="Object_BigPoster">
+                    <param name="icon">$VAR[Image_Poster]</param>
+                    <param name="diffuse">diffuse/poster_w560_h820.png</param>
+                </include>
+            </control>
+            <control type="group">
+                <left>infodialog_artwork_start</left>
+                <right>infodialog_poster_slide</right>
+                <height>infodialog_poster_h</height>
+                <include>DialogInfo_Animation_ArtworkSlide</include>
+                <animation effect="fade" start="100" end="0" time="400" tween="cubic" easing="inout" reversible="true" condition="String.IsEmpty(Window.Property(DialogInfo.ArtworkView))">Conditional</animation>
                 <include content="Object_BigPoster">
                     <param name="icon">$VAR[Image_DialogInfo_Fanart]</param>
-                    <param name="diffuse">diffuse/landscape_w1760_h820.png</param>
+                    <param name="diffuse">diffuse/landscape_w1160_h820.png</param>
                     <param name="aspectratio">keep</param>
                     <param name="posterback_colordiffuse">black</param>
                 </include>
-                <control type="image">
+                <!-- <control type="image">
                     <include content="Dimension_Padding"><param name="pad">-3</param></include>
                     <include>Texture_SelectBox_Thin</include>
                     <visible>Control.HasFocus(8100)</visible>
-                </control>
+                </control> -->
             </control>
         </control>
 

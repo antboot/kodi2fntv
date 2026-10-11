@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <includes>
+    <constant name="infodialog_poster_slide">-720</constant>
+    <constant name="infodialog_artwork_start">1320</constant>
 
     <!-- 1440 x 1080 -->
     <constant name="alphabet_w">42.96</constant>
