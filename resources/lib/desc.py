@@ -274,6 +274,10 @@ def build_item(client, it, playable=True, guessed_type=None, url=None, folder=No
         'playable': bool(playable),
         'infos': _infos_from_item(it, guessed_type),
         'art': art,
+        # 列表行季/集数的结构化副本（label 文本里的同源数据）：媒体库同步
+        # 以此做"未变化剧"短路（libsync._tv_walk——集数一致免抓取结构）。
+        # 旧范围缓存无此字段 = 不短路，范围 30 分钟内重建后自动生效。
+        'tv_counts': (ns, ne) if item_type == 'TV' else None,
     }
 
 

@@ -283,6 +283,36 @@ def b64url_encode(data):
     return base64.urlsafe_b64encode(data).decode('ascii').rstrip('=')
 
 
+# ------------------------------------------------------------ 图片判定
+# 合法图片按内容魔数判定，不用字节大小门槛：服务端对无照片演员返回
+# 492 字节的占位头像（真机实测 HTTP 200 / image/webp / RIFF…WEBP），
+# 0.7.14 之前 >1024 字节的写入门槛把它每轮下载成功又丢弃、永远落不了盘
+# （648 个重复任务白烧 6 分钟同步）。
+
+def looks_like_image(data):
+    """字节流是否合法图片（webp/jpeg/png/gif 魔数；<64B 一律不信）"""
+    if not data or len(data) < 64:
+        return False
+    return (data[:4] == b'RIFF' and data[8:12] == b'WEBP'
+            or data[:3] == b'\xff\xd8\xff'
+            or data[:8] == b'\x89PNG\r\n\x1a\n'
+            or data[:4] == b'GIF8')
+
+
+def file_is_image(path, fast_min=1024):
+    """本地文件是否已合格图片：大于 fast_min 直接认（快路径——每轮同步
+    4 万张逐个 stat，不能逐个读文件头），小文件再读 64 字节判魔数。"""
+    try:
+        if not os.path.isfile(path):
+            return False
+        if os.path.getsize(path) > fast_min:
+            return True
+        with open(path, 'rb') as f:
+            return looks_like_image(f.read(64))
+    except OSError:
+        return False
+
+
 # ------------------------------------------------------------ 播放端 UA 捕获
 # 网盘直链与换链时的声明 UA 精确绑定。Kodi 原生 curl 与 vfs.stream.fast
 # （kodi::network::GetUserAgent()）默认发送的都是 Kodi 完整 UA 串（含平台

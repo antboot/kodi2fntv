@@ -394,14 +394,14 @@ def actor_thumb_path(profile_path, ext='.webp'):
 
 
 def local_actor_thumb(profile_path):
-    """已下载的演员头像本地路径；未下载返回 None（兼容 .webp 与旧 .jpg）"""
+    """已下载的演员头像本地路径；未下载返回 None（兼容 .webp 与旧 .jpg）
+
+    大于 512B 直接认，小文件读魔数（492B 的占位头像也是合法文件，
+    0.7.14 前的字节门槛会把它判成未下载、每轮重新排队）。"""
     for p in (actor_thumb_path(profile_path),
               actor_thumb_path(profile_path, '.jpg')):
-        try:
-            if p and os.path.isfile(p) and os.path.getsize(p) > 512:
-                return p
-        except OSError:
-            continue
+        if p and util.file_is_image(p, fast_min=512):
+            return p
     return None
 
 

@@ -8,20 +8,25 @@
   - 元数据（NFO）与图片（海报/背景/清晰标志/单集剧照）全部同步为本地
     文件：NFO 引用本地路径，Kodi 原生库完全离线可用。服务器 sys/img
     需要 Authx 签名，Kodi 直接抓取会失败，因此图片在同步时经本地代理
-    下载落盘（并行、增量、已存在跳过）。
+    下载落盘（并行；三层增量：同路径去重、已合格文件按魔数跳过、404
+    连续失败负缓存——占位头像仅 492B 也是合法图片，不能用字节门槛）。
   - 幂等增量：内容无变化的文件不重写；manifest 记录本轮文件集，删除
     消失条目并触发 CleanLibrary。
   - 失败防御：剧集结构抓取失败/集数异常为空时沿用旧结构，且当轮跳过
     该剧清理——网络抖动不再把整部剧"清出库"；图片下载连续无响应即
     熔断中止本轮，服务端宕机不再把同步线程挂住数天。
   - 剧集结构：剧 → tvshow.nfo；季 → 子目录；集 → SxxEyy.strm + nfo。
-    季集数据带 24h 读缓存（libsync_tvwalk.json），同步温和不刷接口。
+    季集数据带 24h 读缓存（libsync_tvwalk.json），过期剧 3 线程并行抓取
+    （item_list_walk 同款先例），每 worker 保留 0.1s 温和限速；列表行
+    集数与缓存一致的剧免抓取只续期（7 天强制全量复核兜底）。
   - 扫库触发：JSON-RPC TCP 9090 优先（service 上下文可靠，不依赖 GUI），
-    executebuiltin + scan_pending（进插件根目录补扫）兜底。
+    executebuiltin + scan_pending（进插件根目录补扫）兜底；本轮无任何
+    落盘变化时跳过扫库（稳定态空跑整库 Scan 是大库同步的最大无效开销）。
   - 演员头像 art 修复：Kodi 重扫对 actor art 只补缺不覆盖，旧版导入的
     必失败服务器 URL 记录会一直滞留——同步后直写 MyVideos DB 把已
     本地化的演员头像记录修正/补全为本地路径（幂等）。
 """
+import hashlib
 import os
 import re
 import threading
@@ -39,8 +44,13 @@ ART_DIR = 'art'
 SYNC_TTL_DEFAULT = 12      # 默认同步周期（小时，可在设置中调整）
 TV_WALK_TTL = 24 * 3600
 TV_WALK_PRUNE_AFTER = 14 * 24 * 3600   # 已删剧的走缓存保留宽限（防范围文件临时缺失误删编号锁）
+TV_WALK_WORKERS = 3     # 过期剧并行抓取线程数（服务端查询吞吐是瓶颈，同 client.WALK_WORKERS 先例）
+TV_WALK_RECHECK = 7 * 24 * 3600   # 集数一致免抓取的最长间隔：到期强制全量复核，防同集数换 guid/编号的服务端变更长期滞留
 ART_WORKERS = 12
 ART_ABORT_STREAK = 10                  # 连续 N 张图片下载完全无响应即熔断本轮
+ART_MISS_FILE = 'art_miss.json'
+ART_MISS_SKIP_ROUNDS = 2               # 连续失败 N 轮进入负缓存（首轮失败仍重试一轮：按需生成的 404 通常下轮已就绪）
+ART_MISS_TTL = 7 * 24 * 3600           # 负缓存有效期：到期重试一次，服务端补图自动恢复
 MANIFEST_FILE = 'libsync_manifest.json'
 STATE_FILE = 'libsync_state.json'
 TV_WALK_FILE = 'libsync_tvwalk.json'
@@ -210,30 +220,61 @@ class _SyncProgress(object):
 
 # ------------------------------------------------------------------ 图片本地化
 
+def _art_miss_key(path, url):
+    """图片负缓存键：本地路径 + URL。服务端换图 → URL 变 → 新键自动重试。"""
+    return hashlib.md5(('%s|%s' % (path, url)).encode('utf-8')).hexdigest()[:16]
+
+
 def _download_art(client, tasks, progress=None):
     """并行下载图片素材到本地。tasks = [(本地路径, 绝对URL, 宽度)]。
 
-    已存在且非空的文件跳过（增量）；404 等服务端有响应的失败保留 3 次
-    重试（服务端图片按需生成，冷启动首访可能 404，真机实测）；完全无
-    响应（连接失败/超时）连续 ART_ABORT_STREAK 张即熔断中止本轮——
-    否则服务端宕机时每张要烧 3×(25s×2) 超时，数万张任务能把同步
-    线程挂住数天。播放中自动暂停让路（代理与本进程同住，12 线程下载
-    的 GIL 争用曾把代理 HEAD 拖到 20s 超时，真机日志 Timeout 28）。
-    progress(done, total) 供同步进度显示。返回成功下载数。"""
+    三层增量（0.7.14 真机定位：6.5 分钟的同步里 650 个任务中 648 个是
+    同两个演员头像的重复排队——任务收集只看"文件不存在"、同一演员出现
+    在 N 部影片就排 N 次；且该头像服务端返回 200 但仅 492 字节，旧
+    ">1024 字节才写盘"的门槛把它每轮下载成功又丢弃，永远落不了盘）：
+      - 去重：同本地路径只排一次（648 → 2）；
+      - 已合格文件跳过：>1024B 快路径，小文件读魔数（占位头像也是图，
+        一次下载终身复用，写入/跳过判定同用 util.looks_like_image）；
+      - 负缓存（art_miss.json）：404 等"服务端有响应但拿不到图"的失败
+        连续 ART_MISS_SKIP_ROUNDS 轮后、ART_MISS_TTL 天内不再排队；服务端
+        换图（URL 变）即新键自动重试。
+    完全无响应（连接失败/超时）不记负缓存——那是服务端宕机不是缺图，
+    连续 ART_ABORT_STREAK 张熔断中止本轮（否则每张烧 3×(25s×2) 超时，
+    数万张任务能把同步线程挂住数天）。播放中自动暂停让路（代理与本
+    进程同住，12 线程下载的 GIL 争用曾把代理 HEAD 拖到 20s 超时，真机
+    日志 Timeout 28）。progress(done, total) 供同步进度显示。返回成功
+    下载数。"""
     from concurrent.futures import ThreadPoolExecutor, as_completed
     from resources.lib import proxy
     import urllib.error
     import urllib.request
+    now = time.time()
+    miss = util.load_json(ART_MISS_FILE)
+    miss = miss if isinstance(miss, dict) else {}
     todo = []
+    seen = set()
+    dup_dropped = neg_skipped = 0
     for path, abs_url, width in tasks:
         if not abs_url:
             continue
-        try:
-            if os.path.isfile(path) and os.path.getsize(path) > 1024:
-                continue
-        except OSError:
-            pass
-        todo.append((path, abs_url, width))
+        if path in seen:
+            dup_dropped += 1
+            continue
+        seen.add(path)
+        if util.file_is_image(path):
+            continue
+        key = _art_miss_key(path, abs_url)
+        e = miss.get(key)
+        if (e and e.get('n', 0) >= ART_MISS_SKIP_ROUNDS
+                and now - e.get('ts', 0) < ART_MISS_TTL):
+            neg_skipped += 1
+            continue
+        todo.append((path, abs_url, width, key))
+    if dup_dropped:
+        _log('图片任务去重：%d 个同路径重复任务合并' % dup_dropped)
+    if neg_skipped:
+        _log('图片负缓存：%d 个连续失败任务本轮跳过（%d 天内）'
+             % (neg_skipped, ART_MISS_TTL // 86400))
     if not todo:
         return 0
     os.makedirs(os.path.dirname(todo[0][0]), exist_ok=True)
@@ -264,8 +305,8 @@ def _download_art(client, tasks, progress=None):
     def _one(t):
         """下载单张：'ok' 成功 / 'miss' 失败但服务端有响应 / 'dead' 完全无响应"""
         if abort.is_set():
-            return 'dead'
-        path, abs_url, width = t
+            return 'dead', t[3]
+        path, abs_url, width, key = t
         abs_url = abs_url if 'width=' in abs_url else client.image_url(abs_url, width=width)
         url = proxy.image_url(abs_url)
         # 直连优先（带 Authx 签名，省去本机代理一跳提速），失败回退代理。
@@ -304,26 +345,28 @@ def _download_art(client, tasks, progress=None):
                 except Exception as e:
                     _log('图片下载失败 %s: %s' % (os.path.basename(path), str(e)[:50]),
                          xbmc.LOGDEBUG)
-            if data and len(data) > 1024:
+            if data and util.looks_like_image(data):
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 with open(path, 'wb') as f:
                     f.write(data)
-                return 'ok'
+                return 'ok', key
             if attempt < 3:
                 time.sleep(3)
-        return 'miss' if alive else 'dead'
+        return ('miss' if alive else 'dead'), key
 
     ok = dead_streak = 0
     with ThreadPoolExecutor(max_workers=ART_WORKERS) as pool:
         futs = [pool.submit(_one, t) for t in todo]
         for i, f in enumerate(as_completed(futs), 1):
             try:
-                res = f.result()
+                res, key = f.result()
             except Exception:
-                res = 'miss'
+                res, key = 'miss', ''
             if res == 'ok':
                 ok += 1
                 dead_streak = 0
+                if key in miss:
+                    miss.pop(key, None)
             elif res == 'dead':
                 dead_streak += 1
                 if dead_streak >= ART_ABORT_STREAK and not abort.is_set():
@@ -332,8 +375,16 @@ def _download_art(client, tasks, progress=None):
                          % dead_streak, xbmc.LOGWARNING)
             else:
                 dead_streak = 0    # 服务端有响应（404 按需生成属正常），不熔断
+                # 负缓存计数：同轮去重后每键恰一个任务，n 即连续失败轮数；
+                # 到期重试仍失败则 n 递增、再静默一个 TTL 周期
+                e = miss.get(key)
+                miss[key] = {'ts': time.time(), 'n': (e.get('n', 0) + 1) if e else 1}
             if progress and (i % 50 == 0 or i == len(todo)):
                 progress(i, len(todo))
+    if len(miss) > 5000:   # 防膨胀（正常只有个位数；服务端大规模异常时封顶）
+        ordered = sorted(miss.items(), key=lambda kv: kv[1].get('ts', 0))
+        miss = dict(ordered[-2000:])
+    util.save_json(ART_MISS_FILE, miss)
     return ok
 
 
@@ -513,8 +564,36 @@ def _episode_nfo(ep, still_path):
     return '\n'.join(lines)
 
 
-def _tv_walk(client, tv_guids, force=False):
+def _tv_counts_match(tv_counts, guid, old_data):
+    """列表行自报集数与已缓存结构一致（"未变化剧"短路判定）。
+
+    tv_counts 缺该条目/字段非法/集数为 0 一律视为不可判（返回 False 走
+    全量抓取），兼容旧范围缓存（无 tv_counts 字段——范围 30 分钟内重建，
+    重建前短路不生效属无害降级）。"""
+    counts = (tv_counts or {}).get(guid)
+    if not isinstance(counts, (list, tuple)) or len(counts) < 2:
+        return False
+    try:
+        ne = int(counts[1])
+    except (TypeError, ValueError):
+        return False
+    return ne > 0 and len(old_data.get('eps') or []) == ne
+
+
+def _tv_walk(client, tv_guids, tv_counts=None, force=False):
     """剧 → (季, 集) 结构，带 24h 读缓存，温和不刷接口。
+
+    过期剧并行抓取（TV_WALK_WORKERS 线程）：与 client.item_list_walk 同一
+    先例——真机实测服务端查询吞吐是瓶颈，3 并发已近饱和。首轮同步后各剧
+    缓存时间戳集中过期，此前每隔一轮同步都要串行走完全部剧（每剧
+    season_list + 每季 episode_list + 每剧 0.1s 限速，500 部剧约 1500 次
+    调用、仅 sleep 就 50 秒起）；并行后墙钟约降至 1/3，限速语义按 worker
+    保留（每剧抓取成功后 sleep 0.1s）。
+
+    未变化剧短路（tv_counts）：结构缓存过期但 item/list 列表行自报集数
+    与缓存一致时免抓取、只续期 ts——日常同步从"每隔一轮全量走一遍结构"
+    降为"只有集数变化的剧才真正抓取"。同集数换 guid/编号的服务端变更会
+    漏检，由 TV_WALK_RECHECK 到期强制全量复核兜底；force 不走短路。
 
     失败防御（瞬时故障不伤库）：
       - 单剧抓取异常：有旧缓存则沿用旧结构（不刷新 ts，下轮重试），
@@ -523,16 +602,38 @@ def _tv_walk(client, tv_guids, force=False):
         数据——空结果若落缓存会封死 24h，且当轮清理会把该剧文件当
         "已消失"误删。
     返回 (数据映射, 失败且无旧数据可回退的 guid 集)。"""
+    from concurrent.futures import ThreadPoolExecutor
     cache = util.load_json(TV_WALK_FILE) or {}
     now = time.time()
     out = {}
     failed = set()
+    stale = []   # 缓存过期/缺失、待抓取的 (guid, 旧数据)
+    short_circuited = 0
     for g in tv_guids:
         e = cache.get(g)
         old_data = (e.get('data') or {}) if e else {}
         if e and now - e.get('ts', 0) < TV_WALK_TTL and not force:
             out[g] = old_data
             continue
+        # 过期后的免抓取短路：列表行集数与缓存一致（且距上次真实抓取未超
+        # TV_WALK_RECHECK）→ 只续期 ts。集数是加集/删集/换季的公共信号；
+        # 季数口径（特集是否计入）服务端未必与 season_list 一致，硬比对
+        # 可能系统性失配使短路永不命中，故不比对季数。
+        if (e and not force
+                and _tv_counts_match(tv_counts, g, old_data)
+                and now - (e.get('walked') or e.get('ts', 0)) < TV_WALK_RECHECK):
+            out[g] = old_data
+            cache[g] = {'ts': now, 'walked': e.get('walked') or e.get('ts', 0),
+                        'data': old_data}
+            short_circuited += 1
+            continue
+        stale.append((g, old_data))
+    if short_circuited:
+        _log('剧集结构短路 %d 部（列表行集数与缓存一致，未刷接口）' % short_circuited)
+
+    def _one(item):
+        """抓单剧结构并套用编号锁。返回 (guid, ok|empty|error, 结构, 异常)。"""
+        g, old_data = item
         try:
             seasons = client.season_list(g) or []
             eps = []
@@ -541,35 +642,43 @@ def _tv_walk(client, tv_guids, force=False):
                     ep = dict(ep)
                     ep.setdefault('season_number', s.get('season_number'))
                     eps.append(ep)
-            if not eps and old_data.get('eps'):
-                _log('剧 %s… 本轮集数为空（服务端异常？），沿用旧结构 %d 集'
-                     % (g[:12], len(old_data['eps'])), xbmc.LOGWARNING)
-                out[g] = old_data    # 不写缓存：下轮仍会重取
-                continue
-            # 集编号稳定化：服务端跨轮返回的 (季,集) 编号可能漂移（真机
-            # 实测同一集编号变化 → NFO 内容变 → Kodi 扫库器按（季,集）
-            # 匹配不到旧记录插入新行 → 库里重复集），以 guid 为键锁定
-            # 首次分配的编号，后续轮次沿用
-            old_eps = old_data.get('eps') or []
-            if old_eps:
-                locked = {ep.get('guid'): (ep.get('season_number'),
-                                           ep.get('episode_number'))
-                          for ep in old_eps if ep.get('guid')}
-                for ep in eps:
-                    if ep.get('guid') in locked:
-                        ep['season_number'], ep['episode_number'] = locked[ep['guid']]
-            out[g] = {'seasons': seasons, 'eps': eps}
-            cache[g] = {'ts': now, 'data': out[g]}
-            time.sleep(0.1)   # 温和限速
         except Exception as ex:
-            if old_data.get('eps'):
-                _log('剧 %s… 结构获取失败，沿用旧缓存（下轮重试）: %s'
-                     % (g[:12], ex), xbmc.LOGWARNING)
-                out[g] = old_data    # 不刷新 ts：下轮重试
-            else:
-                _log('剧 %s… 结构获取失败且无旧数据，本轮跳过: %s'
-                     % (g[:12], ex), xbmc.LOGWARNING)
-                failed.add(g)
+            return g, 'error', old_data, ex
+        if not eps and old_data.get('eps'):
+            return g, 'empty', old_data, None
+        # 集编号稳定化：服务端跨轮返回的 (季,集) 编号可能漂移（真机
+        # 实测同一集编号变化 → NFO 内容变 → Kodi 扫库器按（季,集）
+        # 匹配不到旧记录插入新行 → 库里重复集），以 guid 为键锁定
+        # 首次分配的编号，后续轮次沿用
+        old_eps = old_data.get('eps') or []
+        if old_eps:
+            locked = {ep.get('guid'): (ep.get('season_number'),
+                                       ep.get('episode_number'))
+                      for ep in old_eps if ep.get('guid')}
+            for ep in eps:
+                if ep.get('guid') in locked:
+                    ep['season_number'], ep['episode_number'] = locked[ep['guid']]
+        time.sleep(0.1)   # 温和限速（每 worker 独立间隔，仅成功抓取计入）
+        return g, 'ok', {'seasons': seasons, 'eps': eps}, None
+
+    if stale:
+        with ThreadPoolExecutor(max_workers=min(TV_WALK_WORKERS, len(stale))) as pool:
+            for g, kind, data, ex in pool.map(_one, stale):
+                if kind == 'ok':
+                    out[g] = data
+                    cache[g] = {'ts': now, 'walked': now, 'data': data}
+                elif kind == 'empty':
+                    _log('剧 %s… 本轮集数为空（服务端异常？），沿用旧结构 %d 集'
+                         % (g[:12], len(data.get('eps') or [])), xbmc.LOGWARNING)
+                    out[g] = data    # 不写缓存：下轮仍会重取
+                elif data.get('eps'):
+                    _log('剧 %s… 结构获取失败，沿用旧缓存（下轮重试）: %s'
+                         % (g[:12], ex), xbmc.LOGWARNING)
+                    out[g] = data    # error 路径 data 即旧数据：不刷新 ts，下轮重试
+                else:
+                    _log('剧 %s… 结构获取失败且无旧数据，本轮跳过: %s'
+                         % (g[:12], ex), xbmc.LOGWARNING)
+                    failed.add(g)
     # 瘦身：已不在库里的剧保留 TV_WALK_PRUNE_AFTER 宽限后丢弃（编号锁随
     # 之失效属可接受——剧已删）；宽限期防范围文件临时缺失时误清编号锁
     guids = set(tv_guids)
@@ -907,6 +1016,7 @@ def sync_library(client, force=False):
         seen = set()
         tvs = []
         seen_t = set()
+        tv_counts = {}   # guid -> 列表行 (季数, 集数)（_tv_walk 未变化剧短路用）
         for key in desc.scope_keys(client):
             scope = desc.load_scope(key, allow_expired=True) or {}
             for d in scope.get('items') or []:
@@ -919,6 +1029,9 @@ def sync_library(client, force=False):
                 elif d.get('type') == 'TV' and g not in seen_t:
                     seen_t.add(g)
                     tvs.append(d)
+                    counts = d.get('tv_counts')
+                    if isinstance(counts, (list, tuple)) and len(counts) == 2:
+                        tv_counts[g] = counts
         if not movies and not tvs:
             return 'empty'   # 描述符未就绪，下轮再试
         prog.update(3, '清单完成：电影 %d 部 / 剧集 %d 部' % (len(movies), len(tvs)))
@@ -942,9 +1055,10 @@ def sync_library(client, force=False):
         actor_local = {}   # 演员名 → 本地头像路径（art 修复用）
         new_f = chg_f = 0
 
-        # 剧集结构（24h 读缓存，温和限速；瞬时失败沿用旧结构防误删）
+        # 剧集结构（24h 读缓存，温和限速；瞬时失败沿用旧结构防误删；
+        # 集数一致的未变化剧短路免抓取）
         prog.update(5, '获取 %d 部剧集的季/集结构…' % len(tvs))
-        tv_data, tv_failed = _tv_walk(client, [d['guid'] for d in tvs])
+        tv_data, tv_failed = _tv_walk(client, [d['guid'] for d in tvs], tv_counts)
         n_eps = sum(len((tv_data.get(x['guid']) or {}).get('eps') or []) for x in tvs)
         total_items = len(movies) + n_eps
         done_items = [0]
@@ -1059,6 +1173,7 @@ def sync_library(client, force=False):
         # 本轮新落盘的头像：重建对应 NFO（<thumb> 代理 URL → 本地路径）
         # 并补收 art 修复匹配集——首轮同步即导入本地路径，不必等第二轮
         # 自愈（_write 内容比对幂等，仅头像确实落盘的条目会重写）
+        thumb_rewrote = 0
         if thumb_pending:
             prog.update(94, '回写本地头像路径…')
             for is_movie, base, d, g, art_paths in thumb_pending:
@@ -1066,31 +1181,45 @@ def sync_library(client, force=False):
                                      actor_local)
                 nfo = _movie_nfo(client, d, g, art_paths) if is_movie \
                     else _tvshow_nfo(client, d, art_paths)
-                _write((base + '.nfo') if is_movie
-                       else os.path.join(base, 'tvshow.nfo'), nfo)
+                r = _write((base + '.nfo') if is_movie
+                           else os.path.join(base, 'tvshow.nfo'), nfo)
+                thumb_rewrote += (r in ('new', 'chg'))
 
         # 演员头像 art 修复（幂等，先于扫库）：信息页下次打开即取到本地头像，
         # 不依赖 Kodi 重扫是否会覆盖旧记录
-        prog.update(96, '登记媒体库并触发扫库…')
         fixed = _repair_actor_art(actor_local)
 
         # 内容类型：直接写 MyVideos DB 的 path 表。Content.SetContent 内建
         # 在 service 上下文不生效（真机 0.7.0 实测：扫库器按 path.strContent
-        # 决定导入与否，未设置的目录整目录跳过）。
+        # 决定导入与否，未设置的目录整目录跳过）。幂等每轮照写——Kodi 侧
+        # 库重建丢行时这是唯一的自动恢复来源。
+        prog.update(96, '登记媒体库…')
         _set_content_db(mroot, 'movies')
         _set_content_db(troot, 'tvshows')
+
+        # 无变化不扫库：稳定态（库内容不变）每 12h 一轮的同步里，新增/
+        # 更新/清理/新图片常年全零，VideoLibrary.Scan 即使空跑也要遍历
+        # 全部库文件。本轮确无任何落盘变化即跳过 Scan；手动/首次同步
+        # （force）保留扫库——这是 Kodi 库被清空而本地文件全 same 场景的
+        # 恢复入口。上一轮 JSON-RPC 扫库失败遗留的 scan_pending 兜底位
+        # 照常继承并当轮补发（不再因无变化轮静默丢失），clean_pending
+        # 同样改为继承保留（进插件根目录时 run_pending_scan 消费）。
+        changed = bool(new_f or chg_f or removed or got or thumb_rewrote or force)
+        need_scan = changed or bool(state.get('scan_pending'))
+        prev_clean_pending = bool(state.get('clean_pending'))
         state = {'ts': time.time(), 'movies': len(movies), 'tv': len(tvs),
-                 'files': len(manifest), 'art': got, 'scan_pending': 1,
+                 'files': len(manifest), 'art': got,
+                 'scan_pending': 1 if need_scan else 0,
                  'art_migrated': 1 if state.get('art_migrated') else 0,
                  'sig': _config_sig()}
-        if removed:
+        if removed or prev_clean_pending:
             state['clean_pending'] = 1
         util.save_json(STATE_FILE, state)
         # 扫库：JSON-RPC（service 上下文可靠）优先；失败回退 executebuiltin，
         # 并保留 scan_pending 由 run_pending_scan()（进插件根目录时）兜底。
         # Clean 始终保留 clean_pending 兜底（builtin 在 service 上下文不可靠，
         # JSON-RPC Clean 会弹确认框阻塞）
-        if _trigger_library_scan(mroot, troot, clean=bool(removed)):
+        if need_scan and _trigger_library_scan(mroot, troot, clean=bool(removed)):
             state['scan_pending'] = 0
             util.save_json(STATE_FILE, state)
 
@@ -1098,6 +1227,8 @@ def sync_library(client, force=False):
             len(movies), len(tvs), len(manifest), new_f, chg_f, removed, got)
         if fixed:
             summary += '，演员头像修复 %d 条' % fixed
+        if not need_scan:
+            summary += '，无变化未扫库'
         _log('同步完成: %s' % summary)
         # 完成角标通知（service 进程可用；同步本就避开播放窗口，不打扰）
         try:

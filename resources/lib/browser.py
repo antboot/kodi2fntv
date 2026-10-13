@@ -223,13 +223,18 @@ def root(handle):
     items.append((plugin_url({'action': 'search'}),
                   _static_item('搜索', 'DefaultAddonsSearch.png'), True))
     # 媒体库同步状态行（配置后才显示）：最近一次同步概况，点击请求
-    # 立即同步（service 常驻循环消费，插队于版本扫描等重活之前执行）
+    # 立即同步（service 常驻循环消费，插队于版本扫描等重活之前执行）。
+    # 非文件夹（动作型）条目：点击按 RunPlugin 语义执行，不发生目录
+    # 导航——此前 folder=True 且 sync_action 回根目录清单，容器 URL 被
+    # 固定成 action=sync，皮肤 ~30s 一次的容器刷新不断重放该 URL，每
+    # 次又登记一次同步请求（真机 0.7.14 当天实测：同步→扫库→刷新→
+    # 同步无限循环，每轮 force 同步还绕过全部缓存重走全部剧结构）。
     try:
         from resources.lib import libsync
         sync_label, sync_stamp_ = libsync.sync_status_label()
         if sync_label:
             items.append((plugin_url({'action': 'sync', 'st': sync_stamp_, 'dv': stamp}),
-                          _static_item(sync_label, 'DefaultAddonService.png'), True))
+                          _static_item(sync_label, 'DefaultAddonService.png'), False))
     except Exception as e:
         util.log('同步状态行构建失败: %s' % e, xbmc.LOGWARNING)
     items.append((plugin_url({'action': 'relogin'}),
@@ -249,15 +254,27 @@ def root(handle):
 def sync_action(handle, params):
     """状态行点击：登记立即同步请求并刷新根菜单。
 
-    重活由 service 常驻循环执行（invoker 内跑会拖住 Kodi 插件进程，
-    首轮 40k 图片下载可长达数十分钟）；请求在描述符就绪后插队消费。"""
+    重活由 service 常驻进程执行（invoker 内跑会拖住 Kodi 插件进程，
+    首轮 40k 图片下载可长达数十分钟）；请求在描述符就绪后插队消费。
+    收尾用 Container.Refresh（同 relogin/mark_watched 模式），绝不能在
+    本 action URL 上回目录清单——Kodi 会把容器 URL 固定成 action=sync，
+    皮肤的周期性容器刷新会无限重放它（每次重放=再登记一次同步+force
+    同步绕过全部缓存+触发扫库，真机实测每 30-50 秒一轮停不下来）。"""
     from resources.lib import libsync
     if util.get_setting('libsync', 'true') != 'true':
         util.notify('媒体库同步已在设置中停用')
     else:
-        libsync.request_sync()
-        util.notify('已请求同步，即将在后台执行（右下角显示进度）')
-    root(handle)
+        # 防重放护栏：请求已在队列（request_sync 自身幂等）或同步刚结束
+        # 一分钟内，不再登记——即便 action URL 被皮肤/收藏/遥控重放，
+        # 也不会再滚雪球成同步风暴
+        state = util.load_json(libsync.STATE_FILE) or {}
+        just_ran = time.time() - (state.get('ts') or 0) < 60
+        if util.load_json(libsync.SYNC_REQUEST_FILE) or just_ran:
+            util.notify('同步已排队或刚执行过，无需重复')
+        else:
+            libsync.request_sync()
+            util.notify('已请求同步，即将在后台执行（右下角显示进度）')
+    xbmc.executebuiltin('Container.Refresh')
 
 
 # ---------------------------------------------------------------------- 库/类型视图（整库直出）
