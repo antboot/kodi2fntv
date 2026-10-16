@@ -169,37 +169,37 @@
                     <include>Info_Meta_Grouplist_Definition</include>
 
                     <!-- Ratings -->
-                    <include content="Info_Meta_Ratings" condition="$EXP[Exp_TMDbHelper_IsData]">
+                    <include content="Info_Meta_Ratings" condition="false">
                         <param name="content">Movies</param>
                         <param name="item">Item01</param>
                         <param name="visible">String.IsEqual($PARAM[container]$PARAM[listitem].DBType,movie) | $PARAM[override_movie]</param>
                         <param name="service">$PARAM[service]</param>
                     </include>
-                    <include content="Info_Meta_Ratings" condition="$EXP[Exp_TMDbHelper_IsData]">
+                    <include content="Info_Meta_Ratings" condition="false">
                         <param name="content">Movies</param>
                         <param name="item">Item02</param>
                         <param name="visible">String.IsEqual($PARAM[container]$PARAM[listitem].DBType,movie) | $PARAM[override_movie]</param>
                         <param name="service">$PARAM[service]</param>
                     </include>
-                    <include content="Info_Meta_Ratings" condition="$EXP[Exp_TMDbHelper_IsData]">
+                    <include content="Info_Meta_Ratings" condition="false">
                         <param name="content">Movies</param>
                         <param name="item">Item03</param>
                         <param name="visible">String.IsEqual($PARAM[container]$PARAM[listitem].DBType,movie) | $PARAM[override_movie]</param>
                         <param name="service">$PARAM[service]</param>
                     </include>
-                    <include content="Info_Meta_Ratings" condition="$EXP[Exp_TMDbHelper_IsData]">
+                    <include content="Info_Meta_Ratings" condition="false">
                         <param name="content">TVShows</param>
                         <param name="item">Item01</param>
                         <param name="visible">String.IsEqual($PARAM[container]$PARAM[listitem].DBType,tvshow) | String.IsEqual($PARAM[container]$PARAM[listitem].DBType,season) | String.IsEqual($PARAM[container]$PARAM[listitem].DBType,episode)</param>
                         <param name="service">$PARAM[service]</param>
                     </include>
-                    <include content="Info_Meta_Ratings" condition="$EXP[Exp_TMDbHelper_IsData]">
+                    <include content="Info_Meta_Ratings" condition="false">
                         <param name="content">TVShows</param>
                         <param name="item">Item02</param>
                         <param name="visible">String.IsEqual($PARAM[container]$PARAM[listitem].DBType,tvshow) | String.IsEqual($PARAM[container]$PARAM[listitem].DBType,season) | String.IsEqual($PARAM[container]$PARAM[listitem].DBType,episode)</param>
                         <param name="service">$PARAM[service]</param>
                     </include>
-                    <include content="Info_Meta_Ratings" condition="$EXP[Exp_TMDbHelper_IsData]">
+                    <include content="Info_Meta_Ratings" condition="false">
                         <param name="content">TVShows</param>
                         <param name="item">Item03</param>
                         <param name="visible">String.IsEqual($PARAM[container]$PARAM[listitem].DBType,tvshow) | String.IsEqual($PARAM[container]$PARAM[listitem].DBType,season) | String.IsEqual($PARAM[container]$PARAM[listitem].DBType,episode)</param>
@@ -207,7 +207,7 @@
                     </include>
 
                     <!-- Total Episodes (Service Disabled) -->
-                    <include content="Info_Meta_Object" condition="!$EXP[Exp_TMDbHelper_IsData]">
+                    <include content="Info_Meta_Object" condition="true">
                         <param name="bordersize">-12</param>
                         <param name="icon">special://skin/extras/icons/table-list.png</param>
                         <param name="label">$INFO[$PARAM[container]$PARAM[listitem].Property(totalepisodes),, $LOCALIZE[20360]]</param>
@@ -259,14 +259,14 @@
                     </include>
 
                     <!-- Status -->
-                    <include content="Info_Meta_Object" condition="$EXP[Exp_TMDbHelper_IsData]">
+                    <include content="Info_Meta_Object" condition="false">
                         <param name="label">$VAR[Label_$PARAM[service]_Status]$VAR[Label_$PARAM[service]_StatusDate, ,]</param>
                         <param name="icon">$VAR[Image_$PARAM[service]_Status]</param>
                         <param name="visible">[[String.IsEqual($PARAM[container]$PARAM[listitem].DBType,tvshow) | String.IsEqual($PARAM[container]$PARAM[listitem].DBType,season) | $PARAM[override_tvshow]] + !String.IsEmpty(Window(Home).Property(TMDbHelper.$PARAM[service].Status))]</param>
                     </include>
 
                     <!-- Awards -->
-                    <include content="Info_Meta_Object" condition="$EXP[Exp_TMDbHelper_IsData] + String.IsEmpty(Skin.String(CustomRating.Movies.Item03))">
+                    <include content="Info_Meta_Object" condition="false + String.IsEmpty(Skin.String(CustomRating.Movies.Item03))">
                         <param name="icon">flags/$VAR[Color_Directory]/ratings/oscars.png</param>
                         <param name="label">$INFO[Window(Home).Property(TMDbHelper.$PARAM[service].Oscar_Wins),x,]</param>
                         <param name="visible">[String.IsEqual($PARAM[container]$PARAM[listitem].DBType,movie) | $PARAM[override_movie]] + !String.IsEmpty(Window(Home).Property(TMDbHelper.$PARAM[service].Oscar_Wins))</param>
@@ -557,14 +557,14 @@
                     <aspectratio align="left" aligny="center">keep</aspectratio>
                     <fadetime>0</fadetime>
                     <texture background="true">$INFO[$PARAM[croplogo]]</texture>
-                    <visible>[!String.IsEmpty($PARAM[croplogo]) + $EXP[Exp_TMDbHelper_IsCrop]]</visible>
+                    <visible>[!String.IsEmpty($PARAM[croplogo]) + false]</visible>
                 </control>
                 <control type="image">
                     <height>info_title_logo_h</height>
                     <aspectratio align="left" aligny="center">keep</aspectratio>
                     <fadetime>0</fadetime>
                     <texture background="true">$INFO[$PARAM[container]$PARAM[listitem].Art(clearlogo)]</texture>
-                    <visible>![!String.IsEmpty($PARAM[croplogo]) + $EXP[Exp_TMDbHelper_IsCrop]]</visible>
+                    <visible>![!String.IsEmpty($PARAM[croplogo]) + false]</visible>
                     <visible>!String.IsEmpty($PARAM[container]$PARAM[listitem].Art(clearlogo))</visible>
                 </control>
                 <control type="image">
@@ -572,7 +572,7 @@
                     <aspectratio align="left" aligny="center">keep</aspectratio>
                     <fadetime>0</fadetime>
                     <texture background="true">$INFO[$PARAM[container]$PARAM[listitem].Art(tvshow.clearlogo)]</texture>
-                    <visible>![!String.IsEmpty($PARAM[croplogo]) + $EXP[Exp_TMDbHelper_IsCrop]]</visible>
+                    <visible>![!String.IsEmpty($PARAM[croplogo]) + false]</visible>
                     <visible>String.IsEmpty($PARAM[container]$PARAM[listitem].Art(clearlogo))</visible>
                     <visible>!String.IsEmpty($PARAM[container]$PARAM[listitem].Art(tvshow.clearlogo))</visible>
                 </control>
@@ -581,13 +581,13 @@
                     <aspectratio align="left" aligny="center">keep</aspectratio>
                     <fadetime>0</fadetime>
                     <texture background="true">$INFO[$PARAM[container]$PARAM[listitem].Art(artist.clearlogo)]</texture>
-                    <visible>![!String.IsEmpty($PARAM[croplogo]) + $EXP[Exp_TMDbHelper_IsCrop]]</visible>
+                    <visible>![!String.IsEmpty($PARAM[croplogo]) + false]</visible>
                     <visible>String.IsEmpty($PARAM[container]$PARAM[listitem].Art(clearlogo))</visible>
                     <visible>String.IsEmpty($PARAM[container]$PARAM[listitem].Art(tvshow.clearlogo))</visible>
                     <visible>!String.IsEmpty($PARAM[container]$PARAM[listitem].Art(artist.clearlogo))</visible>
                 </control>
                 <control type="group">
-                    <visible>![!String.IsEmpty($PARAM[croplogo]) + $EXP[Exp_TMDbHelper_IsCrop]]</visible>
+                    <visible>![!String.IsEmpty($PARAM[croplogo]) + false]</visible>
                     <visible>String.IsEmpty($PARAM[container]$PARAM[listitem].Art(clearlogo))</visible>
                     <visible>String.IsEmpty($PARAM[container]$PARAM[listitem].Art(tvshow.clearlogo))</visible>
                     <visible>String.IsEmpty($PARAM[container]$PARAM[listitem].Art(artist.clearlogo))</visible>

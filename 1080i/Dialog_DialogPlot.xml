@@ -535,8 +535,8 @@
                         <pagecontrol>61</pagecontrol>
                         <orientation>vertical</orientation>
                         <include>Size_Group_PlotText</include>
-                        <include condition="$EXP[Exp_TMDbHelper_IsData]">DialogPlot_Plotbox_TMDbHelper</include>
-                        <include condition="!$EXP[Exp_TMDbHelper_IsData]">DialogPlot_Plotbox_Local</include>
+                        <include condition="false">DialogPlot_Plotbox_TMDbHelper</include>
+                        <include condition="true">DialogPlot_Plotbox_Local</include>
                     </control>
                     <include content="Part_Scrollbar_Max">
                         <param name="id">61</param>

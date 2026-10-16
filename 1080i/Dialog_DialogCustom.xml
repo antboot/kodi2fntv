@@ -338,7 +338,7 @@
             <param name="groupid">8102</param>
             <param name="control">radiobutton</param>
             <param name="istext">true</param>
-            <selected>$EXP[Exp_TMDbHelper_IsBlur] + Skin.String(TMDbHelper.Blur.Size,720)</selected>
+            <selected>false + Skin.String(TMDbHelper.Blur.Size,720)</selected>
             <param name="label">$LOCALIZE[39173]</param>
             <param name="label2">$LOCALIZE[13508]</param>
             <param name="has_label2">true</param>
@@ -357,7 +357,7 @@
             <param name="groupid">8103</param>
             <param name="control">radiobutton</param>
             <param name="istext">true</param>
-            <selected>$EXP[Exp_TMDbHelper_IsBlur] + !Skin.String(TMDbHelper.Blur.Size,1080) + !Skin.String(TMDbHelper.Blur.Size,720) + !Skin.String(TMDbHelper.Blur.Size,240)</selected>
+            <selected>false + !Skin.String(TMDbHelper.Blur.Size,1080) + !Skin.String(TMDbHelper.Blur.Size,720) + !Skin.String(TMDbHelper.Blur.Size,240)</selected>
             <param name="label">$LOCALIZE[39173]</param>
             <param name="label2">$LOCALIZE[571]</param>
             <param name="has_label2">true</param>
@@ -376,7 +376,7 @@
             <param name="groupid">8104</param>
             <param name="control">radiobutton</param>
             <param name="istext">true</param>
-            <selected>$EXP[Exp_TMDbHelper_IsBlur] + Skin.String(TMDbHelper.Blur.Size,240)</selected>
+            <selected>false + Skin.String(TMDbHelper.Blur.Size,240)</selected>
             <param name="label">$LOCALIZE[39173]</param>
             <param name="label2">$LOCALIZE[418]</param>
             <param name="has_label2">true</param>
@@ -395,7 +395,7 @@
             <param name="groupid">8105</param>
             <param name="control">radiobutton</param>
             <param name="istext">true</param>
-            <selected>!$EXP[Exp_TMDbHelper_IsBlur]</selected>
+            <selected>true</selected>
             <param name="label">$LOCALIZE[39173]</param>
             <param name="label2">$LOCALIZE[351]</param>
             <param name="has_label2">true</param>
@@ -1105,7 +1105,7 @@
             <param name="dialog">true</param>
             <label>TMDbHelper</label>
             <include>Action_TMDbHelper_Toggle_Onclick</include>
-            <selected>$EXP[Exp_TMDbHelper_IsData]</selected>
+            <selected>false</selected>
         </include>
 
         <include content="Settings_Button">
@@ -1115,7 +1115,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableDirector)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableDirector)</selected>
             <label>$LOCALIZE[20339]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8032</param>
@@ -1124,7 +1124,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableWriter)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableWriter)</selected>
             <label>$LOCALIZE[20417]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8033</param>
@@ -1133,7 +1133,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableCreator)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableCreator)</selected>
             <label>$LOCALIZE[31065]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8034</param>
@@ -1142,7 +1142,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableStarring)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableStarring)</selected>
             <label>$LOCALIZE[31076]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8035</param>
@@ -1159,7 +1159,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableSeasons)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableSeasons)</selected>
             <label>$LOCALIZE[33054]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8037</param>
@@ -1168,7 +1168,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableEpisodes)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableEpisodes)</selected>
             <label>$LOCALIZE[20360]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8038</param>
@@ -1177,7 +1177,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableStudio)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableStudio)</selected>
             <label>$LOCALIZE[572]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8039</param>
@@ -1186,7 +1186,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableYear)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableYear)</selected>
             <label>$LOCALIZE[345]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8040</param>
@@ -1195,7 +1195,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableCrew)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableCrew)</selected>
             <label>$LOCALIZE[31050]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8041</param>
@@ -1204,7 +1204,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableVideos)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableVideos)</selected>
             <label>$LOCALIZE[10025]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8042</param>
@@ -1213,7 +1213,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableComments)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableComments)</selected>
             <label>$LOCALIZE[31334]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8043</param>
@@ -1222,7 +1222,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableRecommendations)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableRecommendations)</selected>
             <label>$LOCALIZE[31018]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8044</param>
@@ -1236,7 +1236,7 @@
             <param name="id">8050</param>
             <param name="dialog">true</param>
             <label>$LOCALIZE[33063]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8051</param>
@@ -1245,7 +1245,7 @@
             <label>$LOCALIZE[31356]</label>
             <onclick>Skin.ToggleSetting(Info.UseLocalCast)</onclick>
             <selected>!Skin.HasSetting(Info.UseLocalCast)</selected>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8052</param>
@@ -1255,7 +1255,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.EnableLocalCollection)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.EnableLocalCollection)</selected>
             <visible>!Skin.HasSetting(VideoInfo.Widgets.DisableCollection)</visible>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
         <include content="Settings_Button">
             <param name="id">8053</param>
@@ -1265,7 +1265,7 @@
             <onclick>Skin.ToggleSetting(VideoInfo.Widgets.DisableOnlineGallery)</onclick>
             <selected>!Skin.HasSetting(VideoInfo.Widgets.DisableOnlineGallery)</selected>
             <visible>!Skin.HasSetting(VideoInfo.Widgets.DisableGallery)</visible>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
     </include>
 

@@ -402,7 +402,7 @@
             <label>$LOCALIZE[39123]</label>
             <onclick>Skin.ToggleSetting(ContextMenu.DisableArtwork)</onclick>
             <selected>!Skin.HasSetting(ContextMenu.DisableArtwork)</selected>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+            <visible>false</visible>
         </include>
 
     </include>
@@ -459,7 +459,7 @@
             <label>$LOCALIZE[31093]</label>
             <onclick>Skin.ToggleSetting(Background.ExtraFanart)</onclick>
             <selected>Skin.HasSetting(Background.ExtraFanart)</selected>
-            <visible>$EXP[Exp_TMDbHelper_IsBlur]</visible>
+            <visible>false</visible>
         </include>
 
         <include content="Settings_Label" description="Navigation">
@@ -609,58 +609,6 @@
 
     <!-- Details -->
     <include name="SkinSettings_Items_Details">
-
-        <include content="Settings_Label" description="TMDbHelper">
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">001</param>
-            <label>TMDbHelper</label>
-        </include>
-
-        <include content="Settings_Button" description="TMDbHelper Service">
-            <param name="control">radiobutton</param>
-            <param name="dialog">false</param>
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">002</param>
-            <label>TMDbHelper $LOCALIZE[19099]</label>
-            <include>Action_TMDbHelper_Toggle_Onclick</include>
-            <selected>$EXP[Exp_TMDbHelper_IsData]</selected>
-        </include>
-
-        <include content="Settings_Label" description="Ratings">
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">003</param>
-            <label>$LOCALIZE[31202]</label>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
-        </include>
-
-        <include content="Settings_Button" description="CustomDialog Movie  Ratings">
-            <param name="dialog">false</param>
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">004</param>
-            <label>$LOCALIZE[342]</label>
-            <label2>$INFO[Skin.String(CustomRating.Movies.Item01)]$INFO[Skin.String(CustomRating.Movies.Item02), • ,]$INFO[Skin.String(CustomRating.Movies.Item03), • ,]</label2>
-            <onclick>SetProperty(CustomDialogSettingsTitle,[CAPITALIZE]$LOCALIZE[31202]: $LOCALIZE[342][/CAPITALIZE],Home)</onclick>
-            <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_Ratings_Movies_Items,Home)</onclick>
-            <onclick>ActivateWindow(1118)</onclick>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
-        </include>
-
-        <include content="Settings_Button" description="CustomDialog TV Ratings">
-            <param name="dialog">false</param>
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">005</param>
-            <label>$LOCALIZE[20343]</label>
-            <label2>$INFO[Skin.String(CustomRating.TVShows.Item01)]$INFO[Skin.String(CustomRating.TVShows.Item02), • ,]$INFO[Skin.String(CustomRating.TVShows.Item03), • ,]</label2>
-            <onclick>SetProperty(CustomDialogSettingsTitle,[CAPITALIZE]$LOCALIZE[31202]: $LOCALIZE[20343][/CAPITALIZE],Home)</onclick>
-            <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_Ratings_TVShows_Items,Home)</onclick>
-            <onclick>ActivateWindow(1118)</onclick>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
-        </include>
 
         <include content="Settings_Label" description="Interface">
             <param name="window">skinsettings</param>

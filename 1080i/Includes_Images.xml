@@ -6,18 +6,18 @@
         <value>special://skin/extras/icons/lock.png</value>
     </variable>
 
-    <expression name="Image_Clearlogo_Title_IsVisible_Expression">[[$EXP[Exp_TMDbHelper_IsData] + !String.IsEmpty(Window(Home).Property(TMDbHelper.ListITem.CropImage))] | [$EXP[Exp_TMDbHelper_IsData] + !String.IsEmpty(Window(Home).Property(TMDbHelper.ListITem.Current.CropImage)) + $EXP | [Exp_InfoDialogs]] | [!String.IsEmpty(ListITem.Art(clearlogo))] | [!String.IsEmpty(ListITem.Art(tvshow.clearlogo))] | [!String.IsEmpty(ListITem.Art(artist.clearlogo))]]</expression>
+    <expression name="Image_Clearlogo_Title_IsVisible_Expression">[[false + !String.IsEmpty(Window(Home).Property(TMDbHelper.ListITem.CropImage))] | [false + !String.IsEmpty(Window(Home).Property(TMDbHelper.ListITem.Current.CropImage)) + $EXP | [Exp_InfoDialogs]] | [!String.IsEmpty(ListITem.Art(clearlogo))] | [!String.IsEmpty(ListITem.Art(tvshow.clearlogo))] | [!String.IsEmpty(ListITem.Art(artist.clearlogo))]]</expression>
 
     <variable name="Image_Clearlogo_Title">
-        <value condition="$EXP[Exp_TMDbHelper_IsData] + !String.IsEmpty(Window(Home).Property(TMDbHelper.ListITem.CropImage))">$INFO[Window(Home).Property(TMDbHelper.ListITem.CropImage)]</value>
-        <value condition="$EXP[Exp_TMDbHelper_IsData] + !String.IsEmpty(Window(Home).Property(TMDbHelper.ListITem.Current.CropImage)) + $EXP[Exp_InfoDialogs]">$INFO[Window(Home).Property(TMDbHelper.ListITem.Current.CropImage)]</value>
+        <value condition="false + !String.IsEmpty(Window(Home).Property(TMDbHelper.ListITem.CropImage))">$INFO[Window(Home).Property(TMDbHelper.ListITem.CropImage)]</value>
+        <value condition="false + !String.IsEmpty(Window(Home).Property(TMDbHelper.ListITem.Current.CropImage)) + $EXP[Exp_InfoDialogs]">$INFO[Window(Home).Property(TMDbHelper.ListITem.Current.CropImage)]</value>
         <value condition="!String.IsEmpty(ListITem.Art(clearlogo))">$INFO[ListITem.Art(clearlogo)]</value>
         <value condition="!String.IsEmpty(ListITem.Art(tvshow.clearlogo))">$INFO[ListITem.Art(tvshow.clearlogo)]</value>
         <value condition="!String.IsEmpty(ListITem.Art(artist.clearlogo))">$INFO[ListITem.Art(artist.clearlogo)]</value>
     </variable>
 
     <variable name="Image_Overlay_Poster">
-        <value condition="!$EXP[Exp_TMDbHelper_IsData]">$INFO[ListItem.Art(poster)]</value>
+        <value condition="true">$INFO[ListItem.Art(poster)]</value>
         <value condition="!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.Base_Icon)) + String.IsEqual(Window(Home).Property(TMDbHelper.ListItem.TMDb_Type),person)">$INFO[Window(Home).Property(TMDbHelper.ListItem.Base_Icon)]</value>
         <value>$INFO[Window(Home).Property(TMDbHelper.ListItem.Base_Poster)]</value>
     </variable>
@@ -377,7 +377,7 @@
 
     <variable name="Image_Foreground">
         <value condition="$EXP[Exp_BackgroundArtwork_IsSimple]">$INFO[Window(Home).Property(TMDbHelper.SimpleBackground.BlurImage.Original)]</value>
-        <value condition="!$EXP[Exp_TMDbHelper_IsBlur]">$VAR[Image_Foreground_NoService]</value>
+        <value condition="true">$VAR[Image_Foreground_NoService]</value>
         <value condition="!String.IsEmpty(Window.Property(TMDbHelper.ListItem.BlurImage.Original))">$INFO[Window.Property(TMDbHelper.ListItem.BlurImage.Original)]</value>
         <value>$INFO[Window(Home).Property(TMDbHelper.ListItem.Current.BlurImage.Original)]</value>
     </variable>

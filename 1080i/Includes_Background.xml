@@ -43,10 +43,10 @@
     <include name="Background_Artwork">
         <param name="fadetime">background_fadetime</param>
         <definition>
-            <include content="Background_FlixArt" condition="$EXP[Exp_TMDbHelper_IsBlur]">
+            <include content="Background_FlixArt" condition="false">
                 <param name="fadetime">$PARAM[fadetime]</param>
             </include>
-            <include content="Background_FlixArt" condition="!$EXP[Exp_TMDbHelper_IsBlur]">
+            <include content="Background_FlixArt" condition="true">
                 <param name="fadetime">$PARAM[fadetime]</param>
                 <param name="diffuse">diffuse/flixart/flixart_new.png</param>
             </include>
@@ -78,12 +78,12 @@
         <definition>
             <control type="group">
                 <include>Background_NotVideo</include>
-                <include content="Background_Blur_Quadrants" condition="$EXP[Exp_TMDbHelper_IsBlur]">
+                <include content="Background_Blur_Quadrants" condition="false">
                     <param name="flixart_size_w">$PARAM[flixart_size_w]</param>
                     <param name="flixart_size_h">$PARAM[flixart_size_h]</param>
                     <param name="fadetime">$PARAM[fadetime]</param>
                 </include>
-                <include content="Background_Image" condition="!$EXP[Exp_TMDbHelper_IsBlur]">
+                <include content="Background_Image" condition="true">
                     <param name="fadetime">$PARAM[fadetime]</param>
                 </include>
             </control>
