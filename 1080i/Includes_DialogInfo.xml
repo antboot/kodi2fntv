@@ -328,7 +328,6 @@
                 <label2>$LOCALIZE[20339]</label2>
                 <icon>$VAR[Image_FromDirector]</icon>
                 <property name="tmdb_type">person</property>
-                <property name="tmdb_id">$VAR[Path_FromDirector]</property>
                 <property name="is_static">true</property>
                 <include>DialogInfo_Widgets_Action</include>
             </item>
@@ -338,7 +337,6 @@
                 <label2>$LOCALIZE[20417]</label2>
                 <icon>$VAR[Image_FromWriter]</icon>
                 <property name="tmdb_type">person</property>
-                <property name="tmdb_id">$VAR[Path_FromWriter]</property>
                 <property name="is_static">true</property>
                 <include>DialogInfo_Widgets_Action</include>
             </item>
@@ -1096,10 +1094,6 @@
             <onclick>SetProperty(tmdb_id,$PARAM[tmdb_id],1114)</onclick>
             <onclick>SetProperty(tmdb_type,$PARAM[tmdb_type],1114)</onclick>
             <onclick>SetProperty(dbtype,$PARAM[dbtype],1114)</onclick>
-            <onclick>SetProperty(origin_tmdb_id,$VAR[Path_InfoParams_TMDbID],1114)</onclick>
-            <onclick>SetProperty(origin_tmdb_type,$VAR[Path_InfoParams_TMDbType],1114)</onclick>
-            <onclick>SetProperty(origin_season,$VAR[Path_InfoParams_Season],1114)</onclick>
-            <onclick>SetProperty(origin_episode,$VAR[Path_InfoParams_Episode],1114)</onclick>
             <onclick>ActivateWindow(1114)</onclick>
         </definition>
     </include>
@@ -1125,10 +1119,6 @@
             <onclick>SetProperty(dbtype,$INFO[Container.ListItem.dbtype],1114)</onclick>
             <onclick>SetProperty(filenameandpath,$INFO[Container.ListItem.filenameandpath],1114)</onclick>
             <onclick>SetProperty(folderpath,$INFO[Container.ListItem.folderpath],1114)</onclick>
-            <onclick>SetProperty(origin_tmdb_id,$VAR[Path_InfoParams_TMDbID],1114)</onclick>
-            <onclick>SetProperty(origin_tmdb_type,$VAR[Path_InfoParams_TMDbType],1114)</onclick>
-            <onclick>SetProperty(origin_season,$VAR[Path_InfoParams_Season],1114)</onclick>
-            <onclick>SetProperty(origin_episode,$VAR[Path_InfoParams_Episode],1114)</onclick>
             <onclick>ActivateWindow(1114)</onclick>
         </definition>
     </include>
@@ -1481,7 +1471,6 @@
             <label>Trakt</label>
             <icon>special://skin/extras/icons/trakt.png</icon>
             <onclick>Dialog.Close(1172,true)</onclick>
-            <onclick>$VAR[Action_Sync]</onclick>
             <visible>!String.IsEmpty(Window(Home).Property(Fuse.TraktIsAuth)) + !String.IsEqual(  ListItem.DBType,musicvideo)</visible>
             <visible>false</visible>
         </item>
@@ -1721,7 +1710,6 @@
                         <param name="icon">special://skin/extras/icons/video-addons.png</param>
                         <param name="shot">$VAR[Image_DirectorIcon]</param>
                         <param name="tmdb_type">person</param>
-                        <param name="tmdb_id">$VAR[Path_FromDirector]</param>
                         <onclick condition="false">SetProperty(type,Director,1120)</onclick>
                         <onclick condition="false">ActivateWindow(1120)</onclick>
                         <onclick condition="true">SendClick(13)</onclick>
@@ -1736,7 +1724,6 @@
                         <param name="icon">special://skin/extras/icons/write.png</param>
                         <param name="shot">$VAR[Image_WriterIcon]</param>
                         <param name="tmdb_type">person</param>
-                        <param name="tmdb_id">$VAR[Path_FromWriter]</param>
                         <onclick>SetProperty(type,Writer,1120)</onclick>
                         <onclick>ActivateWindow(1120)</onclick>
                         <visible>!String.IsEmpty(Window(Home).Property(Fuse.ListItem.Writer)) | !String.IsEmpty(ListItem.Writer)</visible>

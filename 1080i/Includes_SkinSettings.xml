@@ -194,7 +194,6 @@
             <label>$LOCALIZE[31268]</label>
             <label2>$VAR[Label_Setting_BackgroundStyle]</label2>
             <onclick>Skin.ToggleSetting(Info.EnableStylisedBackgrounds)</onclick>
-            <include>Action_Blur_ClearContentFallbacks_Onclick</include>
         </include>
         <include content="Settings_Button" description="Ratings">
             <param name="dialog">false</param>

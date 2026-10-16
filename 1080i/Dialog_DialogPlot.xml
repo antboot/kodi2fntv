@@ -405,78 +405,6 @@
         </include>
     </include>
 
-    <include name="DialogPlot_Plotbox_Fuse">
-        <include content="DialogPlot_Plotbox_Quick_Object">
-            <param name="head">$LOCALIZE[202]</param>
-            <param name="text">Window(Home).Property(Fuse.ListItem.Tagline)</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Object">
-            <param name="head">$LOCALIZE[31028]</param>
-            <param name="text">$VAR[Label_Plot_Fuse]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.base_plot)) | !String.IsEmpty(Window(Home).Property(Fuse.ListItem.Plot)) | !String.IsEmpty(Window(Home).Property(Fuse.ListItem.biography))</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Object">
-            <param name="head">$LOCALIZE[31024]</param>
-            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.rottentomatoes_consensus),, ]$INFO[Window(Home).Property(Fuse.ListItem.rottentomatoes_reviewsfresh),$LOCALIZE[31054] , ]$INFO[Window(Home).Property(Fuse.ListItem.rottentomatoes_reviewstotal),$LOCALIZE[31055] , $LOCALIZE[31056] ]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.rottentomatoes_consensus))</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Person_Object">
-            <param name="head">$LOCALIZE[31038]</param>
-            <param name="role">Director</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Person_Object">
-            <param name="head">$LOCALIZE[31039]</param>
-            <param name="role">Writer</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Person_Object">
-            <param name="head">$LOCALIZE[31076]</param>
-            <param name="role">Cast</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Person_Object">
-            <param name="head">$LOCALIZE[31383]</param>
-            <param name="role">Producer</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Person_Object">
-            <param name="head">$LOCALIZE[31052]</param>
-            <param name="role">Sound_Department</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Person_Object">
-            <param name="head">$LOCALIZE[31072]</param>
-            <param name="role">Art_Department</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Person_Object">
-            <param name="head">$LOCALIZE[31067]</param>
-            <param name="role">Photography</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Person_Object">
-            <param name="head">$LOCALIZE[31075]</param>
-            <param name="role">Editor</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Quick_Object">
-            <param name="head">$LOCALIZE[31064]</param>
-            <param name="text">Window(Home).Property(Fuse.ListItem.Awards)</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Object">
-            <param name="head">$LOCALIZE[31286]$INFO[Window(Home).Property(Fuse.ListItem.Total_Awards_Won), ,] $LOCALIZE[31064]</param>
-            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.Awards_Won_CR)]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.Total_Awards_Won))</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Object">
-            <param name="head">$LOCALIZE[31287]$INFO[Window(Home).Property(Fuse.ListItem.Total_Awards_Nominated), ,] $LOCALIZE[31064]</param>
-            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.Awards_Nominated_CR)]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.Total_Awards_Nominated))</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Object">
-            <param name="head">JustWatch</param>
-            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.Provider.1.Name)]$INFO[Window(Home).Property(Fuse.ListItem.Provider.2.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.3.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.4.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.5.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.6.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.7.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.8.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.9.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.10.Name),[CR],]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.Provider.1.Name))</param>
-        </include>
-        <include content="DialogPlot_Plotbox_Object">
-            <param name="head">$INFO[Window(Home).Property(Fuse.ListItem.PlayCount),$LOCALIZE[16102] , $LOCALIZE[31183]]</param>
-            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.LastPlayed),$LOCALIZE[568] ,]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.PlayCount))</param>
-        </include>
-    </include>
 
     <include name="DialogPlot_Plotbox_Local">
         <include content="DialogPlot_Plotbox_Quick_Object">
@@ -528,7 +456,6 @@
                         <pagecontrol>61</pagecontrol>
                         <orientation>vertical</orientation>
                         <include>Size_Group_PlotText</include>
-                        <include condition="false">DialogPlot_Plotbox_Fuse</include>
                         <include condition="true">DialogPlot_Plotbox_Local</include>
                     </control>
                     <include content="Part_Scrollbar_Max">
