@@ -52,7 +52,7 @@
 
     <expression name="Exp_Hubs_Spotlight_HasItems">[!Integer.IsEqual(Container(301).NumItems,0) | Container(301).IsUpdating]</expression>
 
-    <expression name="Exp_Hubs_Spotlight_SlideDown">[Integer.IsEqual(Window.Property(TMDBHelper.WidgetContainer),301)]</expression>
+    <expression name="Exp_Hubs_Spotlight_SlideDown">[Integer.IsEqual(Window.Property(Fuse.WidgetContainer),301)]</expression>
     <expression name="Exp_Hubs_Spotlight_ShowButtons">[ControlGroup(310).HasFocus()]</expression>
 
     <expression name="Exp_Hubs_Menu_Loopback">[Skin.HasSetting(HomeSwitcher.LoopBack) | Skin.HasSetting(HomeSwitcher.Vertical)]</expression>

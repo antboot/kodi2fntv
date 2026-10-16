@@ -2,7 +2,7 @@
 <window id="2600">
     <defaultcontrol always="true">8000</defaultcontrol>
     <menucontrol>9000</menucontrol>
-    <onload>SetProperty(TMDbHelper.WidgetContainer,8000)</onload>
+    <onload>SetProperty(Fuse.WidgetContainer,8000)</onload>
     <include content="_Action_Blur_Onload">
         <param name="sourceimage">Art(fanart)|Property(fanart)|Icon</param>
     </include>

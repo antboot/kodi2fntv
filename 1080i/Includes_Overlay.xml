@@ -268,26 +268,26 @@
     </include>
 
     <variable name="Overlay_WidgetContainer">
-        <value condition="Window.IsVisible(10000)">$INFO[Window(10000).Property(TMDbHelper.WidgetContainer),, ](10000)</value>
-        <value condition="Window.IsVisible(11101)">$INFO[Window(11101).Property(TMDbHelper.WidgetContainer),, ](11101)</value>
-        <value condition="Window.IsVisible(11102)">$INFO[Window(11102).Property(TMDbHelper.WidgetContainer),, ](11102)</value>
-        <value condition="Window.IsVisible(11103)">$INFO[Window(11103).Property(TMDbHelper.WidgetContainer),, ](11103)</value>
-        <value condition="Window.IsVisible(11104)">$INFO[Window(11104).Property(TMDbHelper.WidgetContainer),, ](11104)</value>
-        <value condition="Window.IsVisible(11105)">$INFO[Window(11105).Property(TMDbHelper.WidgetContainer),, ](11105)</value>
-        <value condition="Window.IsVisible(11106)">$INFO[Window(11106).Property(TMDbHelper.WidgetContainer),, ](11106)</value>
-        <value condition="Window.IsVisible(11107)">$INFO[Window(11107).Property(TMDbHelper.WidgetContainer),, ](11107)</value>
-        <value condition="Window.IsVisible(11108)">$INFO[Window(11108).Property(TMDbHelper.WidgetContainer),, ](11108)</value>
-        <value condition="Window.IsVisible(11109)">$INFO[Window(11109).Property(TMDbHelper.WidgetContainer),, ](11109)</value>
-        <value condition="Window.IsVisible(videos)">$INFO[Window(videos).Property(TMDbHelper.WidgetContainer)],, (videos)</value>
-        <value condition="Window.IsVisible(music)">$INFO[Window(music).Property(TMDbHelper.WidgetContainer),, ](music)</value>
-        <value condition="Window.IsVisible(pictures)">$INFO[Window(pictures).Property(TMDbHelper.WidgetContainer)](p,, ictures)</value>
-        <value condition="Window.IsVisible(programs)">$INFO[Window(programs).Property(TMDbHelper.WidgetContainer)](p,, rograms)</value>
-        <value condition="Window.IsVisible(games)">$INFO[Window(games).Property(TMDbHelper.WidgetContainer),, ](games)</value>
-        <value condition="Window.IsVisible(tvchannels)">$INFO[Window(tvchannels).Property(TMDbHelper.WidgetContainer)](tvc,, hannels)</value>
-        <value condition="Window.IsVisible(tvsearch)">$INFO[Window(tvsearch).Property(TMDbHelper.WidgetContainer)](t,, vsearch)</value>
-        <value condition="Window.IsVisible(tvguide)">$INFO[Window(tvguide).Property(TMDbHelper.WidgetContainer)](,, tvguide)</value>
-        <value condition="Window.IsVisible(tvrecordings)">$INFO[Window(tvrecordings).Property(TMDbHelper.WidgetContainer)](tvrec,, ordings)</value>
-        <value condition="Window.IsVisible(tvtimers)">$INFO[Window(tvtimers).Property(TMDbHelper.WidgetContainer)](t,, vtimers)</value>
+        <value condition="Window.IsVisible(10000)">$INFO[Window(10000).Property(Fuse.WidgetContainer),, ](10000)</value>
+        <value condition="Window.IsVisible(11101)">$INFO[Window(11101).Property(Fuse.WidgetContainer),, ](11101)</value>
+        <value condition="Window.IsVisible(11102)">$INFO[Window(11102).Property(Fuse.WidgetContainer),, ](11102)</value>
+        <value condition="Window.IsVisible(11103)">$INFO[Window(11103).Property(Fuse.WidgetContainer),, ](11103)</value>
+        <value condition="Window.IsVisible(11104)">$INFO[Window(11104).Property(Fuse.WidgetContainer),, ](11104)</value>
+        <value condition="Window.IsVisible(11105)">$INFO[Window(11105).Property(Fuse.WidgetContainer),, ](11105)</value>
+        <value condition="Window.IsVisible(11106)">$INFO[Window(11106).Property(Fuse.WidgetContainer),, ](11106)</value>
+        <value condition="Window.IsVisible(11107)">$INFO[Window(11107).Property(Fuse.WidgetContainer),, ](11107)</value>
+        <value condition="Window.IsVisible(11108)">$INFO[Window(11108).Property(Fuse.WidgetContainer),, ](11108)</value>
+        <value condition="Window.IsVisible(11109)">$INFO[Window(11109).Property(Fuse.WidgetContainer),, ](11109)</value>
+        <value condition="Window.IsVisible(videos)">$INFO[Window(videos).Property(Fuse.WidgetContainer)],, (videos)</value>
+        <value condition="Window.IsVisible(music)">$INFO[Window(music).Property(Fuse.WidgetContainer),, ](music)</value>
+        <value condition="Window.IsVisible(pictures)">$INFO[Window(pictures).Property(Fuse.WidgetContainer)](p,, ictures)</value>
+        <value condition="Window.IsVisible(programs)">$INFO[Window(programs).Property(Fuse.WidgetContainer)](p,, rograms)</value>
+        <value condition="Window.IsVisible(games)">$INFO[Window(games).Property(Fuse.WidgetContainer),, ](games)</value>
+        <value condition="Window.IsVisible(tvchannels)">$INFO[Window(tvchannels).Property(Fuse.WidgetContainer)](tvc,, hannels)</value>
+        <value condition="Window.IsVisible(tvsearch)">$INFO[Window(tvsearch).Property(Fuse.WidgetContainer)](t,, vsearch)</value>
+        <value condition="Window.IsVisible(tvguide)">$INFO[Window(tvguide).Property(Fuse.WidgetContainer)](,, tvguide)</value>
+        <value condition="Window.IsVisible(tvrecordings)">$INFO[Window(tvrecordings).Property(Fuse.WidgetContainer)](tvrec,, ordings)</value>
+        <value condition="Window.IsVisible(tvtimers)">$INFO[Window(tvtimers).Property(Fuse.WidgetContainer)](t,, vtimers)</value>
     </variable>
 
     <include name="Overlay_DebugInfo">

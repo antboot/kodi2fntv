@@ -86,7 +86,7 @@
                         </include>
                         <visible>$PARAM[visible]</visible>
                         <viewtype label="$PARAM[viewtype_label]">wrap</viewtype>
-                        <onfocus>ClearProperty(TMDbHelper.WidgetContainer)</onfocus>
+                        <onfocus>ClearProperty(Fuse.WidgetContainer)</onfocus>
                         <onfocus condition="![$PARAM[overlay]]">ClearProperty(Background.ShowOverlay,Home)</onfocus>
                         <onfocus condition="$PARAM[overlay]">SetProperty(Background.ShowOverlay,True,Home)</onfocus>
                         <onfocus>SetProperty(InfoPanel.FullSwitch,Wall,Home)</onfocus>

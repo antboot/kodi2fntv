@@ -193,17 +193,6 @@
                 <onclick>runscript(script.wikipedia,wikipedia=$VAR[Path_Wikipedia_Title],tmdb_type=$VAR[Path_Wikipedia_Type])</onclick>
             </include>
 
-            <include content="Button_Dialog">
-                <param name="groupid">9227</param>
-                <param name="id">9027</param>
-                <param name="icon">special://skin/extras/icons/info2.png</param>
-                <label>$LOCALIZE[14116]</label>
-                <onclick>Close</onclick>
-                <onclick>Skin.SetString(InfoPanel.FullSwitch,Full,Home)</onclick>
-                <onclick>RunScript(plugin.video.themoviedb.helper,add_tmdb=$INFO[Window(Home).Property(TMDBHelper.ListItem.Monitor.TMDb_ID)],tmdb_type=$INFO[Window(Home).Property(TMDBHelper.ListItem.Monitor.TMDb_Type)],call_auto=1190,return)</onclick>
-                <visible>!String.IsEmpty(Window(Home).Property(TMDBHelper.ListItem.Monitor.TMDb_ID))</visible>
-                <visible>String.IsEmpty(Window(Home).Property(TMDBHelper.IsUpdating))</visible>
-            </include>
 
         </definition>
     </include>

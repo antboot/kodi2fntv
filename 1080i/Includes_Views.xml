@@ -213,7 +213,7 @@
             <visible>!Integer.IsEqual(Container.NumItems,0)</visible>
             <include>Info_Panel_Dimensions</include>
             <include content="Info_Panel">
-                <param name="visible">String.IsEmpty(Window.Property(TMDBHelper.WidgetContainer))</param>
+                <param name="visible">String.IsEmpty(Window.Property(Fuse.WidgetContainer))</param>
                 <param name="visible_line">$EXP[View_Row_Info_Details_Expression]</param>
                 <param name="visible_plot">$EXP[View_Row_Info_Details_Expression]</param>
                 <param name="visible_meta">$EXP[View_Row_Info_Details_Expression]</param>

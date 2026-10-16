@@ -2,11 +2,10 @@
 <includes>
 
     <variable name="DialogContextMenu_HeaderLabel">
-        <value condition="!String.ISEmpty(Window(Home).Property(TMDbHelper.ListItem.base_label)) + $EXP[Exp_AllowExpandedContextMenu]">$INFO[Window(Home).Property(TMDbHelper.ListItem.base_label)]</value>
         <value>$LOCALIZE[10106]</value>
     </variable>
 
-    <expression name="DialogContextMenu_HasArtwork">[!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.base_poster)) + $EXP[Exp_AllowExpandedContextMenu] + !Skin.HasSetting(ContextMenu.DisableArtwork)]</expression>
+    <expression name="DialogContextMenu_HasArtwork">[false]</expression>
 
     <variable name="DialogContextMenu_OnUp">
         <value condition="Control.IsVisible(1020)">SetFocus(1020)</value>
@@ -163,7 +162,7 @@
                         <include condition="$PARAM[has_artwork]">Part_Panel</include> -->
                         <include condition="$PARAM[has_artwork]">Size_LeftGroup_Large</include>
                         <include content="DialogPlot_Artwork" condition="$PARAM[has_artwork]">
-                            <param name="poster_icon">$INFO[Window(Home).Property(TMDbHelper.ListItem.base_poster)]</param>
+                            <param name="poster_icon">$INFO[ListItem.Art(poster)]</param>
                             <param name="hidden_icon">$PARAM[hidden_icon]</param>
                         </include>
                     </control>
@@ -252,14 +251,13 @@
 
     <!-- Variables -->
     <variable name="DialogContextMenu_Wiki_Title">
-        <value condition="!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.base_tvshowtitle))">$ESCINFO[Window(Home).Property(TMDbHelper.ListItem.base_tvshowtitle)]</value>
-        <value condition="!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.base_title))">$ESCINFO[Window(Home).Property(TMDbHelper.ListItem.base_title)]</value>
-        <value condition="!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.base_label))">$ESCINFO[Window(Home).Property(TMDbHelper.ListItem.base_label)]</value>
+        <value condition="!String.IsEmpty(ListItem.TvShowTitle)">$ESCINFO[ListItem.TvShowTitle]</value>
+        <value condition="!String.IsEmpty(ListItem.Title)">$ESCINFO[ListItem.Title]</value>
     </variable>
 
     <variable name="DialogContextMenu_Wiki_Type">
-        <value condition="String.IsEqual(Window(Home).Property(TMDbHelper.ListItem.base_dbtype),tvshow) | String.IsEqual(Window(Home).Property(TMDbHelper.ListItem.base_dbtype),season) | String.IsEqual(Window(Home).Property(TMDbHelper.ListItem.base_dbtype),episode)"> tv series</value>
-        <value condition="String.IsEqual(Window(Home).Property(TMDbHelper.ListItem.base_dbtype),movie)"> film</value>
+        <value condition="String.IsEqual(ListItem.DBType,tvshow) | String.IsEqual(ListItem.DBType,season) | String.IsEqual(ListItem.DBType,episode)"> tv series</value>
+        <value condition="String.IsEqual(ListItem.DBType,movie)"> film</value>
     </variable>
 
 
@@ -270,33 +268,16 @@
             <icon>special://skin/extras/icons/quote.png</icon>
             <onclick>Close</onclick>
             <onclick>ActivateWindow(1113)</onclick>
-            <visible>[!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.base_plot))]</visible>
+            <visible>[!String.IsEmpty(ListItem.Plot)]</visible>
             <selected>false</selected>
         </item>
         <item>
             <label>Wiki</label>
             <icon>special://skin/extras/icons/globe.png</icon>
-            <visible>[!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.base_title))]</visible>
+            <visible>[!String.IsEmpty(ListItem.Title)]</visible>
             <onclick>Dialog.Close(contextmenu,true)</onclick>
             <onclick>runscript(script.wikipedia,wikipedia=$VAR[DialogContextMenu_Wiki_Title]$VAR[DialogContextMenu_Wiki_Type])</onclick>
             <selected>false</selected>
-        </item>
-        <item>
-            <label>$LOCALIZE[31041]</label>
-            <icon>special://skin/extras/icons/fire2.png</icon>
-            <visible>[String.IsEqual(Window(Home).Property(TMDbHelper.ListItem.base_dbtype),tvshow) | String.IsEqual(Window(Home).Property(TMDbHelper.ListItem.base_dbtype),season) | String.IsEqual(Window(Home).Property(TMDbHelper.ListItem.base_dbtype),episode) | String.IsEqual(Window(Home).Property(TMDbHelper.ListItem.base_dbtype),movie)]</visible>
-            <onclick>Dialog.Close(contextmenu,true)</onclick>
-            <onclick>RunScript(plugin.video.themoviedb.helper,related_lists,query=$VAR[Path_ContextParams_Query],tmdb_type=$VAR[Path_ContextParams_TMDbType])</onclick>
-            <visible>false</visible>
-        </item>
-        <item>
-            <label>$LOCALIZE[31393]</label>
-            <icon>special://skin/extras/icons/video.png</icon>
-            <visible>[!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.Trailer))]</visible>
-            <onclick>Dialog.Close(contextmenu,true)</onclick>
-            <onclick>SetProperty(PlayTrailerItems,$VAR[Path_VideoInfo_Trailers],Home)</onclick>
-            <onclick>RunScript(script.skinvariables,run_executebuiltin=special://skin/shortcuts/builtins/skinvariables-playtrailer.json,use_rules)</onclick>
-            <visible>false</visible>
         </item>
         <item>
             <label>$LOCALIZE[15019]</label>

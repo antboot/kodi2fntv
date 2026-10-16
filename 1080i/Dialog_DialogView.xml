@@ -84,7 +84,7 @@
         <include content="DialogInfo_Details_Action">
             <param name="header">$INFO[Container(7000).ListItem.Label]</param>
             <param name="poster">$INFO[Container(7000).ListItem.Icon]</param>
-            <param name="path">plugin://plugin.video.themoviedb.helper/?info=details&amp;tmdb_type=$INFO[Container(7000).ListItem.Property(tmdb_type)]&amp;tmdb_id=$INFO[Container(7000).ListItem.Property(tmdb_id)]</param>
+            <param name="path">special://skin/extras/playlists/Null.xsp</param>
             <param name="tmdb_id">$INFO[Container(7000).ListItem.Property(tmdb_id)]</param>
             <param name="tmdb_type">$INFO[Container(7000).ListItem.Property(tmdb_type)]</param>
         </include>

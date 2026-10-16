@@ -719,7 +719,7 @@
         <param name="condition">true</param>
         <param name="prefix" />
         <definition>
-            <onfocus condition="$PARAM[condition]">SetProperty(TMDbHelper.WidgetContainer,$INFO[$PARAM[container]ListItem.Property(widget_id)])</onfocus>
+            <onfocus condition="$PARAM[condition]">SetProperty(Fuse.WidgetContainer,$INFO[$PARAM[container]ListItem.Property(widget_id)])</onfocus>
             <onfocus condition="$PARAM[condition] + !String.IsEmpty($PARAM[container]ListItem.Property(hide_artwork))">SetProperty(Background.HideArtwork,True)</onfocus>
             <onfocus condition="$PARAM[condition] + !String.IsEmpty($PARAM[container]ListItem.Property(show_artwork))">ClearProperty(Background.HideArtwork)</onfocus>
             <onfocus condition="$PARAM[condition] + !String.IsEmpty($PARAM[container]ListItem.Property(show_overlay))">SetProperty(Background.ShowOverlay,True,Home)</onfocus>

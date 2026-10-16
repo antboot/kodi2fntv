@@ -4,7 +4,7 @@
     <include name="View_Combined_Info">
         <include content="Info_Panel" condition="$EXP[Exp_View_52$PARAM[id]_Include]">
             <param name="container">Container(53$PARAM[id]).</param>
-            <param name="visible">Integer.IsEqual(Window.Property(TMDBHelper.WidgetContainer),53$PARAM[id])</param>
+            <param name="visible">Integer.IsEqual(Window.Property(Fuse.WidgetContainer),53$PARAM[id])</param>
             <param name="include_details">$PARAM[include_details]</param>
         </include>
     </include>
@@ -175,7 +175,7 @@
                         <onclick condition="Container(53$PARAM[id]).ListItem.IsFolder">SetFocus(50)</onclick>
                         <onclick condition="!Container(53$PARAM[id]).ListItem.IsFolder">PlayMedia($ESCINFO[Container(53$PARAM[id]).ListItem.FileNameAndPath])</onclick>
                         <content target="$VAR[Path_CollectionNode_Target]">$VAR[View_53$PARAM[id]_Content]</content>
-                        <onfocus>SetProperty(TMDbHelper.WidgetContainer,53$PARAM[id])</onfocus>
+                        <onfocus>SetProperty(Fuse.WidgetContainer,53$PARAM[id])</onfocus>
                         <onfocus>ClearProperty(Background.ShowOverlay,Home)</onfocus>
                         <onfocus>ClearProperty(InfoPanel.FullSwitch,Home)</onfocus>
 
@@ -234,7 +234,7 @@
             <left>40</left>
             <centertop>0</centertop>
             <height>80</height>
-            <onfocus>ClearProperty(TMDbHelper.WidgetContainer)</onfocus>
+            <onfocus>ClearProperty(Fuse.WidgetContainer)</onfocus>
             <onfocus condition="![$PARAM[overlay]]">ClearProperty(Background.ShowOverlay,Home)</onfocus>
             <onfocus condition="$PARAM[overlay]">SetProperty(Background.ShowOverlay,True,Home)</onfocus>
             <onfocus condition="![$PARAM[overlay]]">ClearProperty(InfoPanel.FullSwitch,Home)</onfocus>
@@ -377,7 +377,7 @@
 
                         <visible>$PARAM[visible]</visible>
                         <viewtype label="$PARAM[viewtype_label]">list</viewtype>
-                        <onfocus>ClearProperty(TMDbHelper.WidgetContainer)</onfocus>
+                        <onfocus>ClearProperty(Fuse.WidgetContainer)</onfocus>
                         <onfocus>SetProperty(Background.ShowOverlay,True,Home)</onfocus>
                         <onfocus>SetProperty(InfoPanel.FullSwitch,List,Home)</onfocus>
                     </include>
@@ -466,7 +466,7 @@
                 <pagecontrol>64</pagecontrol>
                 <onright>64</onright>
 
-                <onfocus>SetProperty(TMDbHelper.WidgetContainer,53$PARAM[id])</onfocus>
+                <onfocus>SetProperty(Fuse.WidgetContainer,53$PARAM[id])</onfocus>
                 <onfocus>SetProperty(Background.ShowOverlay,True,Home)</onfocus>
             </include>
         </definition>

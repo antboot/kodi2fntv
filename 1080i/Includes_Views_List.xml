@@ -260,7 +260,7 @@
                         <pagecontrol>$PARAM[scrollbar_id]</pagecontrol>
                         <visible>$PARAM[visible]</visible>
                         <viewtype label="$PARAM[viewtype_label]">list</viewtype>
-                        <onfocus>ClearProperty(TMDbHelper.WidgetContainer)</onfocus>
+                        <onfocus>ClearProperty(Fuse.WidgetContainer)</onfocus>
                         <onfocus condition="![$PARAM[overlay]]">ClearProperty(Background.ShowOverlay,Home)</onfocus>
                         <onfocus condition="$PARAM[overlay]">SetProperty(Background.ShowOverlay,True,Home)</onfocus>
                         <onfocus>SetProperty(InfoPanel.FullSwitch,List,Home)</onfocus>

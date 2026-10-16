@@ -228,7 +228,7 @@
                     <param name="condition">$PARAM[conditional_fade]</param>
                 </include>
                 <include content="Animation_Widget_FadeOut" condition="$PARAM[widgetfade_include]">
-                    <param name="condition">!Control.HasFocus($PARAM[id]) + !Control.HasFocus($PARAM[categoryid]) + !Integer.IsEqual(Window.Property(TMDBHelper.WidgetContainer),$PARAM[id]) + ![$PARAM[widgetfade_disable]]</param>
+                    <param name="condition">!Control.HasFocus($PARAM[id]) + !Control.HasFocus($PARAM[categoryid]) + !Integer.IsEqual(Window.Property(Fuse.WidgetContainer),$PARAM[id]) + ![$PARAM[widgetfade_disable]]</param>
                 </include>
 
             </include>
@@ -261,7 +261,7 @@
                 </include>
 
                 <include content="Animation_Widget_FadeOut" condition="$PARAM[widgetfade_include]">
-                    <param name="condition">!Control.HasFocus($PARAM[id]) + !Control.HasFocus($PARAM[categoryid]) + !Integer.IsEqual(Window.Property(TMDBHelper.WidgetContainer),$PARAM[id]) + ![$PARAM[widgetfade_disable]]</param>
+                    <param name="condition">!Control.HasFocus($PARAM[id]) + !Control.HasFocus($PARAM[categoryid]) + !Integer.IsEqual(Window.Property(Fuse.WidgetContainer),$PARAM[id]) + ![$PARAM[widgetfade_disable]]</param>
                 </include>
 
                 <include content="Animation_ConditionalFade">
@@ -774,7 +774,7 @@
                     <param name="refocus">$PARAM[refocus]</param>
                 </include>
 
-                <onfocus>SetProperty(TMDbHelper.WidgetContainer,$PARAM[id])</onfocus>
+                <onfocus>SetProperty(Fuse.WidgetContainer,$PARAM[id])</onfocus>
                 <nested />
 
             </include>
@@ -829,7 +829,7 @@
                     <param name="menuid">$PARAM[menuid]</param>
                     <param name="onback">[Integer.IsEqual(Container($PARAM[baseid]$PARAM[id]).CurrentItem,1)]</param>
                 </include>
-                <onfocus condition="$PARAM[set_widgetcontainer]">SetProperty(TMDbHelper.WidgetContainer,$PARAM[baseid]$PARAM[id])</onfocus>
+                <onfocus condition="$PARAM[set_widgetcontainer]">SetProperty(Fuse.WidgetContainer,$PARAM[baseid]$PARAM[id])</onfocus>
                 <nested />
             </include>
         </definition>

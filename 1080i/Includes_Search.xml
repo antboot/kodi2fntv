@@ -304,7 +304,7 @@
 
     <include name="Search_Info">
         <include content="Info_Panel" condition="!String.IsEqual(Skin.String(HomeSwitcher.Search.Mode),Wall)">
-            <param name="visible">[!$EXP[Exp_InfoDialogs] + Integer.IsEqual(Window.Property(TMDBHelper.WidgetContainer),$PARAM[id])]</param>
+            <param name="visible">[!$EXP[Exp_InfoDialogs] + Integer.IsEqual(Window.Property(Fuse.WidgetContainer),$PARAM[id])]</param>
             <param name="visible_line">true</param>
             <param name="visible_plot">true</param>
             <param name="visible_meta">true</param>
@@ -312,7 +312,7 @@
             <param name="container">Container($PARAM[id]).</param>
         </include>
         <include content="Info_Panel" condition="String.IsEqual(Skin.String(HomeSwitcher.Search.Mode),Wall)">
-            <param name="visible">[!$EXP[Exp_InfoDialogs] + Integer.IsEqual(Window.Property(TMDBHelper.WidgetContainer),$PARAM[id])]</param>
+            <param name="visible">[!$EXP[Exp_InfoDialogs] + Integer.IsEqual(Window.Property(Fuse.WidgetContainer),$PARAM[id])]</param>
             <param name="visible_line">false</param>
             <param name="visible_plot">false</param>
             <param name="visible_meta">false</param>

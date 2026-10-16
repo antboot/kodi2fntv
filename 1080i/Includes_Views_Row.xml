@@ -104,7 +104,7 @@
                         <pagecontrol>60</pagecontrol>
                         <visible>$PARAM[visible]</visible>
                         <viewtype label="$PARAM[viewtype_label]">wrap</viewtype>
-                        <onfocus>ClearProperty(TMDbHelper.WidgetContainer)</onfocus>
+                        <onfocus>ClearProperty(Fuse.WidgetContainer)</onfocus>
                         <onfocus>ClearProperty(Background.ShowOverlay,Home)</onfocus>
                         <onfocus>ClearProperty(InfoPanel.FullSwitch,Home)</onfocus>
 

@@ -3,7 +3,7 @@
     <zorder>0</zorder>
     <defaultcontrol always="true">6501</defaultcontrol>
     <onload>CancelAlarm(osd_timeout,true)</onload>
-    <onload>SetProperty(TMDbHelper.WidgetContainer,6501,1141)</onload>
+    <onload>SetProperty(Fuse.WidgetContainer,6501,1141)</onload>
     <onload>Skin.SetString(VideoOSD.PersonCredits.CastCrew,cast)</onload>
     <include>Animation_OSD_Dialog_WindowChange</include>
     <controls>
@@ -22,7 +22,7 @@
                     <param name="icon">$INFO[Container(6501).ListItem.Icon]</param>
                     <param name="role">$INFO[Container(6501).ListItem.Label]</param>
                     <param name="name">$VAR[Label_OSD_CastMember_Appearances]</param>
-                    <param name="text">$INFO[Window(Home).Property(TMDbHelper.ListItem.Plot)]</param>
+                    <param name="text">$INFO[ListItem.Plot]</param>
                 </include>
 
                 <!-- Cast List -->
@@ -33,7 +33,7 @@
                     <content>$VAR[Path_OSD_Cast]</content>
                     <include>OSD_List_Dimensions</include>
 
-                    <onfocus>SetProperty(TMDbHelper.WidgetContainer,6501,1141)</onfocus>
+                    <onfocus>SetProperty(Fuse.WidgetContainer,6501,1141)</onfocus>
 
                     <onup condition="Skin.String(VideoOSD.PersonCredits.CastCrew,cast)">PreviousMenu</onup>
                     <onup condition="Skin.String(VideoOSD.PersonCredits.CastCrew,crew)">Skin.SetString(VideoOSD.PersonCredits.CastCrew,cast)</onup>
@@ -46,8 +46,6 @@
                         <param name="end">0</param>
                         <param name="id">6501</param>
                     </include>
-
-                    <onclick>SetProperty(VideoOSD.InfoDialog.Path,plugin://plugin.video.themoviedb.helper/?info=details&amp;tmdb_type=person&amp;tmdb_id=$INFO[Container(9501).ListItem.Property(TMDb_ID)],Home)</onclick>
                     <onclick>ActivateWindow(1193)</onclick>
                 </include>
             </control>
@@ -61,7 +59,7 @@
                         <param name="label">$LOCALIZE[206]...</param>
                         <param name="visible">Container(6501).IsUpdating</param>
                         <param name="include">List_Poster_Row</param>
-                        <visible>Integer.IsEqual(Window.Property(TMDBHelper.WidgetContainer),6501)</visible>
+                        <visible>Integer.IsEqual(Window.Property(Fuse.WidgetContainer),6501)</visible>
                     </include>
                 </control>
             </control>
