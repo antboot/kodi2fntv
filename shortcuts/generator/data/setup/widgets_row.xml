@@ -66,30 +66,6 @@
             <value>$INFO[Window.Property(WidgetMeta.{widget_prev_id}.FolderPath)]</value>
         </rule>
         <rule>
-            <condition>{item_path}==Stacked_Movie_Recommendations</condition>
-            <value>plugin://plugin.video.themoviedb.helper/?info=recommendations&amp;nextpage=false&amp;cacheonly=true&amp;length=1&amp;amp;tmdb_type=movie&amp;amp;query=$INFO[Window.Property(WidgetMeta.{widget_prev_id}.Title)]$INFO[Window.Property(WidgetMeta.{widget_prev_id}.TMDb_ID),&amp;amp;tmdb_id=,]</value>
-        </rule>
-        <rule>
-            <condition>{item_path}==Stacked_TVShows_Recommendations</condition>
-            <value>plugin://plugin.video.themoviedb.helper/?info=recommendations&amp;nextpage=false&amp;cacheonly=true&amp;length=1&amp;amp;tmdb_type=tv&amp;amp;query=$INFO[Window.Property(WidgetMeta.{widget_prev_id}.TvShowTitle)]$INFO[Window.Property(WidgetMeta.{widget_prev_id}.TMDb_ID),&amp;amp;tmdb_id=,]</value>
-        </rule>
-        <rule>
-            <condition>{item_path}==Stacked_Movie_Year</condition>
-            <value>plugin://plugin.video.themoviedb.helper/?info=discover&amp;nextpage=false&amp;cacheonly=true&amp;length=1&amp;amp;tmdb_type=movie&amp;amp;sort_by=vote_count.desc&amp;amp;primary_release_year=$INFO[Window.Property(WidgetMeta.{widget_prev_id}.Year)]</value>
-        </rule>
-        <rule>
-            <condition>{item_path}==Stacked_TVShows_Year</condition>
-            <value>plugin://plugin.video.themoviedb.helper/?info=discover&amp;nextpage=false&amp;cacheonly=true&amp;length=1&amp;amp;tmdb_type=tv&amp;amp;sort_by=vote_count.desc&amp;amp;first_air_date_year=$INFO[Window.Property(WidgetMeta.{widget_prev_id}.Year)]</value>
-        </rule>
-        <rule>
-            <condition>{item_path}==Stacked_Movie_Genre</condition>
-            <value>plugin://plugin.video.themoviedb.helper/?info=discover&amp;nextpage=false&amp;cacheonly=true&amp;length=1&amp;amp;tmdb_type=movie&amp;amp;sort_by=vote_count.desc&amp;amp;with_genres=$INFO[Window.Property(WidgetMeta.{widget_prev_id}.Genre)]</value>
-        </rule>
-        <rule>
-            <condition>{item_path}==Stacked_TVShows_Genre</condition>
-            <value>plugin://plugin.video.themoviedb.helper/?info=discover&amp;nextpage=false&amp;cacheonly=true&amp;length=1&amp;amp;tmdb_type=tv&amp;amp;sort_by=vote_count.desc&amp;amp;with_genres=$INFO[Window.Property(WidgetMeta.{widget_prev_id}.Genre)]</value>
-        </rule>
-        <rule>
             <condition>True</condition>
             <value>{item_path}</value>
         </rule>
@@ -187,38 +163,6 @@
         </rule>
     </rules>
     <rules name="widget_usewidgetlabel">
-        <rule>
-            <condition>{item_path}&lt;&lt;plugin://plugin.video.themoviedb.helper/?info=random_genres</condition>
-            <value>True</value>
-        </rule>
-        <rule>
-            <condition>{item_path}&lt;&lt;plugin://plugin.video.themoviedb.helper/?info=random_keyword</condition>
-            <value>True</value>
-        </rule>
-        <rule>
-            <condition>{item_path}&lt;&lt;plugin://plugin.video.themoviedb.helper/?info=random_trendinglists</condition>
-            <value>True</value>
-        </rule>
-        <rule>
-            <condition>{item_path}&lt;&lt;plugin://plugin.video.themoviedb.helper/?info=random_popularlists</condition>
-            <value>True</value>
-        </rule>
-        <rule>
-            <condition>{item_path}&lt;&lt;plugin://plugin.video.themoviedb.helper/?info=random_likedlists</condition>
-            <value>True</value>
-        </rule>
-        <rule>
-            <condition>{item_path}&lt;&lt;plugin://plugin.video.themoviedb.helper/?info=random_mylists</condition>
-            <value>True</value>
-        </rule>
-        <rule>
-            <condition>{item_path}&lt;&lt;plugin://plugin.video.themoviedb.helper/?info=trakt_becauseyouwatched</condition>
-            <value>True</value>
-        </rule>
-        <rule>
-            <condition>{item_path}&lt;&lt;plugin://plugin.video.themoviedb.helper/?info=trakt_becausemostwatched</condition>
-            <value>True</value>
-        </rule>
         <rule>
             <condition>{item_path}&lt;&lt;plugin://script.skinvariables/?info=get_params_file</condition>
             <value>True</value>

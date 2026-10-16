@@ -8,7 +8,7 @@
     <param name="categorydebounce">true</param>
     <param name="categorycontent">{widget_path}</param>
     <param name="categorytarget">{widget_target}</param>
-    <param name="categoryonfocus">SetProperty(TMDbHelper.WidgetContainer,{widget_id})</param>
+    <param name="categoryonfocus">SetProperty(Fuse.WidgetContainer,{widget_id})</param>
     <param name="categorynavigationinclude">Widget_Combined_Categories_Navigation</param>
     <param name="menuid">302</param>
     <param name="include_movement">false</param>

@@ -628,7 +628,7 @@
                 </control>
                 <control type="image">
                     <fadetime>background_fadetime</fadetime>
-                    <texture border="40" colordiffuse="overlay_hard">$VAR[Image_Current_Background,,-diffuse-20.jpg]</texture>
+                    <texture border="40" colordiffuse="overlay_hard">$VAR[Image_Current_Background]</texture>
                 </control>
             </control>
             <include>Part_Background_Glass_Border</include>

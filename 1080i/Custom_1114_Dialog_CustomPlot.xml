@@ -21,12 +21,12 @@
     <onunload>ClearProperty(origin_tmdb_type,1114)</onunload>
     <onunload>ClearProperty(origin_season,1114)</onunload>
     <onunload>ClearProperty(origin_episode,1114)</onunload>
-    <onload>SetProperty(TMDbHelper.ContextMenu,True)</onload>
+    <onload>SetProperty(Fuse.ContextMenu,True)</onload>
     <controls>
 
         <include content="Object_Hidden_List" condition="!String.IsEmpty(Window.Property(tmdb_type)) + !String.IsEmpty(Window.Property(tmdb_id)) + String.IsEmpty(Window.Property(textbox))">
             <param name="id">7000</param>
-            <content limit="1">$INFO[Window.Property(tmdb_id),plugin://plugin.video.themoviedb.helper/?info=details&amp;tmdb_id=,]$INFO[Window.Property(tmdb_type),&amp;tmdb_type=,]</content>
+            <content limit="1">special://skin/extras/playlists/Null.xsp</content>
         </include>
 
         <include content="Object_Hidden_Button" condition="String.IsEmpty(Window.Property(path))">

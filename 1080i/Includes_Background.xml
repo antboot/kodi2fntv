@@ -66,7 +66,7 @@
                 <height>200%</height>
                 <fadetime>$PARAM[fadetime]</fadetime>
                 <aspectratio>scale</aspectratio>
-                <texture background="true">$VAR[Image_Background,,-tiled.jpg]</texture>
+                <texture background="true">$VAR[Image_Background]</texture>
             </control>
         </control>
     </include>

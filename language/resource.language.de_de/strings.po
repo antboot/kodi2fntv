@@ -1794,11 +1794,6 @@ msgctxt "#31434"
 msgid "Customise video OSD"
 msgstr "Video-OSD anpassen"
 
-#: /1080i/SkinSettings.xml
-msgctxt "#31435"
-msgid "TMDbHelper lookups"
-msgstr "TMDbHelper-Abfragen"
-
 #: /1080i/Includes_Labels.xml
 msgctxt "#31438"
 msgid "Simple"

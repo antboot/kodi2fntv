@@ -164,7 +164,6 @@
                     <onclick>Dialog.Close(1141,true)</onclick>
                     <onclick>Dialog.Close(videobookmarks,true)</onclick>
                     <onclick>Skin.SetString(InfoPanel.FullSwitch,Full,Home)</onclick>
-                    <onclick>RunScript(plugin.video.themoviedb.helper,add_path=$INFO[Container(7001).ListItem.FolderPath],call_auto=1190,origin_tmdb_type=$INFO[Window.Property(origin_tmdb_type)],origin_tmdb_id=$INFO[Window.Property(origin_tmdb_id)],origin_season=$INFO[Window.Property(origin_season)],origin_episode=$INFO[Window.Property(origin_episode)],return)</onclick>
                     <content>$INFO[Window.Property(ModePath)]</content>
                     <visible>!String.IsEmpty(Window.Property(ModePath))</visible>
                 </include>
@@ -192,7 +191,6 @@
             <onfocus>ClearProperty(ModePath)</onfocus>
             <onfocus>ClearProperty(ModeName)</onfocus>
             <onclick>Skin.SetString(InfoPanel.FullSwitch,Full,Home)</onclick>
-            <onclick>RunScript(plugin.video.themoviedb.helper,add_path=$INFO[Window.Property(path)],call_auto=1190,origin_tmdb_type=$INFO[Window.Property(origin_tmdb_type)],origin_tmdb_id=$INFO[Window.Property(origin_tmdb_id)],origin_season=$INFO[Window.Property(origin_season)],origin_episode=$INFO[Window.Property(origin_episode)],return)</onclick>
             <onclick>Dialog.Close(1114,true)</onclick>
             <onclick>Dialog.Close(videoosd,true)</onclick>
             <onclick>Dialog.Close(1140,true)</onclick>
@@ -208,7 +206,6 @@
             <param name="icon">special://skin/extras/icons/film.png</param>
             <usealttexture>String.IsEqual(Window.Property(ModeName),$LOCALIZE[342])</usealttexture>
             <onfocus>SetProperty(ModeName,$LOCALIZE[342])</onfocus>
-            <onfocus>SetProperty(ModePath,$INFO[Window.Property(TMDb_ID),plugin://plugin.video.themoviedb.helper/?info=stars_in_movies&amp;tmdb_type=person&amp;tmdb_id=,&amp;limit=250&amp;sort_by=premiered&amp;nextpage=false&amp;cacheonly=true&amp;length=1&amp;exclude_key=genre&amp;exclude_value=Documentary / News / Talk])</onfocus>
             <onclick condition="!Container(7001).IsUpdating + !Integer.IsEqual(Container(7001).NumItems,0)">SetFocus(7001)</onclick>
         </include>
         <!-- TV Shows -->
@@ -220,7 +217,6 @@
             <param name="icon">special://skin/extras/icons/tv.png</param>
             <usealttexture>String.IsEqual(Window.Property(ModeName),$LOCALIZE[20343])</usealttexture>
             <onfocus>SetProperty(ModeName,$LOCALIZE[20343])</onfocus>
-            <onfocus>SetProperty(ModePath,$INFO[Window.Property(TMDb_ID),plugin://plugin.video.themoviedb.helper/?info=stars_in_tvshows&amp;tmdb_type=person&amp;tmdb_id=,&amp;limit=250&amp;sort_by=premiered&amp;nextpage=false&amp;cacheonly=true&amp;length=1&amp;exclude_key=genre&amp;exclude_value=Documentary / News / Talk])</onfocus>
             <onclick condition="!Container(7001).IsUpdating + !Integer.IsEqual(Container(7001).NumItems,0)">SetFocus(7001)</onclick>
         </include>
         <!-- Crew -->
@@ -232,7 +228,6 @@
             <param name="icon">special://skin/extras/icons/director.png</param>
             <usealttexture>String.IsEqual(Window.Property(ModeName),$LOCALIZE[31035])</usealttexture>
             <onfocus>SetProperty(ModeName,$LOCALIZE[31035])</onfocus>
-            <onfocus>SetProperty(ModePath,$INFO[Window.Property(TMDb_ID),plugin://plugin.video.themoviedb.helper/?info=crew_in_both&amp;tmdb_type=person&amp;tmdb_id=,&amp;limit=250&amp;sort_by=premiered&amp;nextpage=false&amp;cacheonly=true&amp;length=1])</onfocus>
             <onclick condition="!Container(7001).IsUpdating + !Integer.IsEqual(Container(7001).NumItems,0)">SetFocus(7001)</onclick>
         </include>
         <!-- Cast -->
@@ -244,7 +239,6 @@
             <param name="icon">special://skin/extras/icons/person.png</param>
             <usealttexture>String.IsEqual(Window.Property(ModeName),$LOCALIZE[31076])</usealttexture>
             <onfocus>SetProperty(ModeName,$LOCALIZE[31076])</onfocus>
-            <onfocus>SetProperty(ModePath,$INFO[Window.Property(TMDb_ID),plugin://plugin.video.themoviedb.helper/?info=cast&amp;tmdb_id=,&amp;limit=250]$INFO[Window.Property(tmdb_type),&amp;tmdb_type=,&amp;nextpage=false&amp;cacheonly=true&amp;length=1])</onfocus>
             <onclick condition="!Container(7001).IsUpdating + !Integer.IsEqual(Container(7001).NumItems,0)">SetFocus(7001)</onclick>
         </include>
         <!-- Crew -->
@@ -256,7 +250,6 @@
             <param name="icon">special://skin/extras/icons/director.png</param>
             <usealttexture>String.IsEqual(Window.Property(ModeName),$LOCALIZE[31383])</usealttexture>
             <onfocus>SetProperty(ModeName,$LOCALIZE[31383])</onfocus>
-            <onfocus>SetProperty(ModePath,$INFO[Window.Property(TMDb_ID),plugin://plugin.video.themoviedb.helper/?info=crew&amp;tmdb_id=,&amp;limit=250]$INFO[Window.Property(tmdb_type),&amp;tmdb_type=,&amp;nextpage=false&amp;cacheonly=true&amp;length=1])</onfocus>
             <onclick condition="!Container(7001).IsUpdating + !Integer.IsEqual(Container(7001).NumItems,0)">SetFocus(7001)</onclick>
         </include>
     </include>
@@ -328,7 +321,7 @@
     <include name="DialogPlot_Plotbox_Person_Image_Object">
         <control type="group">
             <top>-60</top>
-            <visible>!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].$PARAM[indx].Name))</visible>
+            <visible>!String.IsEmpty(Window(Home).Property(Fuse.ListItem.$PARAM[role].$PARAM[indx].Name))</visible>
             <height>60</height>
             <control type="group">
                 <centertop>50%</centertop>
@@ -348,14 +341,14 @@
                 <control type="image">
                     <bordersize>2</bordersize>
                     <aspectratio scalediffuse="false">scale</aspectratio>
-                    <texture diffuse="diffuse/circle/circle_50.png" background="true">$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].$PARAM[indx].Thumb)]</texture>
+                    <texture diffuse="diffuse/circle/circle_50.png" background="true">$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].$PARAM[indx].Thumb)]</texture>
                 </control>
             </control>
             <control type="label">
                 <left>60</left>
                 <font>font_midi</font>
                 <textcolor>dialog_fg_90</textcolor>
-                <label>$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].$PARAM[indx].Name)]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].$PARAM[indx].Role), (,)]</label>
+                <label>$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].$PARAM[indx].Name)]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].$PARAM[indx].Role), (,)]</label>
                 <height>60</height>
             </control>
         </control>
@@ -367,7 +360,7 @@
             <textcolor>dialog_fg_90</textcolor>
             <label>$PARAM[head]</label>
             <height>60</height>
-            <visible>!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].1.Name))</visible>
+            <visible>!String.IsEmpty(Window(Home).Property(Fuse.ListItem.$PARAM[role].1.Name))</visible>
         </control>
         <include content="DialogPlot_Plotbox_Person_Image_Object">
             <param name="role">$PARAM[role]</param>
@@ -407,25 +400,25 @@
         </include> -->
         <include content="DialogPlot_Plotbox_Object">
             <param name="head">$PARAM[head]</param>
-            <param name="text">$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].1.Name)]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].1.Role), (,)]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].2.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].2.Role), (,)]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].3.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].3.Role), (,)]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].4.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].4.Role), (,)]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].5.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].5.Role), (,)]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].6.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].6.Role), (,)]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].7.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].7.Role), (,)]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].8.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].8.Role), (,)]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].9.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].9.Role), (,)]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.$PARAM[role].1.Name))</param>
+            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].1.Name)]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].1.Role), (,)]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].2.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].2.Role), (,)]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].3.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].3.Role), (,)]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].4.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].4.Role), (,)]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].5.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].5.Role), (,)]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].6.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].6.Role), (,)]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].7.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].7.Role), (,)]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].8.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].8.Role), (,)]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].9.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.$PARAM[role].9.Role), (,)]</param>
+            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.$PARAM[role].1.Name))</param>
         </include>
     </include>
 
-    <include name="DialogPlot_Plotbox_TMDbHelper">
+    <include name="DialogPlot_Plotbox_Fuse">
         <include content="DialogPlot_Plotbox_Quick_Object">
             <param name="head">$LOCALIZE[202]</param>
-            <param name="text">Window(Home).Property(TMDbHelper.ListItem.Tagline)</param>
+            <param name="text">Window(Home).Property(Fuse.ListItem.Tagline)</param>
         </include>
         <include content="DialogPlot_Plotbox_Object">
             <param name="head">$LOCALIZE[31028]</param>
-            <param name="text">$VAR[Label_Plot_TMDbHelper]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(TMDBHelper.ListItem.base_plot)) | !String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.Plot)) | !String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.biography))</param>
+            <param name="text">$VAR[Label_Plot_Fuse]</param>
+            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.base_plot)) | !String.IsEmpty(Window(Home).Property(Fuse.ListItem.Plot)) | !String.IsEmpty(Window(Home).Property(Fuse.ListItem.biography))</param>
         </include>
         <include content="DialogPlot_Plotbox_Object">
             <param name="head">$LOCALIZE[31024]</param>
-            <param name="text">$INFO[Window(Home).Property(TMDbHelper.ListItem.rottentomatoes_consensus),, ]$INFO[Window(Home).Property(TMDbHelper.ListItem.rottentomatoes_reviewsfresh),$LOCALIZE[31054] , ]$INFO[Window(Home).Property(TMDbHelper.ListItem.rottentomatoes_reviewstotal),$LOCALIZE[31055] , $LOCALIZE[31056] ]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.rottentomatoes_consensus))</param>
+            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.rottentomatoes_consensus),, ]$INFO[Window(Home).Property(Fuse.ListItem.rottentomatoes_reviewsfresh),$LOCALIZE[31054] , ]$INFO[Window(Home).Property(Fuse.ListItem.rottentomatoes_reviewstotal),$LOCALIZE[31055] , $LOCALIZE[31056] ]</param>
+            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.rottentomatoes_consensus))</param>
         </include>
         <include content="DialogPlot_Plotbox_Person_Object">
             <param name="head">$LOCALIZE[31038]</param>
@@ -461,27 +454,27 @@
         </include>
         <include content="DialogPlot_Plotbox_Quick_Object">
             <param name="head">$LOCALIZE[31064]</param>
-            <param name="text">Window(Home).Property(TMDbHelper.ListItem.Awards)</param>
+            <param name="text">Window(Home).Property(Fuse.ListItem.Awards)</param>
         </include>
         <include content="DialogPlot_Plotbox_Object">
-            <param name="head">$LOCALIZE[31286]$INFO[Window(Home).Property(TMDbHelper.ListItem.Total_Awards_Won), ,] $LOCALIZE[31064]</param>
-            <param name="text">$INFO[Window(Home).Property(TMDbHelper.ListItem.Awards_Won_CR)]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.Total_Awards_Won))</param>
+            <param name="head">$LOCALIZE[31286]$INFO[Window(Home).Property(Fuse.ListItem.Total_Awards_Won), ,] $LOCALIZE[31064]</param>
+            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.Awards_Won_CR)]</param>
+            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.Total_Awards_Won))</param>
         </include>
         <include content="DialogPlot_Plotbox_Object">
-            <param name="head">$LOCALIZE[31287]$INFO[Window(Home).Property(TMDbHelper.ListItem.Total_Awards_Nominated), ,] $LOCALIZE[31064]</param>
-            <param name="text">$INFO[Window(Home).Property(TMDbHelper.ListItem.Awards_Nominated_CR)]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.Total_Awards_Nominated))</param>
+            <param name="head">$LOCALIZE[31287]$INFO[Window(Home).Property(Fuse.ListItem.Total_Awards_Nominated), ,] $LOCALIZE[31064]</param>
+            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.Awards_Nominated_CR)]</param>
+            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.Total_Awards_Nominated))</param>
         </include>
         <include content="DialogPlot_Plotbox_Object">
             <param name="head">JustWatch</param>
-            <param name="text">$INFO[Window(Home).Property(TMDbHelper.ListItem.Provider.1.Name)]$INFO[Window(Home).Property(TMDbHelper.ListItem.Provider.2.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.Provider.3.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.Provider.4.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.Provider.5.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.Provider.6.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.Provider.7.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.Provider.8.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.Provider.9.Name),[CR],]$INFO[Window(Home).Property(TMDbHelper.ListItem.Provider.10.Name),[CR],]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.Provider.1.Name))</param>
+            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.Provider.1.Name)]$INFO[Window(Home).Property(Fuse.ListItem.Provider.2.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.3.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.4.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.5.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.6.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.7.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.8.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.9.Name),[CR],]$INFO[Window(Home).Property(Fuse.ListItem.Provider.10.Name),[CR],]</param>
+            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.Provider.1.Name))</param>
         </include>
         <include content="DialogPlot_Plotbox_Object">
-            <param name="head">$INFO[Window(Home).Property(TMDbHelper.ListItem.PlayCount),$LOCALIZE[16102] , $LOCALIZE[31183]]</param>
-            <param name="text">$INFO[Window(Home).Property(TMDbHelper.ListItem.LastPlayed),$LOCALIZE[568] ,]</param>
-            <param name="visible">!String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.PlayCount))</param>
+            <param name="head">$INFO[Window(Home).Property(Fuse.ListItem.PlayCount),$LOCALIZE[16102] , $LOCALIZE[31183]]</param>
+            <param name="text">$INFO[Window(Home).Property(Fuse.ListItem.LastPlayed),$LOCALIZE[568] ,]</param>
+            <param name="visible">!String.IsEmpty(Window(Home).Property(Fuse.ListItem.PlayCount))</param>
         </include>
     </include>
 
@@ -535,7 +528,7 @@
                         <pagecontrol>61</pagecontrol>
                         <orientation>vertical</orientation>
                         <include>Size_Group_PlotText</include>
-                        <include condition="false">DialogPlot_Plotbox_TMDbHelper</include>
+                        <include condition="false">DialogPlot_Plotbox_Fuse</include>
                         <include condition="true">DialogPlot_Plotbox_Local</include>
                     </control>
                     <include content="Part_Scrollbar_Max">
@@ -553,8 +546,8 @@
 
     <include name="DialogPlot_Artwork">
         <param name="poster_icon">$VAR[Image_Overlay_Poster]</param>
-        <param name="square_icon">$INFO[Window(Home).Property(TMDbHelper.ListItem.Base_Icon)]</param>
-        <param name="c_logo_icon">$INFO[Window(Home).Property(TMDbHelper.ListItem.Base_Clearlogo)]</param>
+        <param name="square_icon">$INFO[Window(Home).Property(Fuse.ListItem.Base_Icon)]</param>
+        <param name="c_logo_icon">$INFO[Window(Home).Property(Fuse.ListItem.Base_Clearlogo)]</param>
         <param name="hidden_icon">true</param>
         <definition>
             <control type="group">
@@ -761,8 +754,7 @@
     </include>
 
     <variable name="DialogPlot_Ratings_8001">
-        <value condition="!String.IsEmpty(Window(Home).Property(TMDBHelper.ListItem.Monitor.TMDb_ID)) + !String.IsEmpty(Window(Home).Property(TMDBHelper.ListItem.Monitor.Season))">plugin://plugin.video.themoviedb.helper/?info=episodes&amp;tmdb_id=$INFO[Window(Home).Property(TMDBHelper.ListItem.Monitor.TMDb_ID)]&amp;tmdb_type=tv&amp;season=$INFO[Window(Home).Property(TMDBHelper.ListItem.Monitor.Season)]</value>
-        <value condition="!String.IsEmpty(Window(Home).Property(TMDBHelper.ListItem.Monitor.TMDb_ID))">plugin://plugin.video.themoviedb.helper/?info=flatseasons&amp;tmdb_id=$INFO[Window(Home).Property(TMDBHelper.ListItem.Monitor.TMDb_ID)]&amp;tmdb_type=tv&amp;exclude_key=season&amp;exclude_value=0</value>
+        <value></value>
     </variable>
 
 

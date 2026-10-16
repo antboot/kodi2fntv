@@ -41,18 +41,18 @@
     </variable>
 
     <variable name="Overlay_IsUpdating">
-        <value condition="!String.IsEmpty(Window(Home).Property(TMDBHelper.IsUpdating))">$VAR[_Overlay_IsUpdating_Details,,  ]$VAR[_Overlay_IsUpdating_Ratings,,  ]$VAR[_Overlay_IsUpdating_Artwork,,  ]</value>
+        <value condition="!String.IsEmpty(Window(Home).Property(Fuse.IsUpdating))">$VAR[_Overlay_IsUpdating_Details,,  ]$VAR[_Overlay_IsUpdating_Ratings,,  ]$VAR[_Overlay_IsUpdating_Artwork,,  ]</value>
         <value>DONE</value>
     </variable>
 
     <variable name="_Overlay_IsUpdating_Details">
-        <value condition="!String.IsEmpty(Window(Home).Property(TMDBHelper.IsUpdatingDetails))">Details</value>
+        <value condition="!String.IsEmpty(Window(Home).Property(Fuse.IsUpdatingDetails))">Details</value>
     </variable>
     <variable name="_Overlay_IsUpdating_Ratings">
-        <value condition="!String.IsEmpty(Window(Home).Property(TMDBHelper.IsUpdatingRatings))">Ratings</value>
+        <value condition="!String.IsEmpty(Window(Home).Property(Fuse.IsUpdatingRatings))">Ratings</value>
     </variable>
     <variable name="_Overlay_IsUpdating_Artwork">
-        <value condition="!String.IsEmpty(Window(Home).Property(TMDBHelper.IsUpdatingArtwork))">Artwork</value>
+        <value condition="!String.IsEmpty(Window(Home).Property(Fuse.IsUpdatingArtwork))">Artwork</value>
     </variable>
 
     <include name="Overlay_InfoLabel">
@@ -300,7 +300,7 @@
                     <align>right</align>
                     <orientation>horizontal</orientation>
                     <include content="Overlay_InfoLabel">
-                        <label>$INFO[Window(Home).Property(TMDbHelper.ListItem.base_title),title: , ]$INFO[Window(Home).Property(TMDbHelper.ListItem.base_year),year: , ]</label>
+                        <label>$INFO[Window(Home).Property(Fuse.ListItem.base_title),title: , ]$INFO[Window(Home).Property(Fuse.ListItem.base_year),year: , ]</label>
                         <textcolor>magenta</textcolor>
                     </include>
                 </control>
@@ -309,7 +309,7 @@
                     <align>right</align>
                     <orientation>horizontal</orientation>
                     <include content="Overlay_InfoLabel">
-                        <label>$INFO[Window(Home).Property(TMDbHelper.ListItem.Title),title: , ]$INFO[Window(Home).Property(TMDbHelper.ListItem.Year),year: , ]</label>
+                        <label>$INFO[Window(Home).Property(Fuse.ListItem.Title),title: , ]$INFO[Window(Home).Property(Fuse.ListItem.Year),year: , ]</label>
                         <textcolor>cyan</textcolor>
                     </include>
                 </control>
@@ -318,7 +318,7 @@
                     <align>right</align>
                     <orientation>horizontal</orientation>
                     <include content="Overlay_InfoLabel">
-                        <label>$INFO[Window(Home).Property(TMDbHelper.ListItem.base_tmdb_id),tmdb_id: , ]$INFO[Window(Home).Property(TMDbHelper.ListItem.base_imdb_id),imdb_id: , ]$INFO[Window(Home).Property(TMDbHelper.ListItem.base_tvdb_id),tvdb_id: , ]</label>
+                        <label>$INFO[Window(Home).Property(Fuse.ListItem.base_tmdb_id),tmdb_id: , ]$INFO[Window(Home).Property(Fuse.ListItem.base_imdb_id),imdb_id: , ]$INFO[Window(Home).Property(Fuse.ListItem.base_tvdb_id),tvdb_id: , ]</label>
                         <textcolor>magenta</textcolor>
                     </include>
                 </control>
@@ -340,11 +340,11 @@
                     <textcolor>yellowgreen</textcolor>
                 </include>
                 <include content="Overlay_InfoLabel">
-                    <label> -tmdbhelper.windowmanager: $INFO[Window(Home).Property(TMDBHelper.ListItem.Monitor.TMDb_ID),TMDb_ID: , ]$INFO[Window(Home).Property(TMDBHelper.ListItem.Monitor.TMDb_Type),TMDb_Type: , ]$INFO[Window(Home).Property(TMDBHelper.ListItem.Monitor.Season),Season: , ]$INFO[Window(Home).Property(TMDBHelper.ListItem.Monitor.Episode),Episode: , ]$INFO[Window(Home).Property(TMDbHelper.Instance),instance: , ]$INFO[Window(Home).Property(TMDBHelper.Position),position: , ]</label>
+                    <label> -windowmanager: $INFO[Window(Home).Property(Fuse.ListItem.Monitor.TMDb_ID),TMDb_ID: , ]$INFO[Window(Home).Property(Fuse.ListItem.Monitor.TMDb_Type),TMDb_Type: , ]$INFO[Window(Home).Property(Fuse.ListItem.Monitor.Season),Season: , ]$INFO[Window(Home).Property(Fuse.ListItem.Monitor.Episode),Episode: , ]$INFO[Window(Home).Property(Fuse.Instance),instance: , ]$INFO[Window(Home).Property(Fuse.Position),position: , ]</label>
                     <textcolor>yellowgreen</textcolor>
                 </include>
                 <include content="Overlay_InfoLabel">
-                    <label> -tmdbhelper.isupdating: $INFO[Window(Home).Property(TMDBHelper.CurrentWindow),window: , ]$VAR[Overlay_WidgetContainer,widget: , ]$VAR[Overlay_IsUpdating,service: , ]</label>
+                    <label> -service: $INFO[Window(Home).Property(Fuse.CurrentWindow),window: , ]$VAR[Overlay_WidgetContainer,widget: , ]$VAR[Overlay_IsUpdating,service: , ]</label>
                     <textcolor>yellowgreen</textcolor>
                 </include>
             </control>
@@ -352,7 +352,7 @@
                 <align>bottom</align>
                 <orientation>vertical</orientation>
                 <include content="Overlay_InfoLabel">
-                    <label> -content.dbtype:$INFO[Container.Content, container: , |]$INFO[ListItem.DBType, listitem: ,]$INFO[ListItem.Property(tmdb_type), (,)]$INFO[Window(Home).Property(TMDbHelper.ListItem.base_dbtype), | TMDbHelper: , ]$INFO[Window(Home).Property(TMDbHelper.ListItem.Monitor.TMDb_Type),(,)]</label>
+                    <label> -content.dbtype:$INFO[Container.Content, container: , |]$INFO[ListItem.DBType, listitem: ,]$INFO[ListItem.Property(tmdb_type), (,)]$INFO[Window(Home).Property(Fuse.ListItem.base_dbtype), | Fuse: , ]$INFO[Window(Home).Property(Fuse.ListItem.Monitor.TMDb_Type),(,)]</label>
                     <textcolor>cyan</textcolor>
                 </include>
                 <include content="Overlay_InfoLabel">

@@ -110,7 +110,6 @@
             "icon": "special://skin/extras/icons/hard-drive.png",
             "link": "false"
         },
-        "grouping://shortcuts/tmdbhelper/",
         {
             "name": "Miscellaneous",
             "path": "grouping://shortcuts/links/kodi/",
@@ -712,55 +711,6 @@
             "link": "false"
         }
     ],
-    "grouping://shortcuts/tmdbhelper/": [
-        {
-            "name": "SkinVariables Custom Filter",
-            "icon": "special://skin/extras/icons/filter.png",
-            "link": "false",
-            "node": "videos",
-            "path": "plugin://script.skinvariables/?info=get_filter_files"
-        },
-        {
-            "name": "TMDbHelper Nodes",
-            "path": "plugin://plugin.video.themoviedb.helper/?info=dir_custom_node",
-            "icon": "special://skin/extras/icons/plug.png",
-            "link": "false",
-            "rule": "System.HasAddon(plugin.video.themoviedb.helper)",
-            "node": "videos"
-        },
-        {
-            "name": "TMDbHelper Movies",
-            "path": "plugin://plugin.video.themoviedb.helper/?info=dir_movie",
-            "icon": "special://skin/extras/icons/plug.png",
-            "link": "false",
-            "rule": "System.HasAddon(plugin.video.themoviedb.helper)",
-            "node": "videos"
-        },
-        {
-            "name": "TMDbHelper TV Shows",
-            "path": "plugin://plugin.video.themoviedb.helper/?info=dir_tv",
-            "icon": "special://skin/extras/icons/plug.png",
-            "link": "false",
-            "rule": "System.HasAddon(plugin.video.themoviedb.helper)",
-            "node": "videos"
-        },
-        {
-            "name": "TMDbHelper Randomised",
-            "path": "plugin://plugin.video.themoviedb.helper/?info=dir_random",
-            "icon": "special://skin/extras/icons/plug.png",
-            "link": "false",
-            "rule": "System.HasAddon(plugin.video.themoviedb.helper)",
-            "node": "videos"
-        },
-        {
-            "name": "TMDbHelper All",
-            "path": "plugin://plugin.video.themoviedb.helper/",
-            "icon": "special://skin/extras/icons/plug.png",
-            "link": "false",
-            "rule": "System.HasAddon(plugin.video.themoviedb.helper)",
-            "node": "videos"
-        }
-    ],
     "grouping://shortcuts/default/": [
         {
             "name": "Movies",
@@ -1291,12 +1241,6 @@
             "name": "Event Log",
             "path": "ActivateWindow(eventlog)",
             "icon": "special://skin/extras/icons/list-check.png",
-            "link": "true"
-        },
-        {
-            "icon": "special://skin/extras/icons/configure.png",
-            "name": "Configure TMDbHelper",
-            "path": "RunPlugin(plugin://plugin.video.themoviedb.helper/?info=dir_settings)",
             "link": "true"
         }
     ],

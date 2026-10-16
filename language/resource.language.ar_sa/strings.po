@@ -1809,11 +1809,6 @@ msgctxt "#31434"
 msgid "Video OSD"
 msgstr "شريط عرض الفيديو"
 
-#: /1080i/SkinSettings.xml
-msgctxt "#31435"
-msgid "TMDbHelper lookups"
-msgstr "بحث من خلال TMDbHelper"
-
 #: /1080i/Includes_Labels.xml
 msgctxt "#31438"
 msgid "Simple"

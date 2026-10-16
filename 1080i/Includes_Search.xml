@@ -169,7 +169,7 @@
                     <content>
                         <item>
                             <label>$LOCALIZE[31066]</label>
-                            <label2>$INFO[Window(Home).Property(TMDbHelper.UserDiscover.FolderPath.Name), ,]</label2>
+                            <label2>$INFO[Window(Home).Property(Fuse.UserDiscover.FolderPath.Name), ,]</label2>
                             <icon>special://skin/extras/icons/binoculars.png</icon>
                             <property name="mode">discover</property>
                         </item>
@@ -234,7 +234,6 @@
                             <param name="hidden_button">List_ButtonMenu_Row_HiddenButton_ERow</param>
                             <param name="hidden_button_enabled">true</param>
                             <param name="onclick_condition">!String.IsEqual(Container(601).ListItem.Property(guid),discover)</param>
-                            <onclick condition="String.IsEqual(Container(601).ListItem.Property(guid),discover)">RunPlugin(plugin://plugin.video.themoviedb.helper/?info=user_discover$INFO[Window(Home).Property(TMDbHelper.UserDiscover.Folderpath.ParamString),&amp;,])</onclick>
                             <onup>301</onup>
                             <onback condition="!Player.HasMedia">301</onback>
                             <onback condition="Player.HasMedia">SetProperty(FullscreenRefocus,SetFocus(601))</onback>
@@ -358,7 +357,7 @@
         <definition>
             <include content="$PARAM[include_widget]" condition="!Skin.HasSetting(Search.DisableDiscover)">
                 <param name="id">501</param>
-                <param name="content">$INFO[window(home).property(tmdbhelper.userdiscover.folderpath)]$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</param>
+                <param name="content">special://skin/extras/playlists/Null.xsp</param>
                 <param name="include">$PARAM[include]</param>
                 <param name="target">videos</param>
                 <param name="visible">String.IsEqual(Container(601).ListItem.Property(guid),discover)</param>
@@ -410,32 +409,22 @@
     </include>
 
     <variable name="Search_Path_Extended_Discover_550">
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),moviedecades)">plugin://plugin.video.themoviedb.helper?info=discover&amp;tmdb_type=movie&amp;primary_release_date.gte=1980-01-01&amp;primary_release_date.lte=1989-12-31&amp;cacheonly=true&amp;nextpage=false$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</value>
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),tvdecades)">plugin://plugin.video.themoviedb.helper?info=discover&amp;tmdb_type=tv&amp;first_air_date.gte=1980-01-01&amp;first_air_date.lte=1989-12-31&amp;cacheonly=true&amp;nextpage=false$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</value>
         <value condition="[String.IsEqual(Container(3003).ListItem.Property(mode),moviekeywords) | String.IsEqual(Container(3003).ListItem.Property(mode),mdblists)]">$INFO[Container(3004).ListItemAbsolute(0).FolderPath]</value>
         <value>-</value>
     </variable>
     <variable name="Search_Path_Extended_Discover_551">
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),moviedecades)">plugin://plugin.video.themoviedb.helper?info=discover&amp;tmdb_type=movie&amp;primary_release_date.gte=1990-01-01&amp;primary_release_date.lte=1999-12-31&amp;cacheonly=true&amp;nextpage=false$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</value>
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),tvdecades)">plugin://plugin.video.themoviedb.helper?info=discover&amp;tmdb_type=tv&amp;first_air_date.gte=1990-01-01&amp;first_air_date.lte=1999-12-31&amp;cacheonly=true&amp;nextpage=false$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</value>
         <value condition="[String.IsEqual(Container(3003).ListItem.Property(mode),moviekeywords) | String.IsEqual(Container(3003).ListItem.Property(mode),mdblists)]">$INFO[Container(3004).ListItemAbsolute(1).FolderPath]</value>
         <value>-</value>
     </variable>
     <variable name="Search_Path_Extended_Discover_552">
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),moviedecades)">plugin://plugin.video.themoviedb.helper?info=discover&amp;tmdb_type=movie&amp;primary_release_date.gte=2000-01-01&amp;primary_release_date.lte=2009-12-31&amp;cacheonly=true&amp;nextpage=false$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</value>
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),tvdecades)">plugin://plugin.video.themoviedb.helper?info=discover&amp;tmdb_type=tv&amp;first_air_date.gte=2000-01-01&amp;first_air_date.lte=2009-12-31&amp;cacheonly=true&amp;nextpage=false$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</value>
         <value condition="[String.IsEqual(Container(3003).ListItem.Property(mode),moviekeywords) | String.IsEqual(Container(3003).ListItem.Property(mode),mdblists)]">$INFO[Container(3004).ListItemAbsolute(2).FolderPath]</value>
         <value>-</value>
     </variable>
     <variable name="Search_Path_Extended_Discover_553">
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),moviedecades)">plugin://plugin.video.themoviedb.helper?info=discover&amp;tmdb_type=movie&amp;primary_release_date.gte=2010-01-01&amp;primary_release_date.lte=2019-12-31&amp;cacheonly=true&amp;nextpage=false$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</value>
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),tvdecades)">plugin://plugin.video.themoviedb.helper?info=discover&amp;tmdb_type=tv&amp;first_air_date.gte=2010-01-01&amp;first_air_date.lte=2019-12-31&amp;cacheonly=true&amp;nextpage=false$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</value>
         <value condition="[String.IsEqual(Container(3003).ListItem.Property(mode),moviekeywords) | String.IsEqual(Container(3003).ListItem.Property(mode),mdblists)]">$INFO[Container(3004).ListItemAbsolute(3).FolderPath]</value>
         <value>-</value>
     </variable>
     <variable name="Search_Path_Extended_Discover_554">
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),moviedecades)">plugin://plugin.video.themoviedb.helper?info=discover&amp;tmdb_type=movie&amp;primary_release_date.gte=2020-01-01&amp;primary_release_date.lte=2029-12-31&amp;cacheonly=true&amp;nextpage=false$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</value>
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),tvdecades)">plugin://plugin.video.themoviedb.helper?info=discover&amp;tmdb_type=tv&amp;first_air_date.gte=2020-01-01&amp;first_air_date.lte=2029-12-31&amp;cacheonly=true&amp;nextpage=false$INFO[Control.GetLabel(3000).index(1),&amp;with_text_query=,]</value>
         <value condition="[String.IsEqual(Container(3003).ListItem.Property(mode),moviekeywords) | String.IsEqual(Container(3003).ListItem.Property(mode),mdblists)]">$INFO[Container(3004).ListItemAbsolute(4).FolderPath]</value>
         <value>-</value>
     </variable>
@@ -479,7 +468,6 @@
             <property name="widget_id">$NUMBER[501]</property>
             <property name="show_artwork">true</property>
             <property name="widget_numitems">$INFO[Container(501).NumItems]</property>
-            <onclick>RunPlugin(plugin://plugin.video.themoviedb.helper/?info=user_discover$INFO[Window(Home).Property(TMDbHelper.UserDiscover.Folderpath.ParamString),&amp;,])</onclick>
             <visible>String.IsEqual(Container(3003).ListItem.Property(mode),discover)</visible>
             <visible>!Container(501).IsUpdating</visible>
         </item>
@@ -490,7 +478,6 @@
             <property name="widget_id">$NUMBER[501]</property>
             <property name="show_artwork">true</property>
             <property name="widget_numitems">$INFO[Container(501).NumItems]</property>
-            <onclick>RunPlugin(plugin://plugin.video.themoviedb.helper/?info=user_discover$INFO[Window(Home).Property(TMDbHelper.UserDiscover.Folderpath.ParamString),&amp;,])</onclick>
             <visible>String.IsEqual(Container(3003).ListItem.Property(mode),discover)</visible>
             <visible>Container(501).IsUpdating</visible>
         </item>
@@ -571,8 +558,6 @@
     </include>
 
     <variable name="Search_Bar_Disc_KeywordPath">
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),moviekeywords)">$INFO[Container(310).ListItem.Label,plugin://plugin.video.themoviedb.helper?info=search&amp;tmdb_type=keyword&amp;nextpage=false&amp;cacheonly=true&amp;query=,]</value>
-        <value condition="String.IsEqual(Container(3003).ListItem.Property(mode),mdblists)">$INFO[Container(310).ListItem.Label,plugin://plugin.video.themoviedb.helper?info=mdblist_searchlists&amp;tmdb_type=both&amp;nextpage=false&amp;query=,]</value>
         <value>-</value>
     </variable>
 

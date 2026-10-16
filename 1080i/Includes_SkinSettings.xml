@@ -785,18 +785,6 @@
             <onclick>Skin.ToggleSetting(PVR.DisableGenreColours)</onclick>
             <selected>!Skin.HasSetting(PVR.DisableGenreColours)</selected>
         </include>
-        <include content="Settings_Button" description="TMDbHelper for PVR">
-            <param name="dialog">false</param>
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">022</param>
-            <param name="control">radiobutton</param>
-            <param name="slevel">2</param>
-            <label>PVR $LOCALIZE[31435]</label>
-            <onclick>Skin.ToggleSetting(TMDbHelper.DisablePVR)</onclick>
-            <selected>!Skin.HasSetting(TMDbHelper.DisablePVR)</selected>
-        </include>
-
         <include content="Settings_Label" description="Seasonal Themes">
             <param name="window">skinsettings</param>
             <param name="baseid">$PARAM[baseid]</param>
@@ -931,19 +919,6 @@
             <param name="baseid">$PARAM[baseid]</param>
             <param name="id">008</param>
             <label>$LOCALIZE[39024]</label>
-        </include>
-        <include content="Settings_Button">
-            <param name="dialog">false</param>
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">009</param>
-            <param name="control">radiobutton</param>
-            <label>plugin.video.themoviedb.helper</label>
-            <label2>$INFO[System.AddonVersion(plugin.video.themoviedb.helper),v,       ]</label2>
-            <onclick condition="!System.HasAddon(plugin.video.themoviedb.helper)">InstallAddon(plugin.video.themoviedb.helper)</onclick>
-            <onclick condition="!System.AddonIsEnabled(plugin.video.themoviedb.helper) + System.HasAddon(plugin.video.themoviedb.helper)">EnableAddon(plugin.video.themoviedb.helper)</onclick>
-            <onclick condition="System.AddonIsEnabled(plugin.video.themoviedb.helper) + System.HasAddon(plugin.video.themoviedb.helper)">Addon.OpenSettings(plugin.video.themoviedb.helper)</onclick>
-            <selected>System.AddonIsEnabled(plugin.video.themoviedb.helper) + System.HasAddon(plugin.video.themoviedb.helper)</selected>
         </include>
 
         <include content="Settings_Button">
