@@ -702,6 +702,16 @@ class FnClient(object):
     def set_watched(self, item_guid):
         return self.call('post', '/v/api/v1/item/watched', {'item_guid': item_guid})
 
+    def keep_watching_list(self):
+        """继续观看列表（服务端维护的顺序，最近在看的排在最前）。
+
+        接口返回有进度且未看完的媒体项，按最近观看时间降序排列。
+        飞牛官方接口为 GET /v/api/v1/play/list。
+        字段与 item/list 略有不同：已看位置使用 ts 而非 watched_ts。
+        """
+        return self.call('get', '/v/api/v1/play/list') or []
+
+
     def play_record(self, item_guid, media_guid, video_guid, audio_guid,
                     subtitle_guid, play_link, ts, duration):
         """回传播放进度"""

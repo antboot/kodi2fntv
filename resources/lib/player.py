@@ -339,17 +339,29 @@ def play(handle, params):
     # 唯一保留的例外：UA 从未采样过（全新安装的第一次播放）仍走代理，
     # 由代理完成采样后下次起全直链。
     total = _to_int(item.get('duration'))
+    resume_ts = _to_int(play_info.get('ts'))
     url = None
-    # 直链有效期门控（分钟，可调）：115 现签发的直链 TTL 仅 35-50 分钟
-    # （真机实测 2026-09-04），原硬编码 max(2×片长, 1h) 会把所有直链拦去
-    # 代理。默认 30 分钟：低于此值视为"撑不完起播段"，交代理处理。
+    # 直链有效期门控（分钟，可调）：115 等网盘直链 TTL 通常仅 35-50 分钟。
+    # 默认 30 分钟：低于此值视为"撑不完起播段"，交代理处理。
     gate_min = _to_int(util.get_setting('directttl', '30'))
     min_valid_secs = gate_min * 60
+
+    # 长片防中途断流保护：直连 CDN 模式下 Kodi 无法中途自动换链，若剩余片长
+    # 明显超出直链寿命，播到后半段一旦 seek 即被网盘 403 闪退。
+    # 片长已知时，若直链无法撑完整场，主动交由本地代理承接（代理在 403 时能自愈重签）。
+    remaining_play = (total - resume_ts) if total > 0 else 0
+    direct_req_secs = min_valid_secs
+    if remaining_play > min_valid_secs and util.get_setting('long_video_proxy_guard', 'true') == 'true':
+        direct_req_secs = remaining_play + 300  # 需能撑完剩余片长 + 5分钟缓冲
+
     if util.get_client_ua():
         playable = None
         try:
             playable = client.resolve_playable_url(
-                media_guid, min_valid_secs=min_valid_secs)
+                media_guid, min_valid_secs=direct_req_secs)
+            if not playable and direct_req_secs > min_valid_secs:
+                util.log('长片剩余时长 %d 分钟超出直链单次有效期，主动走本地代理保障中途换链自愈'
+                         % (remaining_play / 60), xbmc.LOGINFO)
         except Exception as e:
             util.log('直链解析失败，回退代理: %s' % e, xbmc.LOGWARNING)
         if playable and file_name.lower().endswith('.iso') \
@@ -502,6 +514,8 @@ def play(handle, params):
         'subtitle_guid': play_info.get('subtitle_guid', ''),
         'play_link': play_link,
         'ts0': seek_to,          # 起播位置基线（从头开始=0），进度回传的兜底
+        'ts': seek_to,           # 最后已知的播放位置（service 每次回传后更新，
+                                 # 崩溃/强退后补报取它，取不到才退回 ts0）
         'seek_to': seek_to,      # service.onAVStarted 的自动 seek 目标（0=不 seek）
         'duration': total,
         'stream_url': url,

@@ -17,10 +17,10 @@ from concurrent.futures import ThreadPoolExecutor
 
 import xbmc
 
-from resources.lib import util
+from resources.lib import util, store
 
 DETAIL_CACHE_FILE_LEGACY = 'item_detail_cache.json'   # 0.4.1 及以前的单文件缓存
-DETAIL_DIR = 'detail'    # 分片存储：detail/<guid>.json（每条目独立文件）
+DETAIL_DIR = 'detail'    # 旧版分片目录（用于自动平滑迁移至 SQLite）
 GENRE_CACHE_FILE = 'genre_cache.json'
 DETAIL_TTL = 12 * 3600   # 详情缓存 12 小时
 GENRE_TTL = 24 * 3600    # 流派映射缓存 24 小时
@@ -32,61 +32,21 @@ _DETAIL_KEYS = ('original_title', 'release_date', 'air_date', 'genres',
                 'production_countries', 'backdrops', 'logos', 'posters')
 _PERSON_KEYS = ('name', 'role', 'job', 'order', 'profile_path')
 
-_detail_memo = {}        # guid -> ((mtime_ns, size), entry)：读路径进程内缓存
-_legacy_dropped = False
-# 旧版"单文件整读改写"（item_detail_cache.json）在多线程/多进程下互相
-# 覆盖丢条目（0.4.1 真机实测：1323 条队列跑完只剩 775 条且无报错），
-# 0.4.2 起改为每条目一个分片文件，写冲突只剩"同 guid 互盖"（无害）。
-
 
 def _load(name):
-    """读 JSON 缓存文件（进程内带 mtime+size 校验的缓存，见 util.load_json_cached）
-
-    列表渲染对每个条目都会调 get_cached_detail / genre_names——若每次都
-    全量读+解析 item_detail_cache.json（4.4MB），50 个条目实测 2.1s+；
-    进程内缓存后仅首次解析（实测 38ms），后续全部命中内存。
-    写方（本进程 store_detail 或 service 进程预热）落盘会更新 mtime，
-    下次读取自动重载，不惧数据过期。"""
+    """读 JSON 缓存文件（进程内带 mtime+size 校验的缓存）"""
     data = util.load_json_cached(name)
     return data if isinstance(data, dict) else {}
 
 
-def _detail_path(guid):
-    return os.path.join(util.addon_data_dir(), DETAIL_DIR, guid + '.json')
 
-
-def get_cached_detail(guid, ignore_ttl=False):
-    """读取详情分片 {ts, detail, persons}（进程内按 mtime 校验缓存）。
-
-    ignore_ttl=True 供媒体库同步等离线场景使用：流派/演员是静态元数据，
-    不应因分片超过 12h 而被视为缺失（否则生成的 NFO 永远没有流派演员）。"""
-    if not guid:
-        return None
-    path = _detail_path(guid)
-    try:
-        st = os.stat(path)
-    except OSError:
-        return None
-    key = (st.st_mtime_ns, st.st_size)
-    hit = _detail_memo.get(guid)
-    if hit and hit[0] == key:
-        return hit[1]
-    entry = util.load_json(os.path.relpath(path, util.addon_data_dir()))
-    if not isinstance(entry, dict):
-        return None
-    if not ignore_ttl and time.time() - entry.get('ts', 0) >= DETAIL_TTL:
-        return None
-    _detail_memo[guid] = (key, entry)
-    return entry
+def get_cached_detail(guid):
+    """读取详情分片 {ts, detail, persons}（走 SQLite WAL + 内存双层缓存）"""
+    return store.get_detail(guid)
 
 
 def store_detail(guid, detail, persons):
-    """落盘单条详情分片（每条目独立文件，多线程/多进程写互不覆盖）。
-
-    瘦身：persons 只留渲染消费的字段（演员按 order 取前 40 + 全部导演/
-    编剧，丢弃 biography 等大字段），详情只留渲染合并用的键。
-    """
-    global _legacy_dropped
+    """落盘单条详情分片至 SQLite 库（WAL 模式天然支持多进程并发读写）"""
     slim_detail = {}
     for k in _DETAIL_KEYS:
         v = (detail or {}).get(k)
@@ -101,20 +61,8 @@ def store_detail(guid, detail, persons):
     actors = [p for p in slim_persons if p['job'] == 'Actor'][:40]
     crew = [p for p in slim_persons if p['job'] != 'Actor']
 
-    if not _legacy_dropped:
-        _legacy_dropped = True
-        try:
-            legacy = util.data_file(DETAIL_CACHE_FILE_LEGACY)
-            if os.path.isfile(legacy):
-                os.remove(legacy)   # 旧单文件缓存（竞态已弃用），直接回收
-        except OSError:
-            pass
-    try:
-        os.makedirs(os.path.join(util.addon_data_dir(), DETAIL_DIR), exist_ok=True)
-    except OSError:
-        pass
-    util.save_json(os.path.join(DETAIL_DIR, guid + '.json'),
-                   {'ts': time.time(), 'detail': slim_detail, 'persons': actors + crew})
+    store.store_detail(guid, slim_detail, actors + crew)
+
 
 
 def fetch_detail(client, guid):
@@ -352,24 +300,35 @@ def build_genre_index(client=None, force=False):
         return 0
     import glob as _glob
     index = {}
-    for p in _glob.glob(os.path.join(util.addon_data_dir(), DETAIL_DIR, '*.json')):
-        guid = os.path.splitext(os.path.basename(p))[0]
-        try:
-            entry = util.load_json(os.path.relpath(p, util.addon_data_dir()))
-        except Exception:
-            continue
-        if not isinstance(entry, dict):
-            continue
-        gids = (entry.get('detail') or {}).get('genres') or []
-        names = []
-        for gid in gids:
-            raw = mapping.get(str(gid))
-            if raw:
-                names.append(_GENRE_CN.get(raw, raw))
-        for name in names:
-            index.setdefault(name, []).append(guid)
+    # 优先走 SQLite 批量迭代（零碎文件 I/O，微秒级读取）
+    db_items = list(store.all_details())
+    if db_items:
+        for guid, detail in db_items:
+            gids = (detail or {}).get('genres') or []
+            for gid in gids:
+                raw = mapping.get(str(gid))
+                if raw:
+                    name = _GENRE_CN.get(raw, raw)
+                    index.setdefault(name, []).append(guid)
+    else:
+        # 兼容旧版未迁移的 json 分片
+        for p in _glob.glob(os.path.join(util.addon_data_dir(), DETAIL_DIR, '*.json')):
+            guid = os.path.splitext(os.path.basename(p))[0]
+            try:
+                entry = util.load_json(os.path.relpath(p, util.addon_data_dir()))
+            except Exception:
+                continue
+            if not isinstance(entry, dict):
+                continue
+            gids = (entry.get('detail') or {}).get('genres') or []
+            for gid in gids:
+                raw = mapping.get(str(gid))
+                if raw:
+                    name = _GENRE_CN.get(raw, raw)
+                    index.setdefault(name, []).append(guid)
     util.save_json(GENRE_INDEX_FILE, {'ts': time.time(), 'genres': index})
     return len(index)
+
 
 
 def _person_order(p):

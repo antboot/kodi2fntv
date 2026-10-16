@@ -275,10 +275,9 @@ def get_client():
     """取当前客户端；设置里的令牌/服务器变化时同步到当前对象。
 
     兜底（真机 0.7.x 日志实证的播放全败根因）：代理可能由 service 进程
-    先拉起（libsync 图片下载/演员头像回退 URL 等路径会调 image_url），
-    而 set_client 只在插件 invoker 进程调用——service 的代理拿不到客户
-    端，/stream 与 /image 一律 500 'client not ready' 且零日志，重新登
-    录也无效。未设置时按设置构建：ensure_client 是进程内单例，service
+    先拉起，而 set_client 只在插件 invoker 进程调用——service 的代理拿不
+    到客户端，/stream 与 /image 一律 500 'client not ready' 且零日志，重
+    新登录也无效。未设置时按设置构建：ensure_client 是进程内单例，service
     各常驻循环的 API 调用会自动重登并把新令牌写回设置，此处同步即可。"""
     global _client
     if _client is None:

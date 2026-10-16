@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-"""后台服务：监听播放结束，向 NAS 回传播放进度
+"""后台服务：把 Kodi 侧观看记录回传给 NAS（进度 + 已看），并常驻预热海报墙缓存
 
-插件在开始播放时写入 pending.json（含各 guid 与流地址），
-本服务常驻运行，确认播放的是本插件的代理流后，在停止/播完时
-调用 /v/api/v1/play/record 回传进度，实现多端断点续播。
+插件在开始播放时写入 pending.json（含各 guid 与流地址），本服务常驻运行，
+确认播放的是本插件的代理流后：播放中每 60 秒 POST /v/api/v1/play/record
+回传进度（崩溃/强退最多丢一个间隔），停止或播完时回传最终位置，接近播完
+另 POST /v/api/v1/item/watched 标记已看——飞牛 App/网页据此续播，跨端一致。
+回传失败保留 pending 重试，Kodi 退出前先落一次位置。
 """
 import os
 import sys
@@ -22,6 +24,16 @@ from resources.lib.player import PENDING_FILE
 
 MIN_PROGRESS_SECONDS = 5  # 播放不足 5 秒不上报
 RESUME_SEEK_THRESHOLD = 10  # 续播点不足 10s 不自动 seek（接近开头，直接从 0 看）
+PROGRESS_REPORT_INTERVAL = 60   # 播放中周期回传间隔：崩溃/断电最多丢一个间隔
+REPORT_RETRY_S = 30             # 最终回传失败后的重试间隔
+REPORT_RETRY_MAX = 3            # 重试次数上限，超过则保留 pending 等下次启动补报
+
+
+def _to_int(value):
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        return 0
 
 
 def _norm_stream_url(url):
@@ -41,6 +53,8 @@ class FnPlayer(xbmc.Player):
         self.last_time = 0         # 播放期间周期缓存的进度（停止后 getTime 会抛异常）
         self.last_stop_ts = 0      # 上次播放停止的时间戳（后台任务避开停播窗口）
         self._resume_seeked = False  # 本曲是否已自动续播 seek（避免重复）
+        self.retry = None          # [pending, position, attempts]：最终回传失败后待重试
+        self.retry_at = 0
 
     def _file_url(self):
         try:
@@ -113,37 +127,20 @@ class FnPlayer(xbmc.Player):
         self.last_stop_ts = time.time()
         self._report()
 
-    def _report(self):
-        if not (self.pending and self.ours_playing):
-            return
-        pending, self.pending, self.ours_playing = self.pending, None, False
-
-        # 停止/结束后 Kodi 已不在播放，getTime() 会抛异常（且 Kodi 会先写一条
-        # error 日志即使被 except 接住）——只在仍在播放时才调 getTime，
-        # 否则用主循环周期缓存的 last_time，最后才回退起播位置 ts0。
-        position = 0
-        try:
-            if self.isPlaying():
-                position = self.getTime()
-        except Exception:
-            position = 0
-        if position <= 0:
-            position = self.last_time or pending.get('ts0', 0)
-
-        if position < MIN_PROGRESS_SECONDS:
-            util.delete_file(PENDING_FILE)
-            util.debug('播放时间过短（%ds），不上报' % position)
-            return
-
-        duration = pending.get('duration') or 0
-        if duration and position > duration:
-            position = duration
-
+    def _client(self, pending):
+        """按 pending 里的 base/token 造一个客户端（播放现场的凭证快照）"""
         from resources.lib.fnapi.client import FnClient
         client = FnClient(pending.get('base', ''), verify=pending.get('verify', False))
         client.set_credentials(token=pending.get('token', ''))
+        return client
+
+    def _send(self, pending, position):
+        """回传一次进度；成功则把位置写回 pending 落盘（崩溃补报据此取真值）。"""
+        duration = pending.get('duration') or 0
+        if duration and position > duration:
+            position = duration
         try:
-            client.play_record(
+            self._client(pending).play_record(
                 item_guid=pending.get('item_guid', ''),
                 media_guid=pending.get('media_guid', ''),
                 video_guid=pending.get('video_guid', ''),
@@ -153,17 +150,99 @@ class FnPlayer(xbmc.Player):
                 ts=position,
                 duration=duration,
             )
-            util.log('进度已回传: %ds / %ds' % (position, duration))
-            # 播放结束可能改变服务端 watched 状态，清列表 TTL 缓存避免滞后
-            client.invalidate_item_list_cache()
-            # 接近播完（≥90%）视为已看，原地修正整库描述符（重建整库太贵）
-            if duration and position >= duration * 0.9:
-                from resources.lib import desc
-                desc.patch_watched(pending.get('item_guid', ''))
         except Exception as e:
             util.log('进度回传失败: %s' % e, xbmc.LOGWARNING)
-        finally:
+            return False
+        util.log('进度已回传: %ds / %ds' % (position, duration))
+        pending['ts'] = position
+        util.save_json(PENDING_FILE, pending)
+        return True
+
+    def _finish(self, pending, position):
+        """回传成功后的收尾：本地缓存对齐服务端 + 看完时同步服务端已看"""
+        duration = pending.get('duration') or 0
+        guid = pending.get('item_guid', '')
+        from resources.lib import desc
+        desc.note_watch(guid)
+        desc.patch_progress(guid, position)
+        # 播放结束可能改变服务端 watched 状态，清列表 TTL 缓存避免滞后。
+        # 必须打在 service 常驻单例上：此前打在临时 client 上，只清了那个
+        # 对象自己的内存缓存，常驻实例最长 300s 仍供旧列表
+        util.ensure_client().invalidate_item_list_cache()
+        if duration and position >= duration * 0.9:
+            # 接近播完视为已看：本地原地修正（整库重建太贵），并把已看状态
+            # 写回服务端——否则飞牛 App/网页仍显示"观看中"，跨端不一致
+            desc.patch_watched(guid, 1)
+            try:
+                self._client(pending).set_watched(guid)
+                util.log('服务端已标记为观看: %s' % guid[:12])
+            except Exception as e:
+                util.log('服务端标记已看失败: %s' % e, xbmc.LOGWARNING)
+
+    def maybe_report(self, position):
+        """播放中周期回传（主循环每 tick 调用）。
+
+        0.7.17 及之前只在停止/播完时上报一次：看一半强退、断电、杀进程，
+        整段进度全丢，服务端断点永远停在上一场。"""
+        if not (self.pending and self.ours_playing) or position <= 0:
+            return
+        if position - _to_int(self.pending.get('ts')) < PROGRESS_REPORT_INTERVAL:
+            return
+        self._send(self.pending, position)
+
+    def _report(self, position=None):
+        """停止/播完时上报最终位置并收尾（播放中的上报走 maybe_report）"""
+        if not (self.pending and self.ours_playing):
+            return
+        pending = self.pending
+        self.pending, self.ours_playing = None, False
+
+        # 停止/结束后 Kodi 已不在播放，getTime() 会抛异常（且 Kodi 会先写一条
+        # error 日志即使被 except 接住）——只在仍在播放时才调 getTime，
+        # 否则用主循环周期缓存的 last_time，最后才回退已上报位置/起播位置。
+        if position is None:
+            try:
+                if self.isPlaying():
+                    position = self.getTime()
+            except Exception:
+                position = 0
+            position = (position or self.last_time
+                        or _to_int(pending.get('ts')) or _to_int(pending.get('ts0')))
+
+        if position < MIN_PROGRESS_SECONDS:
             util.delete_file(PENDING_FILE)
+            util.debug('播放时间过短（%ds），不上报' % position)
+            return
+
+        if not self._send(pending, position):
+            # 失败不再像 0.7.17 那样"记条 WARNING 就 finally 删 pending"：
+            # 位置留在 retry 槽里由主循环重试，文件也写入本次位置（Kodi 重启
+            # 后的补报据此取真值，不必等下一次周期回传）
+            pending['ts'] = position
+            util.save_json(PENDING_FILE, pending)
+            self.retry = [pending, position, 1]
+            self.retry_at = time.time() + REPORT_RETRY_S
+            return
+        self._finish(pending, position)
+        util.delete_file(PENDING_FILE)
+
+    def retry_report(self):
+        """主循环里的失败重试（非播放、非冷却期时推进）"""
+        if not self.retry or self.isPlaying() or time.time() < self.retry_at:
+            return
+        pending, position, attempts = self.retry
+        if self._send(pending, position):
+            self._finish(pending, position)
+            self.retry = None
+            util.delete_file(PENDING_FILE)
+            return
+        if attempts >= REPORT_RETRY_MAX:
+            util.log('进度回传重试 %d 次仍失败，暂停（pending 保留，重启后再补报）'
+                     % attempts, xbmc.LOGWARNING)
+            self.retry = None
+            return
+        self.retry[2] = attempts + 1
+        self.retry_at = time.time() + REPORT_RETRY_S
 
 
 def _enrich_loop(monitor):
@@ -194,7 +273,7 @@ def _enrich_loop(monitor):
 
 
 PLAY_STOP_COOLDOWN = 150  # 播放刚停的冷却：让 Kodi 先写观看状态/刷新列表，不抢 I/O
-HEAVY_IDLE_S = 300        # 重活（版本扫描/分类索引/媒体库同步）需距上次播放停止 ≥ 5 分钟
+HEAVY_IDLE_S = 300        # 重活（版本扫描/分类索引）需距上次播放停止 ≥ 5 分钟
 
 
 def _prewarm_loop(monitor, player):
@@ -203,13 +282,13 @@ def _prewarm_loop(monitor, player):
     海报墙"整库直出"（browser.filter_list）依赖 desc 范围缓存：进列表命中
     即零网络零解析，只剩 ListItem 构造。开机后台逐库构建（一次 walk 实测
     ~2s），用户进插件时通常已命中——一面墙即整库、无翻页项、零等待。
-    播放中让路；desc.prewarm_one 每次只建一个范围，天然错峰不打突刺。
+    播放中让路；desc.prewarm_scopes 每轮连建最多 3 个范围（0.7.18：此前
+    每轮只建 1 个，配 30 分钟 TTL 让新片最坏要等半小时才出现）。
     播放结束后进入冷却（PLAY_STOP_COOLDOWN）：此前的实现里播放期间
     让路的全部积压任务会在停播瞬间集中释放，恰好压住 Kodi 退回列表时的
-    观看状态写入与容器刷新；版本扫描/媒体库同步等重活另要求距停播
-    ≥ HEAVY_IDLE_S。
+    观看状态写入与容器刷新；版本扫描等重活另要求距停播 ≥ HEAVY_IDLE_S。
     """
-    from resources.lib import desc, meta, libsync
+    from resources.lib import desc, meta
     was_playing = False
     cooldown_until = 0
     while not monitor.waitForAbort(20):
@@ -230,26 +309,9 @@ def _prewarm_loop(monitor, player):
                 client.on_token_refresh = lambda token: util.set_setting('token', token)
             if not client.token:
                 continue   # 未配置/未登录，跳过（首次浏览登录后 token 会落盘）
-            # 立即同步请求（首次配置后自动 / 状态行手动点击）：绝对优先，
-            # 先于整库预热/版本扫描/停播 5 分钟重活门控（用户点名的）。
-            # 播放中与停播 150s 冷却让路已在上方保证，此处无需再等。
-            # 此前排在 prewarm_one 之后：范围缓存集中过期（30 分钟 TTL）
-            # 时一轮 20s 只重建一个范围就 continue，排队的同步要饿等全部
-            # 范围预热完（真机实测 12:05 排队、12:10 仍在逐范围预热）。
-            # 'empty'（描述符全未就绪）时重新排队并落到下方预热逐步补齐，
-            # 不丢请求也不空转死循环。
-            if libsync.pop_sync_request():
-                util.log('收到同步请求，立即执行媒体库同步')
-                status = libsync.sync_library(client, force=True)
-                if status == 'empty':
-                    libsync.request_sync()
-                else:
-                    if status not in ('fresh', 'disabled'):
-                        util.log('媒体库同步: %s' % status)
-                    continue
-            done = desc.prewarm_one(client)
+            done = desc.prewarm_scopes(client)
             if done:
-                util.log('整库预热完成: %s' % done)
+                util.log('整库预热完成: %s' % '、'.join(done))
                 continue
             if time.time() - player.last_stop_ts < HEAVY_IDLE_S:
                 continue   # 重活等空闲窗口（last_stop_ts=0 的开机场景不受限）
@@ -263,12 +325,12 @@ def _prewarm_loop(monitor, player):
             if built:
                 util.log('分类索引已刷新: %d 个流派' % built)
                 continue
-            # 原生媒体库同步（strm+nfo → Kodi 原生库，12h TTL）
-            status = libsync.sync_library(client)
-            if status not in ('fresh', 'disabled'):
-                util.log('媒体库同步: %s' % status)
-            else:
-                monitor.waitForAbort(240)   # 全部新鲜，降频（~4 分钟查一次）
+            # 全部后台任务已完成，降频轮询等待新工作。5 分钟 TTL 下这个长睡
+            # 直接决定新入库媒体最晚何时出现，从 240s 压到 60s；分片睡是为了
+            # 用户刚看过过期墙（request_refresh 排队）时不必等满一整轮
+            for _ in range(6):
+                if monitor.waitForAbort(10) or desc.has_refresh_requests():
+                    break
         except Exception as e:
             util.log('整库预热异常: %s' % e, xbmc.LOGDEBUG)
             monitor.waitForAbort(60)
@@ -284,36 +346,22 @@ def run():
     # 常驻整库预热（构建海报墙描述符缓存）——同样独立线程错峰执行
     threading.Thread(target=_prewarm_loop, args=(monitor, player), daemon=True).start()
 
-    # 启动时若发现遗留的 pending（上次 Kodi 被强制退出），尝试以上次记录的位置上报
+    # 启动时若发现遗留的 pending（上次 Kodi 被强退/断电），补报最后一次已知位置。
+    # 取 ts（周期回传落盘的真实位置）而非 ts0（起播位置）：0.7.17 用 ts0，
+    # 于是"从头开始"那场即使看了两小时也补成 0，被下面的最短时长判据静默丢弃
     stale = util.load_json(PENDING_FILE)
     if stale:
-        util.log('发现未上报的播放记录，尝试补报（ts=%s）' % stale.get('ts0', 0))
-        player.pending = stale
-        player.ours_playing = False  # 未确认播放，直接以上次位置补报
-        position = stale.get('ts0', 0)
-        if position >= MIN_PROGRESS_SECONDS:
-            from resources.lib.fnapi.client import FnClient
-            client = FnClient(stale.get('base', ''), verify=stale.get('verify', False))
-            client.set_credentials(token=stale.get('token', ''))
-            try:
-                client.play_record(
-                    item_guid=stale.get('item_guid', ''),
-                    media_guid=stale.get('media_guid', ''),
-                    video_guid=stale.get('video_guid', ''),
-                    audio_guid=stale.get('audio_guid', ''),
-                    subtitle_guid=stale.get('subtitle_guid', ''),
-                    play_link=stale.get('play_link', ''),
-                    ts=position,
-                    duration=stale.get('duration', 0),
-                )
-                util.log('补报完成')
-                client.invalidate_item_list_cache()
-            except Exception as e:
-                util.log('补报失败: %s' % e, xbmc.LOGWARNING)
-        util.delete_file(PENDING_FILE)
-        player.pending = None
+        position = _to_int(stale.get('ts')) or _to_int(stale.get('ts0'))
+        util.log('发现未上报的播放记录，尝试补报（ts=%ds）' % position)
+        if position < MIN_PROGRESS_SECONDS:
+            util.delete_file(PENDING_FILE)
+        elif player._send(stale, position):
+            player._finish(stale, position)
+            util.delete_file(PENDING_FILE)
+        else:
+            util.log('补报未成功，保留 pending 待下次启动重试', xbmc.LOGWARNING)
 
-    # 主循环：播放开始时读取 pending.json；播放中周期缓存进度
+    # 主循环：播放中缓存进度并周期回传；空闲时推进失败重试
     while not monitor.waitForAbort(5):
         if player.isPlaying():
             # 周期缓存进度：停止后 getTime() 不可用，_report 用此缓存上报真实位置
@@ -333,6 +381,15 @@ def run():
                     if _norm_stream_url(player._file_url()) == _norm_stream_url(pending.get('stream_url')):
                         player.ours_playing = True
                         util.debug('已关联播放: %s' % pending.get('stream_url'))
+            player.maybe_report(player.last_time)
+        else:
+            player.retry_report()
+
+    # Kodi 正在退出：还在播的先把当前位置落一次，进程一停这段就再没人回传
+    if player.pending and player.ours_playing:
+        util.log('Kodi 退出，回传最后播放位置')
+        player._report(position=player.last_time
+                       or _to_int(player.pending.get('ts')))
 
 
 if __name__ == '__main__':

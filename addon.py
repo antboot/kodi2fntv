@@ -8,8 +8,10 @@
   ?action=source&guid=xxx                              弹窗选择版本后播放
   ?action=watched&guid=xxx                             标记为已观看
   ?action=manual                                       手动输入 GUID 浏览
+  ?action=recent                                       最近添加
+  ?action=continue                                     继续观看（有进度未看完）
+  ?action=refresh[&mdb=xxx&title=yyy]                  立即重拉范围（不带参数=全部）
   ?action=relogin                                      重新登录
-  ?action=sync                                         请求立即媒体库同步
 """
 import sys
 from urllib.parse import parse_qs
@@ -46,8 +48,6 @@ def router():
         player.mark_watched(params)
     elif action == 'relogin':
         player.relogin()
-    elif action == 'sync':
-        browser.sync_action(handle, params)
     elif action == 'filter':
         browser.filter_list(handle, params)
     elif action == 'tv':
@@ -60,12 +60,16 @@ def router():
         browser.genres_list(handle, params)
     elif action == 'recent':
         browser.recent(handle, params)
+    elif action == 'continue':
+        browser.continue_watch(handle, params)
     elif action == 'search':
         browser.search(handle, params)
     elif action == 'genre':
         browser.genre_items(handle, params)
     elif action == 'manual':
         browser.manual_guid(handle)
+    elif action == 'refresh':
+        browser.refresh(handle, params)
     else:
         browser.root(handle)
 

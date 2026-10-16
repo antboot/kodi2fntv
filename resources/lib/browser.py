@@ -16,7 +16,7 @@
   Season → episode/list/{season_guid} 返回集
   其他   → item/list(parent_guid=xxx) fv_ 文件夹视图兜底
 """
-from urllib.parse import urlencode, urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse
 
 import time
 
@@ -110,6 +110,15 @@ def render_item(client, d, versions=None):
 
     util.apply_video_info(li, infos)
 
+    # 观看进度 → Kodi 进度条与原生"续播/从头开始"框（CFileItem 按 resumetime
+    # 属性判可续播，用户选续播时插件以 resume=true 被调用，player 已支持）
+    resume_ts = _to_int(d.get('resume_ts'))
+    total = _to_int((d.get('infos') or {}).get('duration'))
+    if resume_ts and total and resume_ts < total * 0.95:
+        li.setProperty('resumetime', str(resume_ts))
+        li.setProperty('totaltime', '%d:%02d:%02d' % (
+            total // 3600, (total // 60) % 60, total % 60))
+
     if not d.get('playable'):
         art.setdefault('thumb', 'DefaultFolder.png')
         art.setdefault('icon', 'DefaultFolder.png')
@@ -151,10 +160,32 @@ def _prepare():
     return client
 
 
+def _with_dv(url, stamp):
+    """目录 URL 补 dv=<数据版本戳>；已有 dv 则覆盖为最新。
+
+    Kodi 的目录缓存（folderMap）按 URL 命中，命中即插件根本不被调用，
+    所以数据一变 URL 必须变。此前只有根菜单几个入口手工带了 dv，字母快跳、
+    翻页、季/集层级、browse 兜底等全部漏掉——用户在这些页面看到的
+    是整个会话期的快照（0.7.18 审计结论，"数据总是旧的"第二主因）。
+    统一在 _end 出口注入，新增视图不可能再漏。"""
+    if not url or not url.startswith('plugin://') or not stamp:
+        return url
+    base, sep, query = url.partition('?')
+    if not sep:
+        return url
+    params = dict(parse_qsl(query, keep_blank_values=True))
+    params['dv'] = stamp
+    return '%s?%s' % (base, urlencode(params))
+
+
 def _end(handle, items, content='videos', succeeded=True, title=None):
     xbmcplugin.setContent(handle, content)
     if title:
         xbmcplugin.setPluginCategory(handle, title)
+    stamp = desc.data_stamp()
+    items = [(_with_dv(url, stamp), li, folder)
+             if folder and url and url.startswith('plugin://') else (url, li, folder)
+             for url, li, folder in items]
     xbmcplugin.addDirectoryItems(handle, items, totalItems=len(items))
     xbmcplugin.endOfDirectory(handle, succeeded=succeeded, updateListing=False)
 
@@ -203,77 +234,77 @@ def root(handle):
             art_url = _art(client, posters[0])
             if art_url:
                 li.setArt({'thumb': art_url, 'poster': art_url, 'icon': art_url})
-        items.append((
-            plugin_url({'action': 'filter', 'mdb': guid, 'title': title,
-                        'dv': desc.data_stamp()}),
-            li, True,
-        ))
+        li.addContextMenuItems([
+            ('刷新此库（跳过缓存重拉）', 'RunPlugin(%s)' % plugin_url(
+                {'action': 'refresh', 'mdb': guid, 'title': title})),
+        ])
+        # dv 由 _end 统一注入（0.7.18）：此前在循环里逐条调 data_stamp()，
+        # 十几个库就是十几次扫盘，而 stamp 在同一目录树内必然相同
+        items.append((plugin_url({'action': 'filter', 'mdb': guid, 'title': title}),
+                      li, True))
 
-    # 全局入口（dv= 数据版本戳：预热数据更新后 URL 变化，Kodi 目录缓存
-    # 随之失效，避免一直展示旧容器——信息页缺演员/版本标记的元凶）
-    stamp = desc.data_stamp()
-    items.append((plugin_url({'action': 'recent', 'dv': stamp}),
+    # 全局入口（dv= 数据版本戳由 _end 统一附加：预热数据更新后 URL 变化，
+    # Kodi 目录缓存随之失效，避免一直展示旧容器——信息页缺演员/版本标记的元凶）
+    items.append((plugin_url({'action': 'continue'}),
+                  _static_item('继续观看', 'DefaultVideoPlaylists.png'), True))
+    items.append((plugin_url({'action': 'recent'}),
                   _static_item('最近添加', 'DefaultRecentlyAddedMovies.png'), True))
-    items.append((plugin_url({'action': 'filter', 'type': 'Movie', 'title': '全部电影', 'dv': stamp}),
+    items.append((plugin_url({'action': 'filter', 'type': 'Movie', 'title': '全部电影'}),
                   _static_item('全部电影', 'DefaultMovies.png'), True))
-    items.append((plugin_url({'action': 'filter', 'type': 'TV', 'title': '全部剧集', 'dv': stamp}),
+    items.append((plugin_url({'action': 'filter', 'type': 'TV', 'title': '全部剧集'}),
                   _static_item('全部剧集', 'DefaultTVShows.png'), True))
-    items.append((plugin_url({'action': 'genres', 'dv': stamp}),
+    items.append((plugin_url({'action': 'genres'}),
                   _static_item('分类浏览', 'DefaultGenre.png'), True))
     items.append((plugin_url({'action': 'search'}),
                   _static_item('搜索', 'DefaultAddonsSearch.png'), True))
-    # 媒体库同步状态行（配置后才显示）：最近一次同步概况，点击请求
-    # 立即同步（service 常驻循环消费，插队于版本扫描等重活之前执行）。
-    # 非文件夹（动作型）条目：点击按 RunPlugin 语义执行，不发生目录
-    # 导航——此前 folder=True 且 sync_action 回根目录清单，容器 URL 被
-    # 固定成 action=sync，皮肤 ~30s 一次的容器刷新不断重放该 URL，每
-    # 次又登记一次同步请求（真机 0.7.14 当天实测：同步→扫库→刷新→
-    # 同步无限循环，每轮 force 同步还绕过全部缓存重走全部剧结构）。
-    try:
-        from resources.lib import libsync
-        sync_label, sync_stamp_ = libsync.sync_status_label()
-        if sync_label:
-            items.append((plugin_url({'action': 'sync', 'st': sync_stamp_, 'dv': stamp}),
-                          _static_item(sync_label, 'DefaultAddonService.png'), False))
-    except Exception as e:
-        util.log('同步状态行构建失败: %s' % e, xbmc.LOGWARNING)
+    items.append((plugin_url({'action': 'refresh'}),
+                  _static_item('立即刷新全部媒体库', 'DefaultFolderDownloads.png'), True))
     items.append((plugin_url({'action': 'relogin'}),
                   _static_item('重新登录（刷新令牌）', 'DefaultUser.png'), True))
 
     _end(handle, items, content='files', title='飞牛影视')
-    # 媒体库同步的扫库在 service 上下文可能不生效，进入根目录时补触发；
-    # 首次配置/切换服务器后自动登记一次立即同步请求（service 秒级消费）
-    try:
-        from resources.lib import libsync
-        libsync.run_pending_scan()
-        libsync.maybe_request_first_sync()
-    except Exception as e:
-        util.log('媒体库扫库触发失败: %s' % e, xbmc.LOGWARNING)
 
 
-def sync_action(handle, params):
-    """状态行点击：登记立即同步请求并刷新根菜单。
+# ---------------------------------------------------------------------- 手动刷新
 
-    重活由 service 常驻进程执行（invoker 内跑会拖住 Kodi 插件进程，
-    首轮 40k 图片下载可长达数十分钟）；请求在描述符就绪后插队消费。
-    收尾用 Container.Refresh（同 relogin/mark_watched 模式），绝不能在
-    本 action URL 上回目录清单——Kodi 会把容器 URL 固定成 action=sync，
-    皮肤的周期性容器刷新会无限重放它（每次重放=再登记一次同步+force
-    同步绕过全部缓存+触发扫库，真机实测每 30-50 秒一轮停不下来）。"""
-    from resources.lib import libsync
-    if util.get_setting('libsync', 'true') != 'true':
-        util.notify('媒体库同步已在设置中停用')
+def refresh(handle, params):
+    """立即重拉范围描述符（跳过 TTL），完成后刷新当前容器。
+
+    后台预热最快也要等一个 tick，而"刚入库就想看到"此前没有任何入口
+    （0.7.16 及之前该位置是媒体库同步的 action=sync，随同步模块一并移除后
+    没补回来）。带 mdb/type 只刷一个范围（库条目右键），不带则刷全部
+    （根菜单"立即刷新全部媒体库"）。
+    """
+    client = _prepare()
+    mdb = params.get('mdb', '')
+    only_type = params.get('type', '')
+    if mdb or only_type:
+        targets = [(mdb, only_type, params.get('title') or '媒体库')]
     else:
-        # 防重放护栏：请求已在队列（request_sync 自身幂等）或同步刚结束
-        # 一分钟内，不再登记——即便 action URL 被皮肤/收藏/遥控重放，
-        # 也不会再滚雪球成同步风暴
-        state = util.load_json(libsync.STATE_FILE) or {}
-        just_ran = time.time() - (state.get('ts') or 0) < 60
-        if util.load_json(libsync.SYNC_REQUEST_FILE) or just_ran:
-            util.notify('同步已排队或刚执行过，无需重复')
-        else:
-            libsync.request_sync()
-            util.notify('已请求同步，即将在后台执行（右下角显示进度）')
+        targets = desc.scopes_to_build(client)
+    if not targets:
+        util.notify('没有可刷新的媒体库')
+        return
+
+    dlg = xbmcgui.DialogProgress()
+    dlg.create('刷新媒体库')
+    ok = failed = 0
+    for i, (guid, tfilter, title) in enumerate(targets):
+        if dlg.iscanceled():
+            break
+        dlg.update(i * 100 // len(targets), '正在重拉 %s…' % (title or '媒体库'))
+        try:
+            desc.build_scope(client, mdb_guid=guid, type_filter=tfilter, title=title)
+            ok += 1
+        except Exception as e:
+            failed += 1
+            util.log('刷新失败 %s: %s' % (title, e), xbmc.LOGWARNING)
+    dlg.close()
+    # 季/集/文件夹视图读的是 item/list 原始列表缓存（独立 300s TTL），
+    # 不清它刷完海报墙仍会看到旧层级；stamp 记忆化同理
+    client.invalidate_item_list_cache()
+    desc.invalidate_stamp()
+    util.notify('已刷新 %d 个范围%s' % (ok, '，%d 个失败' % failed if failed else ''))
     xbmc.executebuiltin('Container.Refresh')
 
 
@@ -315,9 +346,10 @@ def filter_list(handle, params):
     数据层（真机验证）：item/list 支持 ancestor_guid 服务端按库过滤与
     page/page_size 分页（不带分页参数时服务端默认 page_size=500 会静默
     截断大库，务必走 item_list_walk）。整库并行拉取一次 → desc 描述符
-    落盘（30 分钟 TTL）→ 渲染只做 ListItem 构造；TTL 内再次进入零网络
+    落盘（5 分钟 TTL）→ 渲染只做 ListItem 构造；TTL 内再次进入零网络
     零解析。service 进程开机后台预热各库范围，日常进入直接命中。
     网络失败回退过期描述符（陈旧总比白屏好）。
+    等不及 TTL 就用根菜单"立即刷新全部媒体库"或库右键"刷新此库"。
     大墙（≥LETTER_JUMP_MIN 条）预置 A-Z/0-9 字母夹快跳（GB2312 区位法
     拼音首字母，零依赖）。
     """
@@ -330,6 +362,16 @@ def filter_list(handle, params):
     key = desc.scope_key(client, wanted_mdb, wanted_type)
 
     scope = desc.load_scope(key)
+    if scope is None:
+        # 过期但仍在兜底窗口内：先把旧墙秒出（同步整库 walk 要 2s，5 分钟
+        # TTL 下不该让用户每次进库都干等），同时排队请 service 立即重建；
+        # 重建完 dv 变化，下次进入即新数据
+        stale = desc.load_scope(key, allow_expired=True)
+        if stale is not None:
+            desc.request_refresh(key)
+            scope = stale
+            util.log('范围过期，先出旧墙并排队重拉: %s'
+                     % (title or wanted_mdb[:12] or wanted_type))
     if scope is None:
         t0 = time.time()
         try:
@@ -425,6 +467,31 @@ def recent(handle, params):
         items.append((d['url'], render_item(client, d, versions), d['folder']))
     _end(handle, items, content='videos', title=title)
     meta.queue_enrich([d['guid'] for d in entries])
+
+
+def continue_watch(handle, params):
+    """继续观看：服务端有进度且未看完的条目，跨端一致（App 上看的也在）。
+
+    优先调用服务端继续观看接口，直接复用服务端排序（最近在看的排首位）；
+    接口不可用时回退到各范围缓存里随整库预热一并落盘的 progress 清单。
+    """
+    title = '继续观看'
+    client = _prepare()
+    picked = desc.load_progress(client)
+    if not picked:
+        _empty(handle, '暂无观看中的条目（后台预热完成后即出现）')
+        return
+    versions = desc.load_versions()
+    items = []
+    for d in picked:
+        # 混合一面墙：单集标题前缀剧名，否则看不出属于哪部剧
+        tv = (d.get('infos') or {}).get('tvshowtitle')
+        if d.get('type') == 'Episode' and tv:
+            d = dict(d, label='%s · %s' % (tv, d.get('label', '')))
+        items.append((d.get('url', ''), render_item(client, d, versions),
+                      bool(d.get('folder'))))
+    _end(handle, items, content='videos', title=title)
+    meta.queue_enrich([d.get('guid') for d in picked])
 
 
 def search(handle, params):
