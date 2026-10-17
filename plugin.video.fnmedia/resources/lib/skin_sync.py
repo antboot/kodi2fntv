@@ -112,6 +112,7 @@ def sync_home_widgets(force=False):
         server = util.get_setting("server")
         token = util.get_setting("token")
         if not server or not token:
+            sync_skin_preferences()
             util.log("未配置飞牛服务器或未登录，跳过主页小组件同步", xbmc.LOGDEBUG)
             return False
 
@@ -166,6 +167,9 @@ def sync_home_widgets(force=False):
         except Exception:
             pass
 
+        # 同步子菜单、默认关闭精选推荐及 Wall Flyer 视图类型
+        sync_skin_preferences()
+
         _last_sync_time = time.time()
 
         if is_fuse_skin_active():
@@ -181,6 +185,97 @@ def sync_home_widgets(force=False):
         return True
     finally:
         _is_syncing = False
+
+
+def sync_skin_preferences():
+    """同步皮肤配置：
+    1. 子菜单去掉音乐与图片，保留视频和飞牛影视
+    2. 精选推荐（Spotlight）默认关闭
+    3. 飞牛影视及媒体库相关视图统一配置为 Wall Flyer (516)
+    """
+    if not is_fuse_skin_active():
+        return
+
+    # 1. 调整 homesubmenu
+    submenu_node = xbmcvfs.translatePath(
+        "special://profile/addon_data/script.skinvariables/nodes/%s/skinvariables-shortcut-homesubmenu.json" % SKIN_ID
+    )
+    desired_submenu = [
+        {
+            "label": "$LOCALIZE[3]",
+            "icon": "special://skin/extras/icons/video.png",
+            "path": "ActivateWindow(videos)",
+            "target": "",
+            "guid": "guid-0edddec3",
+        },
+        {
+            "label": "fntv",
+            "path": "plugin://%s" % util.ADDON_ID,
+            "icon": "special://home/addons/%s/resources/icon.png" % util.ADDON_ID,
+            "target": "videos",
+            "guid": "guid-f32d3228",
+        },
+    ]
+    try:
+        current_sub = []
+        if os.path.exists(submenu_node):
+            with open(submenu_node, "r", encoding="utf-8") as f:
+                current_sub = json.load(f) or []
+        sig_current = [(item.get("label"), item.get("path")) for item in current_sub if isinstance(item, dict)]
+        sig_desired = [(item.get("label"), item.get("path")) for item in desired_submenu]
+        if sig_current != sig_desired:
+            os.makedirs(os.path.dirname(submenu_node), exist_ok=True)
+            with open(submenu_node, "w", encoding="utf-8") as f:
+                json.dump(desired_submenu, f, ensure_ascii=False, indent=4)
+            win = xbmcgui.Window(10000)
+            win.clearProperty("SkinVariables.ShortcutsNode.%s-skinvariables-shortcut-homesubmenu.json" % SKIN_ID)
+            win.clearProperty("SkinVariables.ShortcutsNode.skinvariables-shortcut-homesubmenu.json")
+    except Exception as e:
+        util.log("sync_homesubmenu error: %s" % e, xbmc.LOGDEBUG)
+
+    # 2. 精选推荐默认关闭
+    try:
+        xbmc.executebuiltin("Skin.SetString(HomeSwitcher.Home.Spotlight.Path,noop)")
+        xbmc.executebuiltin("Skin.Reset(HomeSwitcher.Home.Spotlight.Target)")
+        xbmc.executebuiltin("Skin.SetString(HomeSwitcher.Home.Spotlight.Label,None)")
+    except Exception:
+        pass
+
+    # 3. 视图类型配置 (Wall Flyer 516)
+    viewtypes_file = xbmcvfs.translatePath(
+        "special://profile/addon_data/script.skinvariables/%s-viewtypes.json" % SKIN_ID
+    )
+    try:
+        vt_data = {}
+        if os.path.exists(viewtypes_file):
+            with open(viewtypes_file, "r", encoding="utf-8") as f:
+                vt_data = json.load(f) or {}
+
+        changed = False
+        target_keys = ["movies", "sets", "tvshows", "episode-groups-tvshows", "episode-groups-seasons", "seasons", "videoversions", "actors"]
+
+        for section in ["library", "plugins"]:
+            if section in vt_data:
+                for k in target_keys:
+                    if vt_data[section].get(k) != "516":
+                        vt_data[section][k] = "516"
+                        changed = True
+
+        fn_rules = vt_data.setdefault(util.ADDON_ID, {})
+        for k in target_keys:
+            if fn_rules.get(k) != "516":
+                fn_rules[k] = "516"
+                changed = True
+        fn_rules.setdefault("files", "510")
+        fn_rules.setdefault("addons", "513")
+
+        if changed:
+            with open(viewtypes_file, "w", encoding="utf-8") as f:
+                json.dump(vt_data, f, ensure_ascii=False, indent=4)
+            xbmc.executebuiltin("RunScript(script.skinvariables,action=buildviews)")
+    except Exception as e:
+        util.log("sync_viewtypes error: %s" % e, xbmc.LOGDEBUG)
+
 
 
 def prompt_first_run_setup():

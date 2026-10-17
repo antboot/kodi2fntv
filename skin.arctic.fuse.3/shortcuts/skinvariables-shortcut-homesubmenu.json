@@ -6,15 +6,9 @@
         "target": ""
     },
     {
-        "label": "$LOCALIZE[249]",
-        "icon": "special://skin/extras/icons/songs.png",
-        "path": "ActivateWindow(music)",
-        "target": ""
-    },
-    {
-        "label": "$LOCALIZE[1]",
-        "icon": "special://skin/extras/icons/image.png",
-        "path": "ActivateWindow(pictures)",
-        "target": ""
+        "label": "fntv",
+        "icon": "special://home/addons/plugin.video.fnmedia/resources/icon.png",
+        "path": "plugin://plugin.video.fnmedia",
+        "target": "videos"
     }
 ]

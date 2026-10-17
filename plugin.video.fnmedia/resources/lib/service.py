@@ -429,6 +429,7 @@ def run():
             return
         try:
             from resources.lib import skin_sync
+            skin_sync.sync_skin_preferences()
             skin_sync.sync_home_widgets()
         except Exception as e:
             util.log("initial_skin_sync error: %s" % e, xbmc.LOGDEBUG)
