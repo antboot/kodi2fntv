@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<includes>
+    <constant name="infodialog_poster_slide">-1320</constant>
+    <constant name="infodialog_artwork_start">1920</constant>
+    <constant name="infodialog_artwork_reverse_slide">1320</constant>
+    <constant name="infodialog_artwork_reverse_offset">-2640</constant>
+    <constant name="infodialog_artwork_wrap_offset">2640</constant>
+
+    <!-- 2040 x 1080 -->
+    <constant name="dialog_full_side">480</constant>
+    <constant name="alphabet_w">65.19</constant>
+
+    <constant name="view_listwall_itemlayout_w">613.33</constant>
+    <constant name="-view_listwall_itemlayout_w">-613.33</constant>
+
+    <constant name="view_addonbrowser_itemlayout_w">730</constant>
+    <constant name="-view_addonbrowser_itemlayout_w">-730</constant>
+    <constant name="view_addonbrowser_item_w">690</constant>
+    <constant name="-view_addonbrowser_item_w">-690</constant>
+
+    <constant name="notification_reposition">-1400</constant>
+
+</includes>

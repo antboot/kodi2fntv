@@ -1,0 +1,27 @@
+{
+    "infolabels": {
+        "listitem_trailer": "Container.ListItem.Trailer",
+        "listitem_title": "Container.ListItem.Title",
+        "listitem_tvshowtitle": "Container.ListItem.TVShowTitle"
+    },
+    "values": {
+        "trailer": [
+            {
+                "rules": ["!String.IsEmpty(Container.ListItem.Trailer)"],
+                "value": "{listitem_trailer}"
+            }
+        ],
+        "title": [
+            {
+                "rules": ["!String.IsEmpty(Container.ListItem.TVShowtitle)"],
+                "value": "{listitem_tvshowtitle}"
+            },
+            "{listitem_title}"
+        ]
+    },
+    "actions": [
+        "SetProperty(PlayTrailerTitle,\"{title}\",Home)",
+        "SetProperty(PlayTrailer,\"{trailer}\",Home)",
+        "ActivateWindow(1123)"
+    ]
+}

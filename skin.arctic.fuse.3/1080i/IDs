@@ -1,0 +1,47 @@
+VIEWS: 	STANDARD
+0		Square
+1		Landscape
+2		Poster
+3		Circle
+4		Board
+5 		Card
+6 		Flyer
+7 		Special (for combined list - basic)
+8 		Special (for combined list - expanded)
+9		Placard
+
+VIEWS: 	ADVANCED
+50X		Rows		(one dimensional views)
+51X		Walls 		(two dimensional views)
+52X		Combined Control List
+53X		Combined Content List
+54X		Combined Control Button
+55X		Combined Wall Control List
+56X		Combined Wall Content List
+57X		Combined Wall Control Button
+
+58X		LISTS
+580		Basic
+581		Media
+582		Expanded
+583		Flixart
+584		Flixart 2
+
+
+
+WIDGETS / HOME
+300 	Hub Switcher
+301		Spotlight
+
+400		Content Area
+
+500		Widgets Area
+5XX		Widget IDs
+
+600		Switching Area
+601		Switcher Control
+
+7XX		Widget IDs supplementary
+
+800		Sidemenu
+
