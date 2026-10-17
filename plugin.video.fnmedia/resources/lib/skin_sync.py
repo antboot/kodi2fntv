@@ -196,18 +196,11 @@ def sync_skin_preferences():
     if not is_fuse_skin_active():
         return
 
-    # 1. 调整 homesubmenu
+    # 1. 调整 homesubmenu（仅保留飞牛影视插件主入口）
     submenu_node = xbmcvfs.translatePath(
         "special://profile/addon_data/script.skinvariables/nodes/%s/skinvariables-shortcut-homesubmenu.json" % SKIN_ID
     )
     desired_submenu = [
-        {
-            "label": "$LOCALIZE[3]",
-            "icon": "special://skin/extras/icons/video.png",
-            "path": "ActivateWindow(videos)",
-            "target": "",
-            "guid": "guid-0edddec3",
-        },
         {
             "label": "fntv",
             "path": "plugin://%s" % util.ADDON_ID,
@@ -241,7 +234,7 @@ def sync_skin_preferences():
     except Exception:
         pass
 
-    # 3. 视图类型配置 (Wall Flyer 516)
+    # 3. 视图类型配置 (优先 Wall Flyer 516，其余用普通墙 510/511)
     viewtypes_file = xbmcvfs.translatePath(
         "special://profile/addon_data/script.skinvariables/%s-viewtypes.json" % SKIN_ID
     )
@@ -252,17 +245,40 @@ def sync_skin_preferences():
                 vt_data = json.load(f) or {}
 
         changed = False
-        target_keys = ["movies", "sets", "tvshows", "episode-groups-tvshows", "episode-groups-seasons", "seasons", "videoversions", "actors"]
+        # 支持 Wall Flyer (516) 的分类
+        flyer_keys = [
+            "videos", "movies", "sets", "tvshows", "episode-groups-tvshows",
+            "episode-groups-seasons", "seasons", "episodes", "videoversions",
+            "actors", "musicvideos", "games", "none-games"
+        ]
+        # 采用普通墙·方形 (510) 的分类
+        wall_square_keys = [
+            "files", "sources", "addons", "genres", "genres-music",
+            "years", "years-music", "studios", "directors", "countries",
+            "tags", "roles", "none-calendar", "none"
+        ]
+        # 采用普通墙·横向 (511) 的分类
+        wall_landscape_keys = [
+            "recordings", "none-recordings", "none-timers", "none-search"
+        ]
 
         for section in ["library", "plugins"]:
-            if section in vt_data:
-                for k in target_keys:
-                    if vt_data[section].get(k) != "516":
-                        vt_data[section][k] = "516"
-                        changed = True
+            sec_dict = vt_data.setdefault(section, {})
+            for k in flyer_keys:
+                if sec_dict.get(k) != "516":
+                    sec_dict[k] = "516"
+                    changed = True
+            for k in wall_square_keys:
+                if sec_dict.get(k) != "510":
+                    sec_dict[k] = "510"
+                    changed = True
+            for k in wall_landscape_keys:
+                if sec_dict.get(k) != "511":
+                    sec_dict[k] = "511"
+                    changed = True
 
         fn_rules = vt_data.setdefault(util.ADDON_ID, {})
-        for k in target_keys:
+        for k in flyer_keys:
             if fn_rules.get(k) != "516":
                 fn_rules[k] = "516"
                 changed = True

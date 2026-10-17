@@ -1,11 +1,5 @@
 [
     {
-        "label": "$LOCALIZE[3]",
-        "icon": "special://skin/extras/icons/video.png",
-        "path": "ActivateWindow(videos)",
-        "target": ""
-    },
-    {
         "label": "fntv",
         "icon": "special://home/addons/plugin.video.fnmedia/resources/icon.png",
         "path": "plugin://plugin.video.fnmedia",

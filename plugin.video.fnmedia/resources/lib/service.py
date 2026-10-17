@@ -341,73 +341,48 @@ def _prewarm_loop(monitor, player):
             monitor.waitForAbort(60)
 
 
-def _check_config_prompt(monitor):
-    """检测是否已配置飞牛服务器，未配置时弹窗提示配置"""
-    if util.get_setting("server"):
-        return
-    flag_file = util.data_file("config_prompted.flag")
-    if os.path.exists(flag_file):
-        return
-
+def _first_run_wizard(monitor):
+    """首次运行向导：按顺序先后引导皮肤安装与服务器配置，避免多个弹窗并发冲突"""
     import xbmcgui
     for _ in range(15):
         if monitor.abortRequested():
-            return
-        if util.get_setting("server"):
             return
         if xbmcgui.getCurrentWindowId() > 0:
             break
         time.sleep(1)
 
-    if monitor.abortRequested() or util.get_setting("server"):
+    if monitor.abortRequested():
         return
 
-    try:
+    # 1. 引导安装配套皮肤（仅当尚未安装时询问）
+    SKIN_ID = "skin.arctic.fuse.3"
+    skin_flag = util.data_file("skin_prompted.flag")
+    if not os.path.exists(skin_flag):
         try:
-            with open(flag_file, "w") as f:
+            with open(skin_flag, "w") as f:
                 f.write(str(time.time()))
         except Exception:
             pass
+        if not xbmc.getCondVisibility("System.HasAddon(%s)" % SKIN_ID):
+            dialog = xbmcgui.Dialog()
+            if dialog.yesno("飞牛影视 (fntv)", "检测到尚未安装配套的 Arctic Fuse 3 皮肤，是否立即从仓库安装？",
+                            yeslabel="立即安装", nolabel="稍后再说"):
+                xbmc.executebuiltin("InstallAddon(%s)" % SKIN_ID)
+                time.sleep(1.5)
 
+    if monitor.abortRequested():
+        return
+
+    # 2. 引导配置服务器（仅当尚未配置时询问）
+    config_flag = util.data_file("config_prompted.flag")
+    if not os.path.exists(config_flag) and not util.get_setting("server"):
+        try:
+            with open(config_flag, "w") as f:
+                f.write(str(time.time()))
+        except Exception:
+            pass
         from resources.lib import skin_sync
         skin_sync.prompt_first_run_setup()
-    except Exception as e:
-        util.log("check_config_prompt error: %s" % e, xbmc.LOGWARNING)
-
-
-def _check_skin_prompt(monitor):
-    """检测并提示用户是否需要安装配套的 Arctic Fuse 3 皮肤"""
-    SKIN_ID = "skin.arctic.fuse.3"
-    flag_file = util.data_file("skin_prompted.flag")
-    if os.path.exists(flag_file):
-        return
-
-    # 等待 Kodi GUI 界面完全就绪
-    import xbmcgui
-    for _ in range(15):
-        if monitor.abortRequested():
-            return
-        if xbmc.getCondVisibility("System.HasAddon(%s)" % SKIN_ID):
-            return
-        if xbmcgui.getCurrentWindowId() > 0:
-            break
-        time.sleep(1)
-
-    if monitor.abortRequested() or xbmc.getCondVisibility("System.HasAddon(%s)" % SKIN_ID):
-        return
-
-    try:
-        try:
-            with open(flag_file, "w") as f:
-                f.write(str(time.time()))
-        except Exception:
-            pass
-
-        dialog = xbmcgui.Dialog()
-        if dialog.yesno("飞牛影视 (fntv)", "检测到尚未安装配套的 Arctic Fuse 3 皮肤，是否立即从仓库安装？"):
-            xbmc.executebuiltin("InstallAddon(%s)" % SKIN_ID)
-    except Exception as e:
-        util.log("check_skin_prompt error: %s" % e, xbmc.LOGWARNING)
 
 
 def run():
@@ -419,9 +394,8 @@ def run():
     threading.Thread(target=_enrich_loop, args=(monitor,), daemon=True).start()
     # 常驻整库预热（构建海报墙描述符缓存）——同样独立线程错峰执行
     threading.Thread(target=_prewarm_loop, args=(monitor, player), daemon=True).start()
-    # 提示是否配置服务器及安装配套皮肤
-    threading.Thread(target=_check_config_prompt, args=(monitor,), daemon=True).start()
-    threading.Thread(target=_check_skin_prompt, args=(monitor,), daemon=True).start()
+    # 首次运行顺序引导：先问皮肤，再问服务器配置
+    threading.Thread(target=_first_run_wizard, args=(monitor,), daemon=True).start()
 
     def _initial_skin_sync():
         monitor.waitForAbort(4)

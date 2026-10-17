@@ -405,7 +405,13 @@ def filter_list(handle, params):
                         len(scope.get('items') or [])))
 
     descs = scope.get('items') or []
-    content = 'movies' if wanted_type == 'Movie' else ('tvshows' if wanted_type == 'TV' else 'videos')
+    if not wanted_type and descs:
+        tv_count = sum(1 for d in descs if d.get('type') in ('TV', 'tvshow', 'Season', 'Episode'))
+        content = 'tvshows' if tv_count > len(descs) / 2 else 'movies'
+    elif wanted_type == 'TV':
+        content = 'tvshows'
+    else:
+        content = 'movies'
     versions = desc.load_versions()   # guid→版本数（service 后台扫描，多版本标记）
 
     # 首字母快跳：仅聚合大墙（全部电影/全部剧集，wanted_type 非空；单个
@@ -480,7 +486,7 @@ def recent(handle, params):
     for e in entries:
         d = desc.build_item(client, e)
         items.append((d['url'], render_item(client, d, versions), d['folder']))
-    _end(handle, items, content='videos', title=title)
+    _end(handle, items, content='movies', title=title)
     meta.queue_enrich([d['guid'] for d in entries])
 
 
@@ -512,7 +518,7 @@ def continue_watch(handle, params):
             d = dict(d, label='%s · %s' % (tv, d.get('label', '')))
         items.append((d.get('url', ''), render_item(client, d, versions),
                       bool(d.get('folder'))))
-    _end(handle, items, content='videos', title=title)
+    _end(handle, items, content='movies', title=title)
     meta.queue_enrich([d.get('guid') for d in picked])
 
 
