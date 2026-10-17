@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.fnmedia" version="0.7.22" name="飞牛影视" provider-name="fntv-kodi">
+<addon id="plugin.video.fnmedia" version="0.7.22" name="fntv" provider-name="fntv-kodi">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
     </requires>
@@ -8,9 +8,9 @@
     </extension>
     <extension point="xbmc.service" library="resources/lib/service.py" />
     <extension point="xbmc.addon.metadata">
-        <summary>fnOS 飞牛影视 Kodi 播放插件</summary>
-        <description>访问 fnOS NAS 上的飞牛影视（Trim Media）媒体库：浏览电影、剧集（含蓝光原盘多版本）、其他视频，支持外挂字幕、断点续播与观看进度回传。</description>
-        <disclaimer>非官方插件，仅供个人学习使用。服务器地址、账号密码请在设置中配置。</disclaimer>
+        <summary>Trim Media (fntv) player plugin for Kodi</summary>
+        <description>Browse the Trim Media (fntv) library on your fnOS NAS: movies, TV shows (including Blu-ray discs with multiple versions) and other videos. Supports external subtitles, resume playback and syncing watch status back.</description>
+        <disclaimer>Unofficial plugin, for personal learning only. Configure the server address and credentials in settings.</disclaimer>
         <platform>all</platform>
         <language>zh_CN</language>
         <license>GPL-3.0-only</license>
