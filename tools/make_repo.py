@@ -12,10 +12,8 @@ import os, re, sys, shutil, subprocess, hashlib
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs")
 STAGE = os.path.join(ROOT, ".repo_stage")
-BASEURL = (sys.argv[1] if len(sys.argv) > 1 else "https://huahn3.github.io/kodi2fntv").rstrip("/")
-# Where Kodi fetches addons.xml / addons.xml.md5 from. Default to the same host the
-# user adds as a file source (github.io), so the repo data is reachable wherever the
-# repository zip itself was installed from.
+BASEURL = (sys.argv[1] if len(sys.argv) > 1 else "https://fntv.huhan1.de5.net").rstrip("/")
+# Where Kodi fetches addons.xml / addons.xml.md5 from.
 DATAURL = (sys.argv[2] if len(sys.argv) > 2 else BASEURL).rstrip("/")
 
 # addon id -> source directory
@@ -36,7 +34,7 @@ SOURCES = {
 }
 
 REPO_ID = "repository.fuse.media"
-REPO_VER = "1.0.3"
+REPO_VER = "1.0.4"
 
 EXCLUDE = ["--exclude", ".git", "--exclude", ".github", "--exclude", ".gitignore",
            "--exclude", ".gitattributes", "--exclude", ".agents", "--exclude", ".DS_Store",
