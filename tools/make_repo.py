@@ -13,7 +13,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs")
 STAGE = os.path.join(ROOT, ".repo_stage")
 BASEURL = (sys.argv[1] if len(sys.argv) > 1 else "https://huahn3.github.io/kodi2fntv").rstrip("/")
-DATAURL = (sys.argv[2] if len(sys.argv) > 2 else "https://raw.githubusercontent.com/huahn3/kodi2fntv/main/docs").rstrip("/")
+# Where Kodi fetches addons.xml / addons.xml.md5 from. Default to the same host the
+# user adds as a file source (github.io), so the repo data is reachable wherever the
+# repository zip itself was installed from.
+DATAURL = (sys.argv[2] if len(sys.argv) > 2 else BASEURL).rstrip("/")
 
 # addon id -> source directory
 SOURCES = {
@@ -33,7 +36,7 @@ SOURCES = {
 }
 
 REPO_ID = "repository.fuse.media"
-REPO_VER = "1.0.2"
+REPO_VER = "1.0.3"
 
 EXCLUDE = ["--exclude", ".git", "--exclude", ".github", "--exclude", ".gitignore",
            "--exclude", ".gitattributes", "--exclude", ".agents", "--exclude", ".DS_Store",
@@ -79,6 +82,7 @@ repo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
     <extension point="xbmc.addon.repository" name="Fuse Media Repository">
         <dir>
             <info compressed="false">%s/addons.xml</info>
+            <checksum>%s/addons.xml.md5</checksum>
             <datadir zip="true">%s/</datadir>
         </dir>
     </extension>
@@ -90,7 +94,7 @@ repo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <platform>all</platform>
     </extension>
 </addon>
-''' % (REPO_ID, REPO_VER, DATAURL, DATAURL)
+''' % (REPO_ID, REPO_VER, DATAURL, DATAURL, DATAURL)
 open(os.path.join(repo_dir, "addon.xml"), "w", encoding="utf-8").write(repo_xml)
 os.makedirs(os.path.join(OUT, REPO_ID))
 subprocess.run(["zip", "-rq", os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"), REPO_ID], cwd=STAGE, check=True)
