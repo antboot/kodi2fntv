@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addons>
+<addon id="skin.arctic.fuse.3" name="Arctic Fuse 3" provider-name="jurialmunkey" version="3.3.12.2">
+    <requires>
+        <import addon="xbmc.gui" version="5.17.0" />
+        <import addon="script.skinvariables" version="2.2.9" />
+        <import addon="resource.images.weathericons.white" version="0.0.1" />
+        <import addon="resource.images.studios.coloured" version="0.0.1" />
+        <import addon="resource.font.robotocjksc" version="0.0.3" />
+    </requires>
+    <extension debugging="false" defaultthemename="Textures.xbt" effectslowdown="1" point="xbmc.gui.skin">
+        <res aspect="16:9" default="true" folder="1080i" width="1920" height="1080" />
+        <res aspect="3:2" default="false" folder="1080i" width="1620" height="1080" />
+        <res aspect="4:3" default="false" folder="1080i" width="1440" height="1080" />
+        <res aspect="16:10" default="false" folder="1080i" width="1728" height="1080" />
+        <res aspect="17:9" default="false" folder="1080i" width="2040" height="1080" />
+        <res aspect="21:9" default="false" folder="1080i" width="2520" height="1080" />
+        <res aspect="19.5:9" default="false" folder="1080i" width="2340" height="1080" />
+        <res aspect="18:9" default="false" folder="1080i" width="2160" height="1080" />
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">A minimal row based skin</summary>
+        <summary lang="es">Una skin minimalista de diseño horizontal</summary>
+        <summary lang="de">Ein minimalistisches, zeilenbasiertes Skin</summary>
+        <summary lang="zh">简约行式布局皮肤</summary>
+        <summary lang="ar">سكن مخفف بقوائم افقية</summary>
+        <description lang="en">Arctic Fuse 3 is a minimal row based skin with customisable widgets</description>
+        <description lang="es">Arctic Fuse 3 es una skin minimalista de diseño horizontal con widgets personalizables</description>
+        <description lang="de">Arctic Fuse 3 ist ein minimalistisches, zeilenbasiertes Skin mit anpassbaren Widgets</description>
+        <description lang="zh">Arctic Fuse 3 是一款采用简约行式布局的 Kodi 皮肤，支持小组件自定义功能</description>
+        <description lang="ar">Arctic Fuse 3 سكن مخفف بقوائم افقية وبامكانية تخصيص الاختصارات</description>
+        <platform>all</platform>
+        <license>Creative Commons Attribution Non-Commercial Share-Alike 4.0</license>
+        <forum />
+        <source />
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+    </extension>
+</addon>
+<addon id="plugin.video.fnmedia" version="0.7.22" name="飞牛影视" provider-name="fntv-kodi">
+    <requires>
+        <import addon="xbmc.python" version="3.0.1"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="addon.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.service" library="resources/lib/service.py" />
+    <extension point="xbmc.addon.metadata">
+        <summary>fnOS 飞牛影视 Kodi 播放插件</summary>
+        <description>访问 fnOS NAS 上的飞牛影视（Trim Media）媒体库：浏览电影、剧集（含蓝光原盘多版本）、其他视频，支持外挂字幕、断点续播与观看进度回传。</description>
+        <disclaimer>非官方插件，仅供个人学习使用。服务器地址、账号密码请在设置中配置。</disclaimer>
+        <platform>all</platform>
+        <language>zh_CN</language>
+        <license>GPL-3.0-only</license>
+        <news>v0.7.22 修复起播崩溃：修复 player.py 中由于提前检查长视频直链寿命而引用未初始化变量 resume_ts 导致的 UnboundLocalError，保障所有电影/剧集正常起播。
+v0.7.21 紧急修复：补齐 meta.py 中 _genre_map 所依赖的 _load 函数定义，彻底消除继续观看/渲染列表时的 NameError 报错。
+v0.7.20 架构与稳定性双重优化：①引入 Python 原生 SQLite3 持久化存储层（store.py，开启 WAL 模式多进程并发安全），替代原先散落全盘的数千个 detail_*.json 碎文件与小字典落盘，大幅降低电视盒子 Flash/eMMC 4K 随机读写磨损与遍历延迟，并提供全量详情微秒级迭代（build_genre_index 提速一个数量级），支持旧版 JSON 无缝平滑迁移；②网盘长片中途 403 断流自愈防护：当长视频剩余观看时长明显超出网盘直链有效寿命时，自动走本地代理承接，利用代理内部的 403 重新换链自愈机制保障长电影丝滑播完不闪退；③优化多版本判断与起播等待。
+v0.7.19 修复"继续观看"列表顺序：直接对齐飞牛官方 Web/App 端，调用原生 GET /v/api/v1/play/list 接口，保留服务端严格按最后观看时间维护的倒序列表，跨端一致。
+v0.7.18 全链路审计后修复"数据总是旧的"与"观看记录不回传飞牛"。读路径五处：①范围缓存 TTL 30 分钟→5 分钟，service 预热从"每 20 秒只建 1 个范围"改为一轮连建最多 3 个、空闲长睡 240 秒→60 秒（分 6 片睡以便被刷新请求打断）——新片入库最坏窗口从 35~38 分钟压到 5 分钟量级；②Kodi 目录缓存戳 dv 此前只有根菜单几个入口带，字母快跳/翻页/季集层级/browse 兜底全部漏掉，这些容器在整个会话期内永不回源，现改为在 _end 出口统一给目录条目注入（新增视图不可能再漏），data_stamp 加 5 秒记忆化避免每次渲染扫 detail 目录；③TTL 到期不再让 invoker 同步整库重拉（海报墙会干等 2 秒）：先秒出旧墙并写 scope_refresh.json 排队，service 优先重建该范围；④新增手动刷新——根菜单"立即刷新全部媒体库"、库条目右键"刷新此库"，带进度框跳过 TTL 重拉，完成后失效 item/list 原始列表缓存并 Container.Refresh（0.7.16 删掉 action=sync 后一直没有手动刷新入口）；⑤watched 与兜底缓存修正：patch_watched 支持 playcount=0（此前只写 1 从不写 0，飞牛端取消已看后 Kodi 一直显示已看）、同步维护 progress 清单（看完的条目立刻从"继续观看"墙摘除，此前滞留到 TTL 重建）、新增 patch_progress 让回传后的断点即时反映到墙上、allow_expired 兜底加 24 小时上限（此前无上限，搜索/分类/继续观看可返回任意老数据）、进度回传后的列表缓存失效改打在 service 常驻单例上（此前打在临时 client 上，只清了那个对象的内存缓存）。写路径四处：⑥播放中每 60 秒 POST /play/record 回传一次并把位置写进 pending.json 的 ts 字段——此前只在停止/播完时报一次，看一半强退/断电则整段进度全丢，且崩溃补报用的是 ts0（选"从头开始"那场即使看满 2 小时也补成 0，被最短时长判据静默丢弃）；⑦回传失败不再"记条 WARNING 就 finally 删 pending"，改为落盘本次位置 + 主循环按 30 秒间隔重试至多 3 次，仍失败则保留 pending 等下次启动补报；⑧进度≥90% 时除本地标记外调用已有端点 POST /item/watched 把已看状态写回服务端（此前只改本地描述符，飞牛 App/网页仍显示"观看中"）；⑨Kodi 退出（abortRequested）前若仍在播放先回传一次最后位置。离线冒烟 38 项断言全通过（含过期先出旧墙、排队优先重建、周期回传、失败重试、播完写回服务端）。仍缺端点、本版未做：取消已看/重置断点/收藏/评分（client 无对应方法），播放中换音轨字幕后的记录字段刷新。
+v0.7.17 两项变更：①按用户决定移除原生媒体库同步——libsync 整模块、根菜单同步状态行与 action=sync、service 的同步请求消费与周期同步、设置项"原生媒体库同步/同步周期"及中英文文案、MyVideos 直写与 VideoLibrary.Scan 触发全部删除，主界面媒体库分类与原生小部件不再由本插件供给，条目统一在插件内浏览播放；②新增"继续观看"（根菜单第一项）：零额外请求，直接用 item/list 已有的 watched_ts（观看进度秒数，官方客户端 fntv-electron 的类型定义即证，App/网页上看的进度同样出现）——整库预热时随范围缓存落一份"收纳前"的 progress 清单（被收进 剧→季 的单集也能上墙），跨范围按 guid 去重，只列未看完且进度不足 95% 的条目；ListItem 设 resumetime/totaltime，Kodi 原生"续播/从头开始"框与进度条随之可用（player 侧早已支持 resume=true 参数）。排序主键是本地 watch_recent.json（service 回传进度时记录观看时刻）——服务端列表行只有"看到第几秒"没有"什么时候看的"，因此 App 端观看的条目按已看位置兜底沉底。升级后旧范围缓存无 progress 键，30 分钟 TTL 重建后自动生效（急着看就进一次各库现场触发整库拉取）。
+v0.7.16 修复"点击同步显示已排队却迟迟不动"（0.7.6 排序缺陷，真机日志实锤）：service 常驻循环里同步请求的消费排在整库预热（prewarm_one）之后，而预热一轮 20 秒只重建一个过期范围就 continue——各媒体库范围缓存（30 分钟 TTL）集中过期时，排队的立即同步要饿等全部约 10 个范围逐个预热完才被消费（实测 12:05:14 排队，12:10:54 仍在逐库预热，6 分钟未动）。修复：同步请求改为绝对优先（先于整库预热/版本扫描/重活门控，与注释声称的"插队"意图一致）；描述符全未就绪（empty，全新安装场景）时重新排队并落到当轮预热逐步补齐范围，不丢请求也不空转死循环。另：0.7.15 的防重放护栏不受影响（请求已在队列时点击只提示不覆盖）。
+v0.7.15 修复"不停重复同步"（0.7.6 起埋着的老地雷，0.7.14 当天点击状态行踩响）：真机日志实锤——点击"媒体库同步"状态行后，sync_action 在同一 handle 上以根目录清单收尾，Kodi 把当前容器的 URL 固定成 ?action=sync…；此后皮肤约每 30-50 秒一次的容器刷新不断重放该 URL（router 日志可见 15 次参数完全相同的 action=sync 调用），每次重放又登记一次同步请求 → service 消费执行 force 同步（force 绕过全部缓存：73 部剧全量重走结构、10893 个文件全量比对）→ 因每轮都有 4 个文件内容更新又触发 VideoLibrary.Scan → 容器仍停在 action=sync 上 → 无限循环（实测 11:40 起每 30-50 秒一轮、每轮 13-30 秒，Kodi 日志被同步与扫库刷屏）。修复三处：①状态行改为动作型条目（isFolder=False，点击按 RunPlugin 语义执行、不发生目录导航，容器 URL 永远不会被动作 URL 替换）；②sync_action 收尾改用 Container.Refresh（与 relogin/mark_watched 同款成熟模式），绝不在 action URL 上回目录清单；③防重放护栏：同步请求已在队列或上一轮同步结束不足 60 秒时点击/重放只提示"同步已排队或刚执行过"，不再登记——即便动作 URL 未来被收藏/遥控等其他途径重放，也不会滚成同步风暴。老版本同理存在，只是需要"点击后停留在带定时刷新的容器"才触发。
+v0.7.14 图片同步三层增量（真机定位 6.5 分钟同步的时间去向并修复）：0.7.13 后同步仍慢，真机日志（耗时 6.5 分钟、摘要"图片 0"）+ 盘上任务队列离线复算 + NAS 实测三方对齐定位——增量跳过本身正常（41806 张已落盘图片全部正确跳过），黑洞是每轮重复排队的 650 个任务：①648 个演员头像任务只对应 2 个唯一 URL（同一演员出现在 N 部影片即重复排 N 次，任务收集只按"文件不存在"判断、不按路径去重，两个高产演员分别被排 533/115 次）；②这 2 个头像服务端返回 200 但仅 492 字节（无照片演员的占位头像，image/webp），旧"&gt;1024 字节才写盘"的门槛把它每轮下载成功又丢弃、永远落不了盘；③1 张 poster + 1 张 clearlogo 服务端确无此图（404/503），每轮 3 次重试间隔 3s 白烧。650 任务 × (2×3s sleep + 6 请求) ÷ 12 线程 ≈ 6 分钟，与日志吻合。修复三件套：任务按本地路径去重（648→2）；图片合法性改按内容魔数判定（webp/jpg/png/gif，新增 util.looks_like_image/file_is_image，占位头像一次下载终身复用，meta.local_actor_thumb 的 512B 门槛同步放宽为魔数判定）；404/503 等"服务端有响应但拿不到图"的失败记负缓存 art_miss.json（键=本地路径+URL，连续 2 轮失败 7 天内不再排队，服务端补图换 URL 即新键自动重试，"完全无响应"不记负缓存——那是宕机不是缺图，仍由熔断管）。真机集成验证：650 任务去重后 4 个，2 个占位头像一次落盘（492B、local_actor_thumb 认账），poster/clearlogo 两轮后进负缓存，第三轮 0 任务 0.0 秒（旧代码同场景约 6.5 分钟）；去重数与负缓存命中数均记 INFO 日志便于观测。
+v0.7.13 媒体库同步提速·未变化剧结构免抓取（"优化4"）：剧集季/集结构的 24h 缓存过期后，若 item/list 列表行自报集数与缓存结构一致，即免抓取只续期缓存 ts——日常同步从"每隔一轮全量走一遍结构（500 部剧约 1500 次 season/episode list 调用）"降为"只有集数发生变化的剧才真正抓取"，这是并行化（0.7.12①）之外省 API 总量的根本办法。数据通路：desc.build_item 把列表行季/集数存为结构化字段 tv_counts 随范围缓存落盘（此前只拼进标题文本；旧范围缓存无此字段=不短路，范围 30 分钟内重建后自动生效）；libsync._tv_walk 过期剧先比对集数（仅集数不比对季数——特集是否计入季数的口径服务端未必与 season_list 一致，硬比对可能系统性失配使短路永不命中；集数是加集/删集/换季的公共信号）。漏检兜底：同集数换 guid/编号的服务端变更会漏检，新增 7 天强制全量复核（TV_WALK_RECHECK，缓存条目区分 ts 续期与 walked 真实抓取两个时间戳）；短路命中数记 INFO 日志（"剧集结构短路 N 部（列表行集数与缓存一致，未刷接口）"）便于真机观测是否生效；force（手动/首次同步）不走短路。离线冒烟 18 项全过（短路/失配/到期/force/旧缓存无字段兼容/集数 0 与残缺不可判/build_item 字段/失败防御回归）。
+v0.7.12 媒体库同步提速（剧集结构并行抓取 + 无变化跳过扫库）：①剧集季/集结构抓取由串行改为 3 线程并行（与整库列表 item_list_walk 同一先例——真机实测服务端查询吞吐是瓶颈，3 并发已近饱和）：首轮同步后各剧的 24h 结构缓存时间戳集中过期，此前每隔一轮同步都要串行走完全部剧（每剧 season_list + 每季 episode_list + 每剧 0.1s 限速，500 部剧约 1500 次调用、仅 sleep 就 50 秒起，结构抓取是日常同步的最大结构开销）；并行后墙钟约降至 1/3，温和限速按 worker 保留（每剧抓取成功后 sleep 0.1s），失败防御逐条保留（异常沿用旧缓存不刷 ts 下轮重试、空集数不落 24h 缓存防整剧误删、guid 编号锁防 Kodi 重复集）。②稳定态无变化不再触发整库扫描：内容不变的同步轮里新增/更新/清理/新图片常年全零，VideoLibrary.Scan 空跑也要遍历全部库文件；现仅在本轮确有落盘变化（新增/更新/清理/新图片/演员头像回写 NFO）或手动/首次同步（force，保留 Kodi 库被清空而本地文件全 same 场景的恢复入口）时触发扫库；上一轮 JSON-RPC 扫库失败遗留的 scan_pending 兜底位改为继承并在下轮补发（原实现无变化轮重建 state 会静默丢失），clean_pending 同样改为继承保留（进插件根目录时 run_pending_scan 消费）；同步完成日志与状态摘要标注"无变化未扫库"便于观测。
+v0.7.11 修复 NAS 本地 ISO 原盘播放失败（真机日志 "Error opening image file"）：Kodi 对 .iso 先用 udf:// 探测镜像内 BDMV/index.bdmv（成功才走 libbluray），失败回落 libdvd 找 VIDEO_TS.IFO——两路全败的根因不在 Kodi 也不在代理：fnOS mediasrv 的 media/range 对本地 iso/BDMV 不返回镜像原始字节，而是返回抽取的正片 M2TS 流（Content-Type: video/mp2t、192 字节包对齐、PMT 含 HDMV/AC-3/DTS1 描述符），却仍用 Content-Range/File-Size 伪装成原文件的字节区间；直连 NAS 绕过代理与 FastVFS 实测字节逐一致，普通 mkv 则原样透传真实字节（octet-stream、offset0 为 EBML 魔数）。修复：起播前对镜像命名（.iso/.img）条目做一次 8KB 字节嗅探（读 sector 16 起的卷识别区：UDF 的 BEA01/NSR0x/TEA01 或 ISO9660 的 CD001 = 真镜像；上游自述 mp2t 或 0x47@188/192 步长同步 = 转换流），结果按 media_guid 落盘缓存（7 天 TTL，同一文件终身一次）；转换流把播放 URL 装饰名 .iso→.ts，Kodi 直接 demux 正片（无菜单导航），真镜像与云盘 guid（media/range 400、云链才是真实字节）维持光盘镜像原路径；代理转发侧顺带记录"镜像命名却自述 mp2t"的条目，起播嗅探超时的首播失败重播一次即自愈。
+v0.7.10 修复"Kodi 电视剧空库"：扫库触发此前对 movies、tvshows 两个根各发一次 JSON-RPC Scan，第二次请求撞上第一次扫描进行中会被 Kodi 静默丢弃（仍返回 OK，但事件流实测只有一次 OnScanStarted）——电影先扫正常入库、剧集扫描永远不执行。现改为对共同父目录（library/）发一次 Scan 递归扫完（子目录各自的 path 表内容类型生效），单次请求无撞车可能；内建兜底同步改为父目录。
+v0.7.9 修复 0.7.7 引入的图片下载让路死锁：暂停/恢复此前由主循环在完成回调里判定，同步期间开始播放后全部下载线程暂停、不再产生完成事件，"播放结束继续"永远无法触发——同步卡死在下载阶段（真机实测进度角标停在 47% 直到重启 Kodi）。现改为每个下载线程独立轮询播放状态，播放结束即自动恢复，不依赖完成回调。
+v0.7.8 修复全新安装首轮同步的两条误导性告警："演员头像重命名迁移失败/图片重命名迁移失败: No such file or directory"——目录尚不存在（本来就没有旧文件可迁移）被当成迁移失败记 WARNING；现改为目录不存在时静默跳过，仅真实迁移错误才告警。
+v0.7.7 播放失败双修复（真机日志定位，一晚 11 次播放全败）：①修复开机后播放全部失败——本地代理可能由 service 进程先拉起（媒体库同步的图片下载/演员头像回退 URL 会调 image_url），而代理客户端只由插件 invoker 进程注入（set_client），service 的代理无客户端，/stream 与 /image 一律 500 'client not ready' 且该路径零日志， Kodi OpenInputStream 报错、海报墙全裂；重新登录无效（只刷新设置里的令牌，不改变代理进程内状态），直到 Kodi 重启且下次由 invoker 先起代理才恢复。修复：proxy.get_client 未设置时按设置兜底构建（ensure_client 进程内单例，令牌/服务器变化原地同步），无客户端 500 路径补 WARNING 日志（此前静默是难排查主因）。②修复直链播放从未生效：client.py 的探测/门控日志引用 xbmc.LOGINFO 但未 import xbmc，探测失败或门控触发即抛 NameError（日志表现"直链解析失败，回退代理: name 'xbmc' is not defined"），直链全部被误回退代理。③首轮同步的图片下载让路播放：播放中暂停下载线程、播完自动续传（12 线程下载与代理同进程的 GIL 争用曾把代理 HEAD/Stat 拖到 20 秒超时，真机日志 Timeout 28）。
+v0.7.6 同步状态与手动控制：①插件主菜单新增"媒体库同步"状态行——显示最近一次同步概况（多久前 · 电影/剧集数，未同步/已排队另有提示），点击即请求立即同步（重活仍由 service 常驻进程执行，右下角角标显示进度，同步完成弹出通知）；②首次配置/切换服务器后自动同步——配置好访问进入插件即登记同步请求，service 在描述符就绪后插队执行（先于版本扫描与停播 5 分钟重活门控），不再等 12 小时周期；配置指纹（服务器+账号）记入 state，切换数据源自动整库重建；③同步周期可配置：新增设置"同步周期"（6/12/24 小时，默认 12），插件菜单的手动同步不受周期限制。
+v0.7.5 媒体库同步健壮性：①修复剧集结构瞬时抓取失败（网络抖动/服务端半途异常）会把整部剧当"已消失"清出 Kodi 库——结构获取失败沿用旧缓存（不刷新 ts 下轮重试）、新抓集数异常为空不落 24h 缓存、连旧数据都没有的剧当轮跳过剧集树清理（宁晚一轮清理不误删）；②图片下载加熔断：连续 10 张完全无响应（连接失败/超时，区别于 404 按需生成）即中止本轮——服务端宕机时原实现每张烧 3×(25s×2) 超时、数万张任务可把同步线程挂住数天；③首轮同步演员头像即写本地路径：下载完成后对排队条目重建 NFO（代理 URL→本地）并补跑 art 修复，不再等第二轮（12h 后）自愈；④art 迁移/URL 对齐一次完成后记入 state 不再每轮重跑（迁移完成后每轮仍向 MyVideos 发数万条 no-op UPDATE 属纯空转）；⑤S0 特集季号目录/文件名/NFO 三处一致归入 Specials（此前文件名并入第 1 季而 NFO 写 0，错位且可能与正片撞集号）；⑥电影/剧集 NFO 补写导演/编剧/国家（详情缓存本就有，浏览器路径在用）与 Kodi 19+ ratings 块；⑦杂项：剧集走缓存瘦身（已删剧 14 天宽限后清除）、清理阶段顺带删除空目录、MyVideos 库按版本号数字选取（字典序会 MyVideos9 &gt; MyVideos119 选错）、扫库内建兜底只重扫 JSON-RPC 失败的根、image_url 对列表入参取首项防御、_write 如实返回 new/chg/same/err。
+v0.7.4 媒体库同步进度显示：同步全程在 Kodi 右下角显示角标进度（DialogProgressBG，不打断操作）——收集清单 → 获取剧集结构 → 写入文件（逐部电影/逐集）→ 下载图片（实时张数）→ 登记扫库 五个阶段；_download_art 改为按完成回调并统计真实成功下载数（此前统计的是任务数）。⑦海报/背景/clearlogo/剧照与演员头像同样的 webp 内容 .jpg 后缀问题（真机实测墙视图加载失败 `Load of ...poster.jpg failed`）：webp 内容一律 .webp 命名（只改后缀、图片内容零改动，旧文件自动迁移），NFO 引用与 MyVideos art 表 URL 同步对齐；图片下载直连优先（带 Authx 签名省本机代理一跳）、并发 6→12；集编号按 guid 锁定首次分配值（服务端跨轮编号漂移导致 Kodi 重复集，实测 1033 条）。v0.7.3 媒体库多处体验修复：①原生库信息页演员头像缺图，两层根因——(a) Kodi 重扫对演员头像 art 只补缺不覆盖，0.7.0/0.7.1 导入的必失败服务器 URL 记录滞留；(b) 服务端图片源文件是 webp 而按 .jpg 落盘，Kodi 图片加载按扩展名选 mjpeg 解码器解 webp 数据必失败（真机 21.3 实测，海报走内容嗅探路径幸免）。修复：同步时直写 MyVideos DB 把演员头像 art 记录/art_urls 与本地路径对齐（幂等，兼容 Kodi 19 actors 表与 20/21 actor 表+art_urls 列，单轮实测修复 4.1 万条）；演员头像改 .webp 命名（只改后缀、图片内容零改动，旧文件自动迁移）；头像预下载范围 12→40 位与 NFO 演员上限对齐。②播放退出返回列表卡顿——播放期间让路的后台任务（整库预热/版本扫描/12h 同步）在停播瞬间集中释放抢 I/O，且 _set_content_db 与 Kodi 写观看状态互等 sqlite 锁（原 timeout 15s）；现播放结束后冷却 150s、重活距停播 ≥5 分钟、DB 写 timeout 降 3s 失败即弃。③修复 0.7.x _set_content_db 函数签名错配：tvshows 根被写成 movies、path 表留下 'movies'/'tvshows' 字面量垃圾行，strPath 补尾斜杠（缺失时扫库器路径匹配失败整库不入库）。④扫库触发改 JSON-RPC TCP 9090 优先（service 上下文可靠，不依赖用户进插件目录；实测 Scan 目录参数必须带尾斜杠否则 1ms 空跑），executebuiltin + scan_pending 兜底；Clean 实测 21.3 的 JSON-RPC 会弹确认框阻塞、displayDialog 参数被拒，故只走 executebuiltin 并保留 clean_pending 兜底。⑤修复单集剧照下载任务元组错位（4 元组传入 _download_art 的 3 元组解包，有剧照时中断整个图片下载与同步收尾）。⑥修复剧集剧照全部缺失：episode/list 接口无 still_path 字段（剧照在 poster 字段，1920x1080），下载任务从未生成；服务端图片按需生成、首次请求 404（冷启动），_download_art 增加失败重试（3 次、间隔 3s）。
+v0.7.2 演员头像本地化：信息页/播放页/媒体库 NFO 的演员头像此前仍经本地代理实时抓取 NAS（首次显示必现）。现同步时预下载每部影片前 12 位主演的头像为本地文件（md5 键名、增量跳过、并行下载），build_cast 与 NFO 均本地优先、未下载项回退代理 URL 由后续同步补齐。首轮全量下载约 1.5 万张（22 分钟），此后增量仅新增条目。
+v0.7.1 原生媒体库同步补全图片素材：海报/背景图/清晰标志/单集剧照在同步时经本地代理下载为本地文件（并行 6 线程、增量跳过已有），NFO 引用本地路径——此前 NFO 内嵌的是服务器 sys/img 原始 URL（需 Authx 签名，Kodi 直接抓取必失败），导致原生库没有图片。实测 1264 部电影+73 部剧的 3763 张素材落地，NFO 含中文流派/演员/本地图片路径，扫库零联网。另修复 service 上下文 Content.SetContent 不生效（改直写 MyVideos DB path 表）与扫库内建不可靠（scan_pending 标记 + 用户进入插件根目录时在 GUI 上下文补触发）。
+v0.7.0 原生媒体库同步（新分类"媒体库同步"，默认开）：把飞牛影视的影片/剧集以 strm+nfo 同步进 Kodi 原生视频库——主界面媒体库分类、"最近添加/正在观看"小部件、统一观看状态全部可用。关键设计：strm 指向本插件（播放时实时换链），天然免疫 115 直链 40 分钟过期的限制（Jellyfin 直连模式做不到）。增量幂等：内容无变化不重写，消失条目自动清理；剧集结构为 剧/Season N/SxxEyy，季集数据带 24h 读缓存温和限速；NFO 含中文流派/演员/评分/剧情/唯一 ID，并修复同步场景详情分片被 12h TTL 误判缺失的问题（流派演员是静态数据，同步读取不受 TTL 限制）。开机跑一次，之后每 12 小时自动刷新。
+v0.6.4 插件图标更换为飞牛影视官方图标（来自 fntv-electron 客户端资源，256×256）。
+v0.6.3 修复播放进度不再回传（0.3.x 起潜伏、直链时代必现）：service 主循环把 pending 关联块错误缩进在 except 内——只有 getTime() 抛异常的起播窗口才执行。代理时代 ISO 打开慢（isPlaying=True 而时钟未起，连续抛异常），窗口尚存所以能回传；直链秒开后窗口消失，ours_playing 永远 False、停止时直接跳过回传。现把关联块移出 except 正常执行，并让 onPlayBackStarted 回调自行读盘加载 pending 兜底；关联时仅在无真实进度时才回填 ts0，避免晚关联覆盖已缓存的播放位置。
+v0.6.2 首字母快跳范围收窄（按用户偏好）：仅"全部电影/全部剧集/分类内页"等聚合大墙预置字母夹；进入单个媒体库（如 115-Strm）的墙面保持纯净无字母夹。
+v0.6.1 修复电视剧信息页没有演员表：真机验证飞牛服务端把剧集演员挂在"季"层级（person/list 对 TV 与 Episode 层均返回 0 人，Season 层才有数据；电影则挂在条目本身）。fetch_detail 对 TV 条目自动从前 3 季聚合演员并按姓名去重。已缓存的 TV 详情分片（0 演员）由 service 的 12h TTL 自然过期重取。
+v0.6.0 浏览体验三连：①最近添加——根菜单新增入口，服务端 create_time 倒序（真机验证支持）现拉现渲染，新入库的剧集/电影一目了然；②首字母快跳——大墙（≥200 条）顶部预置 A-Z/0-9 字母夹（GB2312 区位法拼音首字母，零依赖，中文标题实测 21/21 常用字分组正确），点击过滤并保留"← 全部"返回；③本地搜索——根菜单新增"搜索"，跨所有库已预热描述符即时过滤（标题/剧名，不区分大小写），零 API 请求。
+v0.5.1 混合库/电视剧库支持优化：真机验证混合库 item/list 返回扁平全后代列表（831 条里 392 个单集、48 个季与剧/电影混在顶层直接上墙）。现整库直出做层级收纳——按 parent_guid 链把父链闭合的 Season/Episode 收进其 TV（经 季列表→集列表 导航），顶层墙只留电影与剧集卡片（189 库 831→77 条）；剧集卡片标注"（N季、M集）"；修复 Season 被路由到 action=tv（season/list 对季 guid 无效，点进去永远为空）改为 action=season 走 episode/list；孤儿单集（父链不闭合的防御性兜底）保持顶层可播且标题回退文件名。
+v0.5.0 分类浏览（流派分库）+ 修复流派永不显示：①真机定位流派从未显示的根因——流派映射表以 int 为键写盘、读回变 str 后用 int 查永远落空，键统一转字符串修复；服务器流派名为英文，内置常用中英对照（Action→动作、Science Fiction→科幻等），信息页流派现显示中文。②新增"分类浏览"分库：根菜单新增入口，按流派（动作/喜剧/科幻…）列出分库（带条目数），每个流派跨库聚合、按 guid 去重、整库直出（支持版本标记与分页保底）。分类索引由 service 在版本扫描完成后本地聚合刷新（零逐条目 API），索引文件纳入 dv 数据版本戳。
+v0.4.8 播放中信息页显示真实文件名：播放条目的剧情首行写入"正在播放：&lt;文件名&gt;（版本 N/M）"，播放中按 i 打开信息页即可查看当前播放的具体文件与所选版本（多版本影片时对应选择框里选中的那份）。
+v0.4.7 首播也走直链（能直链就直链）：旧策略要求条目曾被代理换过链（cloud_known）才尝试直链，导致每个影片第一次打开必定代理、第二次起才可能直链。现播放端 UA 采样固定后所有播放都尝试直链：云盘条目首播即直链；NAS 本地文件无直链自动落回代理（首播多一次轻量 /stream）；UA 从未采样的全新安装首次播放仍走代理完成采样。
+v0.4.6 修复"基本都是代理模式"：真机实测 115 现签发的直链有效期仅约 35-50 分钟（4 部影片直链 TTL 实测 39/50/37/39 分钟），而直链有效期门控硬编码 max(2×片长, 1h)（2 小时电影要求 ≥4h），所有直链都被门控拦去代理。门控改为设置项"直链最小剩余有效期（分钟）"（默认 30，0=不门控），并输出被拦时的具体数值便于观察。链接中途过期播放仍会卡住，重新播放即可重新解析（信息页/选版本不受影响）。
+v0.4.5 修复多版本起播询问未弹出：云盘快速通道按设计不取流列表导致询问条件永不成立（日志 streams=0）。现起播时若版本扫描缓存标记该影片多版本，按 5 秒预算同步补取流列表后弹出版本选择；超时/失败按默认版本直接起播（服务端扫描成本一次性，结果落缓存）。弹选择框前先关闭 Kodi busy 遮罩避免被覆盖。
+v0.4.4 多版本影片起播前询问版本：播放有多个版本的影片时弹出版本选择框（含各版本文件名明细），取消则播默认版本；流列表未就绪（冷文件）最多等 3 秒，超时按默认起播、仍可右键"选择版本播放"。新增设置"多版本播放前询问版本"（默认开）。
+v0.4.3 信息页展示各版本明细：版本扫描升级为同时记录每个版本的画质/编码标签（此前只存数量，信息页看不到版本数据），多版本影片的信息页剧情按行列出"1. 4K | HEVC | 蓝光原盘…"，旧版本缓存自动增量重扫补齐标签。另排查了 Kodi 日志中的非插件错误：影厂彩色图标资源包 resource.images.studios.coloured 未安装（皮肤引用其纹理）已代为安装；皮肤脚本 R5plot.py 在 macOS 上找 Linux 的 /etc/os-release 报 ERROR（校验失败本就静默退出、无行为影响）已降级为 INFO 并留原文件备份；"无法获取ListItem信息 DBID=" 为皮肤脚本遇到插件条目（无媒体库 DBID）的正常退出，属皮肤侧固有行为。
+v0.4.2 修复详情缓存多写者互覆丢数据 + Kodi 旧容器不刷新 + 信息页字段不全：真机日志定位三连根因——①详情缓存为"单大 JSON 整文件读改写"，多线程/多进程并发互相覆盖且 save_json 先截断可被读成空，实测 1323 条队列跑完只剩 775 条且零报错。改为每条目一个分片文件（detail/&lt;guid&gt;.json），写冲突只剩同 guid 互盖（无害），I/O 从每轮 ~216MB 降至 ~2MB；save_json 全部改原子写（临时文件+rename）。②预热失败原以 DEBUG 级日志静默丢弃——改为 WARNING 可见+保留队列重试（单条 3 次上限）+整轮全败退避。③用户停留在旧渲染容器看不到预热成果——列表 URL 加 dv 数据版本戳（缓存最新改动时间，分钟粒度），数据更新后 URL 变化使 Kodi 目录缓存自然失效。④信息页字段补全：年份取列表行、时长用 runtime 分钟回退（列表行 duration 常为 0）、电影日期归位 premiered（此前全塞 aired 导致只显示"首播"）；多版本信息写入剧情首行（信息页标题不带列表后缀）。
+v0.4.1 修复大库海报墙富元数据缺失 + 多版本影片可见化：真机排查确认列表接口海报字段完好、背景画/标志/演员/流派缺失的根因是详情缓存只保留最近 300 条（大库永远只有 300 条有富元数据且反复重预热）+ 预热串行 12 条/3s 太慢（1300 条需 15 分钟+）。现详情缓存上限 300→2000 并按渲染实际消费字段瘦身存储（丢弃 biography 等大字段），详情+演员表两连发改 4 线程并行（全库 ~3-4 分钟补完），并发写加锁；修复演员 order=0 被排到末尾可能截断的问题。多版本影片：真机实测 30% 电影多版本（最多 6 版本）而列表接口无版本数字段，新增 service 后台版本数扫描（stream_list 逐条探测、3 并行、冷文件保护自动冷却，全库 ~2 分钟），多版本影片在海报墙标题后显示"〔N版本〕"；右键"选择版本播放"等待获取流列表时给出提示。
+v0.4.0 大库整库直出（海报墙一面墙即整库，无翻页项）：真机验证 item/list 支持 page/page_size 分页与 ancestor_guid 服务端按库过滤，且不带分页参数时服务端默认 page_size=500 会静默截断大库（1324 条只返回 500 条，此前的正确性 bug 本次一并修复）。库/全部电影/全部剧集改为：item_list_walk 并行分页拉全（3×500 墙钟 ~2s）→ desc.py 整库描述符落盘（30 分钟 TTL）→ 渲染只做 ListItem 构造，TTL 内进入零网络零解析；service 新增常驻整库预热线程（开机后逐库错峰构建，日常进入直接命中）；富元数据（背景画/标志/演员/流派）改在渲染时从详情缓存现查，service 预热补全后旧描述符无需重建自动变富；标记已观看/播放回传改为 patch_watched 原地修正描述符（不再整库失效）；详情预热队列上限 200→2000。新增设置"每页条数"（默认 0=整库直出；低端设备可设 50-200 回退为带"下一页"的分页列表）。
+v0.3.2 大库列表加载优化：item_list 加 5 分钟 TTL 双层缓存（进程内存 + 落盘配合 mtime 校验，每个列表进程仅首次读盘解析）——全库/目录列表命中时零网络、零读盘，网络失败自动回退过期数据（陈旧总比白屏好）；标记已观看、播放结束回传后主动失效列表缓存，避免 watched 状态在 TTL 内滞后；缓存条目按服务器 base 校验，切换服务器不串数据。play 热路径的 stream_list 缓存读取统一走 mtime 校验缓存（play() 内 CLOUD_LINK_CACHE_FILE/STREAM_CACHE_FILE 读取均只首次读盘解析）。
+v0.3.1 换链 UA 改为播放端完整 UA 串（修复 115 直链 403）：真机定位到 vfs.stream.fast v1.3.1 不解析 Kodi 管道参数（该支持上游 2026-05-05 才提交、未随 1.3.1 发布），其回退为 kodi::network::GetUserAgent() 的完整 UA 串，与短串绑定不匹配被 115 拒绝 403。现改为：本地代理从真实请求（海报/视频流）捕获播放端实际发送的完整 UA 并落盘（视频端 UA 优先），换链时原样声明——直链绑定的 UA 与 Kodi 原生 curl、FastVFS 默认发送的串天然一致，无需依赖管道注入。未捕获到采样前（安装后首次播放）自动走本地代理保证首播可用，并完成采样，之后自动切直链；移除 trim_player 回退链，代理路径统一默认 UA。另真机确认 115 的 /stream 响应无 expired_at，直链缓存走 5 分钟兜底 TTL。
+v0.3.0 网盘直链播放统一逻辑（115/天翼等全部适用）：换链时向服务端声明 Kodi 播放器默认 UA（直链绑定同 UA，多数情况零注入直连），失败自动回退 trim_player 绑定并改用 Kodi 管道参数（url|User-Agent=..&amp;Cookie=..）注入请求头；自洽探测改为"用与播放完全相同的请求头"发 Range 0-0 且仅接受 206（探测头=播放头，彻底消除 0.2.18 的 206 假阳性，不再按 header 直接判死 UA 绑定链路）。新增直链有效期门控：剩余有效期不足 max(2×片长,1h) 不直连（直连后链接中途过期无自愈手段），回退代理。ISO/BDMV 遵守"扩展名必须在 URL path 尾（? 参数里无效）"的插件机制限制：直链 path 自带 .iso 才裸直连；新增高级设置"VFS 插件 scheme"，配置后 ISO 直链经 VFS 插件取流（URL 为 scheme://play/文件名.iso?d=base64url 描述符，含直链/请求头/过期时间；VFS 侧需自管每链接并发与头注入），未配置仍走本地代理。代理转发补传 If-Range；service 播放匹配按去管道 URL 比较（不同 Kodi 版本 getPlayingFile 对管道段返回不一致，避免直链播放时进度回传/自动续播失效）；详情/云链缓存读取统一走 mtime 校验的进程内缓存。
+v0.2.24 按用户决定移除 0.2.23 的列表预热与 0.2.22 的首播提示（避免对 115 产生额外请求模式）：冷文件（从未播过或云链 ~2-3h 过期）首次播放仍需等服务端扫描 ~20s（坑⑤，服务端成本无法在播放时消除），同一文件第二次起云链缓存命中秒开。行为回到 0.2.21。
+v0.2.23 列表浏览时后台预热云盘冷文件（治 20s 首播等待）：冷文件（从未播过或云链过期，实测 115 云链 ~2-3h 失效）播放前服务端要扫描 ~20s 生成直链（坑⑤），播放时无法绕过。现列表每页显示时把可播放条目入预热队列（瞬时写文件），service 新增 _warm_loop 常驻消费——逐个 stream_list 触发服务端扫描并落盘缓存（供播放的文件名/字幕路径复用），用户浏览期间预热完成、点击秒开。安全限制：串行消费（冷扫描本身 ~20s 天然限速）、播放中让路、队列上限 40、连续 2 次失败熔断 60s（避免打爆服务端/115）。预热完成记 INFO 日志"云盘预热完成: guid"。（0.2.24 已移除）
+v0.2.22 首播等待提示：从未播放过的云盘大文件（如 108GB 阿甘正传）首次播放时，服务端 POST /stream 要扫描文件生成直链（实测 ~20s，坑⑤），期间 Kodi 转圈、CCurlFile::Stat 可能超时报错均属正常（HEAD 已即时返回并后台预热，但 Stat 经 GET 路径仍需等扫描完成）。现冷首播时弹通知"首次播放：服务器准备中，大文件约需 20 秒…"，避免以为卡死；同一文件第二次起云链已缓存、秒开。此为服务端扫描成本，插件无法消除。
+v0.2.21 续播只用 Kodi 原生提示框（取消 0.2.20 的插件自弹框）：Kodi 原生"续播/从头开始"框基于播放书签在点击时弹出，用户选"续播"时 Kodi 以 resume=true 调用插件，选"从头开始"/未弹框不带参数。插件据此决定：resume=true → 播放起步后自动 seek 到服务端断点（蓝光 ISO 由插件 seek 落实）；其余一律从 0 起——彻底修掉 0.2.19"选从头开始仍被拉到断点"的问题（未传参不再默认续播）。收到 resume 参数时记 INFO 日志便于核对。
+v0.2.20 续播选择框改由插件自管（修正 0.2.19）：实测 Kodi 的续播提示框选择发生在插件运行之后的 PlayFile 阶段，resume 参数不会传回插件——0.2.19 的"未传参默认续播"分支会在用户选"从头开始"后仍自动 seek 到断点（用户实测复现）。现改为：有断点（≥10s）时由插件自己弹"从头开始 / 续播（mm:ss）"选择框（15s 无操作按从头开始），选择写入 pending.seek_to，service 的 onAVStarted 据此 seek；不再设置 ListItem 的 resumePoint（避免 Kodi 二次弹框或自行 seek 与用户选择冲突，蓝光 ISO 的续播由我们的 seek 兜底）。自动 seek 日志升级为 INFO 级（debug 关闭时也可见，便于排查）。
+v0.2.19 续播按用户选择处理：Kodi 的续播提示框/右键菜单（续播/从头开始）选择以 resume=true/false 参数传给插件，此前插件从未读取——用户选"续播"也被忽略、从 0 起播（蓝光 ISO 尤甚，只能手动拖进度条）。现 player.play 解析该参数写入 pending.seek_to（续播→服务端位置；从头开始→0 不 seek；未弹框默认服务端位置），service 的 FnPlayer.onAVStarted 据此在播放起步后自动 seek 到所选位置（>10s 才 seek，near-check 防重复，失败重试）。修正 0.2.17 无条件 seek 会覆盖用户"从头开始"选择的设计缺陷。
+v0.2.18 修复 115 播放 403 报错（直链假阳性）：resolve_playable_url 的 Range 0-0 探测对 115 链路不可靠——偶发 206 假阳性会把 302 最终 CDN 地址缓存为 playable_url，导致后续播放跳过代理直连 115 → 403 "HTTP response code said error"。现按云链 header 判定：链路要求特定 UA（115 的 trim_player、中转层 UA）→ Kodi 无法为单个播放项附加自定义 UA，一律回退本地代理，不探测、不缓存直链（假阳性根源消除）；S3 预签名等无 UA 要求的链路（天翼/189）不受影响，仍走探测直连。同时清除已缓存的坏 playable_url。
+v0.2.17 蓝光 ISO 续播自动 seek：Kodi 对蓝光 ISO（CDVDInputStreamBluray）+ setResolvedUrl 条目不应用 ListItem 的 resumePoint（从标题 0 起播，此前用户须手动拖进度条）。现 service 的 FnPlayer.onAVStarted（AV 就绪≈首帧）在播放器起步后自动 seek 到服务端记录的续播点 ts0（续播点>10s 才 seek；near-check 若已在续播点附近则不重复 seek，兼容 Kodi 原生 resume 的非蓝光场景；失败重试一次、最终放弃不报错，用户仍可手动 seek），省去"从 0 起播 ~6.5s→手动 seek→re-buffer"的空跑，click→稳定画面约 19.6s→13s。BD PTS 无偏移（首帧 PTS≈0），seek 落点准确。
+v0.2.16 修复冷启动播放 Stat 超时（CCurlFile::Stat Timeout 28）并加速暖启动首屏：代理 HEAD/Stat 不再打上游——命中缓存的文件大小即时返回 Content-Length，未命中立即返回 200 让 GET 取大小，杜绝冷启动时 HEAD 在服务端 65GB 扫描期间超时（20s）报错；GET 的真实大小（206 Content-Range total / 200 Content-Length）落内存+磁盘缓存，后续 HEAD/seek/重开零上游开销（暖启动每次省 ~1-5s 的 NAS 400 探测+云链解析+上游 open）。HEAD 同时后台预热云链缓存，使紧随其后的 GET 命中缓存、扫描与 Kodi 装配并行。size 缓存跨重启（7 天 TTL，下次 GET 自动校正）。
+v0.2.15 优化 115 等云盘代理转发性能（seek 延迟媲美直链）：代理对云盘 HTTPS 直链复用上游 TLS 连接（连接池），省掉每次 seek 的 TCP+TLS 握手；实测后续 seek 延迟从 ~0.35s 降至 ~0.10s（3 倍），拖动进度条/开屏多 seek 响应接近直连。吞吐不变（~14MB/s，受 115 CDN 限速）。池失败/3xx/stale 连接一律回退原 urllib 路径——最坏等同旧行为；部分读中断的连接强制丢弃不复用（避免 stale 连锁）。仅作用于云盘 HTTPS 直链，NAS 本地走原 urllib 零影响。
+v0.2.14 云盘直链分流减负：天翼/189 等 S3 预签名直链（UA 无关）现解析出最终地址后直接交给播放器直连 CDN，不再经本地代理转发视频流（78GB 4K 片零代理流量）；解析用 Kodi 播放器默认 UA 探测，结果与实际播放 UA 一致、零假设，命中则直链、403 则回退代理。115（下载层校验 trim_player UA）、NAS 本地文件（需 Authorization）、中转层需 UA 的资源仍走代理（播放器无法为单个条目附加自定义请求头）。探测结果复用云链缓存（data.playable_url，与直链同有效期），负缓存 60s 避免反复探测 115。
+v0.2.13 修复天翼云盘等 strm 中转资源播放不稳：直链为 302 中转（中转→云盘API→CDN）时，每个播放请求都重打中转、撞上其抖动即整段失败；现首次请求跟随跳转后缓存最终 CDN 地址直连（403 自动失效回退），实测后续请求提速约 2.5 倍且不再受中转波动影响。云盘 strm 剥壳后文件名无真实后缀（如以 "-WF" 结尾）时，自动从直链 URL 尾部文件名或服务端探测的容器类型补全（.mkv/.iso 等），播放器可正确识别容器、代理可补 Content-Type。代理上游故障（≥400、200 空 body、直链 401/403 失效重取）现以 WARNING 级别记录上游主机与 media_guid，此前这些路径零日志、故障排查全靠猜。
+v0.2.12 修复停止播放时 service 的 "Kodi is not playing any media file" error 日志：停止后不再调 getTime()，改用主循环周期缓存的进度；同时修正其掩盖的进度回传 bug（手动停止时原先回传起播位置而非真实观看进度）。
+v0.2.11 加快列表加载（播放退出返回列表的转圈）：详情缓存读取加进程内 mtime 校验缓存——此前列表每个条目都全量解析 4.4MB 的 item_detail_cache.json（50 条目实测 2.1s），缓存后仅首次解析（38ms）；列表加载去掉 ensure_token 的 user/info 校验往返（~115ms/次，call 自带 401 重登）。
+v0.2.10 修正 InfoTagVideo.setCast 报错：其只接受 xbmc.Actor 对象（构造 Actor(name, role, order, thumbnail)），此前传 dict 报 "Non api type passed to setCast" 并回退老 API。现已转换后传入，Actor 类不可用时回退。
+v0.2.9 修正 InfoTagVideo 迁移未生效的问题：Kodi 上 ListItem 的方法名是 getVideoInfoTag()（此前误写成不存在的 getInfoTagVideo() 导致一直回退废弃 API、警告不消）。现以真名为主、兼容备选。
+v0.2.8 迁移到 InfoTagVideo API：ListItem.setInfo/setCast/setProperty(resumetime) 全部改用 InfoTagVideo 的 setter（Kodi 21 起已废弃老 API），消除告警、减日志开销、防未来 Kodi 移除老 API 致失效；老版本无 getInfoTagVideo 时自动回退。
+v0.2.7 修复点播首屏真因：列表浏览的后台详情预热线程让列表 invoker 多活数秒，而 Kodi 播放器 OpenFile 卡在 invoker 退出上（实测 +2.3s）。改为写入队列文件、由常驻 service 进程消费，不卡任何 invoker；play 的演员表装配改用缓存数据、冷项交 service 队列；ensure_server 缓存探测结果（build_cast 40 次 image_url 不再重复探测）。
+v0.2.6 加速点播首屏：去掉每次播放的 user/info token 校验冗余往返（call 自带 401 重登）；详情/演员表装配移到 setResolvedUrl 后台线程（冷项不阻塞，暖项也省去 build_cast）；文件名等待 3s→1s；海报/背景图改由 play_info 即时取（冷项不丢图）。
+v0.2.5 修复云盘 ISO 挂载播放卡死：115 CDN 每链路并发上限约 2（超并发 403 "pmt 3-2"），代理加 2 槽位信号量排队；POST /stream 单飞锁（并发只解析一次，避免多次服务端扫描）；已知云盘条目播放后不再后台补抓 stream_list；403 重试加退避；代理监听队列 5→128（并发突刺连接不再被 RST）。
+v0.2.4 修复云盘 strm（如 .iso.strm）播放失败：文件名取自 stream_list.files（guid 匹配）或云链缓存，剥离 .strm 壳后以真实容器后缀（.iso 等）结尾进播放 URL，使 Kodi 按光盘镜像挂载；快速通道拿不到文件名时限等 stream_list 最多 3 秒。
+v0.2.3 .iso 原盘镜像的 Content-Type 补全为 application/x-iso9660-image。
+v0.2.2 播放 URL 尾部附带真实文件名（含后缀），便于播放器识别文件名与容器类型；上游 Content-Type 缺失时按后缀补全。
+v0.2.1 修复设置界面文字空白：settings.xml 标签改用数字 ID，新增中英文语言包。
+v0.1.1 去除 script.module.requests 依赖，改用标准库 urllib，安装无需联网拉取仓库包。
+v0.1.0 首个版本：登录认证（Authx 签名）、媒体库浏览、蓝光多版本选择、本地代理播放、外挂字幕、进度回传。</news>
+        <assets>
+            <icon>resources/icon.png</icon>
+        </assets>
+    </extension>
+</addon>
+<addon id="script.skinvariables"
+version="2.2.9"
+name="Skin Variables"
+provider-name="jurialmunkey">
+<requires>
+  <import addon="xbmc.python" version="3.0.0" />
+  <import addon="script.module.jurialmunkey" version="0.2.28" />
+  <import addon="script.module.infotagger" version="0.0.5" />
+</requires>
+<extension point="xbmc.python.script" library="script.py" />
+<extension point="xbmc.python.pluginsource" library="plugin.py">
+  <provides>video</provides>
+</extension>
+<extension point="xbmc.addon.metadata">
+  <summary lang="en_GB">Skin Variables helps skinners to construct variables and expressions for multiple containers and listitems using a template</summary>
+  <summary lang="zh_CN">Skin Variables 帮助皮肤设计者使用模板为多个容器和列表项构建变量及表达式</summary>
+  <summary lang="fr_FR">Skin Variables aide les skinners à créer des variables et des expressions pour plusieurs conteneurs et listes à l'aide d'un modèle</summary>
+  <summary lang="sv_SE">Skin Variables hjälper de som bygger skal att skapa variabler och uttryck för flera behållare och listobjekt med hjälp av en mall</summary>
+  <description lang="en_GB">Skin Variables helps skinners to construct variables and expressions for multiple containers and listitems using a template</description>
+  <description lang="zh_CN">Skin Variables 帮助皮肤设计者使用模板为多个容器和列表项构建变量及表达式</description>
+  <description lang="fr_FR">Skin Variables aide les skinners à créer des variables et des expressions pour plusieurs conteneurs et listes à l'aide d'un modèle</description>
+  <description lang="sv_SE">Skin Variables hjälper de som bygger skal att skapa variabler och uttryck för flera behållare och listobjekt med hjälp av en mall</description>
+  <disclaimer lang="en_GB">For skinners</disclaimer>
+  <disclaimer lang="zh_CN">适用于皮肤设计者</disclaimer>
+  <disclaimer lang="fr_FR">Pour les skinners</disclaimer>
+  <disclaimer lang="sv_SE">För de som bygger skal</disclaimer>
+  <license>GPL-3.0-or-later</license>
+  <assets>
+    <icon>icon.png</icon>
+    <fanart>fanart.jpg</fanart>
+  </assets>
+</extension>
+</addon>
+<addon id="script.module.jurialmunkey" name="jurialmunkey common" provider-name="jurialmunkey" version="0.2.35">
+  <requires>
+    <import addon="xbmc.python" version="3.0.1"/>
+    <import addon="script.module.requests" version="2.9.1"/>
+    <import addon="script.module.infotagger" version="0.0.5" />
+  </requires>
+  <extension point="xbmc.python.module" library="resources/modules" />
+  <extension point="xbmc.addon.metadata">
+    <description lang="en_GB">Common code required by TMDbHelper and other related jurialmunkey add-ons</description>
+    <description lang="zh_CN">TMDb 助手及其他相关 jurialmunkey 插件所需的通用代码</description>
+    <license>GPL-3.0-or-later</license>
+    <website>https://github.com/jurialmunkey/script.module.jurialmunkey</website>
+    <assets>
+      <icon>icon.png</icon>
+    </assets>
+  </extension>
+</addon>
+<addon id="script.module.infotagger" name="InfoTagger" provider-name="jurialmunkey" version="0.0.9">
+  <requires>
+    <import addon="xbmc.python" version="3.0.1"/>
+  </requires>
+  <extension point="xbmc.python.module" library="resources/modules" />
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en_GB">Python wrapper for setInfo on Nexus InfoTags</summary>
+    <description lang="en_GB">Python wrapper for setInfo on Nexus InfoTags</description>
+    <license>GPL-3.0-or-later</license>
+    <website>https://github.com/jurialmunkey/script.module.infotagger</website>
+    <source>https://github.com/jurialmunkey/script.module.infotagger</source>
+    <assets>
+      <icon>icon.png</icon>
+    </assets>
+  </extension>
+
+</addon>
+<addon id="script.module.requests" name="requests" version="2.31.0" provider-name="Python Software Foundation">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.certifi" version="2023.5.7"/>
+    <import addon="script.module.chardet" version="5.1.0"/>
+    <import addon="script.module.idna" version="3.4.0"/>
+    <import addon="script.module.urllib3" version="1.26.16+matrix.1"/>
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Requests is an elegant and simple HTTP library for Python, built for human beings.</summary>
+    <description lang="en_GB">Requests is an elegant and simple HTTP library for Python, built for human beings.</description>
+    <license>Apache-2.0</license>
+    <platform>all</platform>
+    <website>https://requests.readthedocs.io/</website>
+    <source>https://github.com/psf/requests</source>
+    <assets>
+      <icon>resources/icon.png</icon>
+    </assets>
+  </extension>
+</addon>
+<addon id="script.module.certifi" name="certifi" version="2023.5.7" provider-name="Certifi">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Certifi: Python SSL Certificates</summary>
+    <description lang="en_GB">Certifi is a carefully curated collection of Root Certificates for validating the trustworthiness of SSL certificates while verifying the identity of TLS hosts. It has been extracted from the Requests project.</description>
+    <license>MPL-2.0</license>
+    <website>https://github.com/certifi/python-certifi</website>
+    <source>https://github.com/certifi/python-certifi</source>
+    <assets>
+      <icon>resources/icon.png</icon>
+    </assets>
+  </extension>
+</addon>
+<addon id="script.module.chardet" name="chardet" version="5.1.0" provider-name="Character Encoding Detector">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">The Universal Character Encoding Detector</summary>
+    <description lang="en_GB">The Universal Character Encoding Detector</description>
+    <license>LGPL-2.1</license>
+    <platform>all</platform>
+    <website>https://chardet.readthedocs.io/</website>
+    <source>https://github.com/chardet/chardet</source>
+    <assets>
+      <icon>resources/icon.png</icon>
+    </assets>
+  </extension>
+</addon>
+<addon id="script.module.idna" name="idna" version="3.10.0" provider-name="Kim Davies">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Internationalized Domain Names for Python</summary>
+    <description lang="en_GB">Internationalized Domain Names for Python</description>
+    <license>BSD-3-Clause</license>
+    <platform>all</platform>
+    <website>https://github.com/kjd/idna</website>
+    <source>https://github.com/kjd/idna</source>
+    <assets>
+      <icon>resources/icon.png</icon>
+    </assets>
+  </extension>
+</addon>
+<addon id="script.module.urllib3" name="urllib3" version="2.2.3" provider-name="urllib3">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0" />
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">urllib3 is a powerful, user-friendly HTTP client for Python</summary>
+    <description lang="en_GB">urllib3 is a powerful, user-friendly HTTP client for Python. Much of the Python ecosystem already uses urllib3 and you should too. urllib3 brings many critical features that are missing from the Python standard libraries</description>
+    <license>MIT</license>
+    <platform>all</platform>
+    <website>https://urllib3.readthedocs.io/</website>
+    <source>https://github.com/urllib3/urllib3</source>
+    <assets>
+      <icon>resources/icon.png</icon>
+    </assets>
+  </extension>
+</addon>
+<addon id="resource.images.weathericons.white" name="Weather Icons - White" version="0.0.6" provider-name="Team Kodi">
+	<extension point="kodi.resource.images" compile="true" type="weather" />
+	<requires>
+		<import addon="kodi.resource" version="1.0.0"/>
+	</requires>
+	<extension point="xbmc.addon.metadata">
+		<summary lang="en">White Weather Icons</summary>
+		<description lang="en">White Weather Icons</description>
+		<platform>all</platform>
+	</extension>
+</addon>
+<addon id="resource.images.studios.coloured" name="Studio Icons - Coloured" version="0.0.24" provider-name="Team Kodi">
+	<extension point="kodi.resource.images" compile="true" type="studios" />
+	<requires>
+		<import addon="kodi.resource" version="1.0.0"/>
+	</requires>
+	<extension point="xbmc.addon.metadata">
+		<summary lang="en">Coloured Studio Icons</summary>
+		<description lang="en">Coloured Studio Icons</description>
+		<platform>all</platform>
+	</extension>
+</addon>
+<addon id="resource.font.robotocjksc" name="Roboto CJKSC" version="0.0.3" provider-name="jurialmunkey">
+    <requires>
+        <import addon="kodi.resource" version="1.0.0"/>
+    </requires>
+    
+    <extension point="kodi.resource.font" compile="false" />
+    
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en_GB">Roboto CJKSC fonts</summary>
+        <description lang="en_GB"></description>
+        <language></language>
+        <platform>all</platform>
+        <license>Apache-2.0</license>
+        <forum></forum>
+        <email></email>
+        <source></source>
+        <news></news>
+        <disclaimer></disclaimer>
+        <assets>
+            <icon>icon.png</icon>
+        </assets>
+    </extension>
+</addon>
+<addon id="repository.fuse.media" name="Fuse Media Repository" version="1.0.0" provider-name="huahn3">
+    <extension point="xbmc.addon.repository" name="Fuse Media Repository">
+        <dir>
+            <info compressed="false">https://huahn3.github.io/kodi2fntv/addons.xml</info>
+            <checksum>https://huahn3.github.io/kodi2fntv/addons.xml.md5</checksum>
+            <datadir zip="true">https://huahn3.github.io/kodi2fntv/</datadir>
+        </dir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en_GB">Fuse Media Repository</summary>
+        <summary lang="zh_CN">Fuse 媒体仓库</summary>
+        <description lang="en_GB">Arctic Fuse 3 (pure) skin, fnOS media plugin and their dependencies.</description>
+        <description lang="zh_CN">Arctic Fuse 3（纯皮肤）、飞牛影视插件及其全部依赖。</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+</addons>
