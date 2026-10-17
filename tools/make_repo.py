@@ -71,6 +71,12 @@ for aid, src in SOURCES.items():
     zpath = os.path.join(OUT, aid, aid + "-" + ver + ".zip")
     os.makedirs(os.path.dirname(zpath))
     subprocess.run(["zip", "-rq", zpath, aid], cwd=STAGE, check=True)
+    for asset in ["icon.png", "fanart.jpg", "fanart.png"]:
+        src_asset = os.path.join(src, asset)
+        if not os.path.isfile(src_asset):
+            src_asset = os.path.join(src, "resources", asset)
+        if os.path.isfile(src_asset):
+            shutil.copy2(src_asset, os.path.join(OUT, aid, asset))
     blocks.append(strip_decl(open(ax, encoding="utf-8", errors="ignore").read()).strip())
     print("packed %s-%s.zip" % (aid, ver))
 

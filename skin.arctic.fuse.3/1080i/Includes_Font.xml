@@ -140,10 +140,10 @@
     </include>
 
     <include name="Font_Default">
-        <param name="font_bold">Inter-Bold.ttf</param>
-        <param name="font_regular">Inter-Regular.ttf</param>
-        <param name="font_light">Inter-Light.ttf</param>
-        <param name="style_light" />
+        <param name="font_bold">resource://resource.font.robotocjksc/Inter-Unicode-Bold.ttf</param>
+        <param name="font_regular">resource://resource.font.robotocjksc/Inter-Unicode-Regular.ttf</param>
+        <param name="font_light">resource://resource.font.robotocjksc/Inter-Unicode-Regular.ttf</param>
+        <param name="style_light">light</param>
         <param name="size_hint">15</param>
         <param name="size_tiny">21</param>
         <param name="size_mini">24</param>
@@ -156,11 +156,11 @@
         <param name="size_midi_x2">64</param>
 
         <!-- Linespacing -->
-        <param name="plot_linespacing_head">1.169</param>
-        <param name="plot_linespacing_midi">1.455</param>
-        <param name="plot_linespacing_main">1.16</param>
-        <param name="plot_linespacing_mini">1.31</param>
-        <param name="plot_linespacing_tiny">1.23</param>
+        <param name="plot_linespacing_head">1.03</param>
+        <param name="plot_linespacing_midi">1.45</param>
+        <param name="plot_linespacing_main">1.13</param>
+        <param name="plot_linespacing_mini">1.20</param>
+        <param name="plot_linespacing_tiny">1.11</param>
 
         <definition>
 
