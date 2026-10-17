@@ -119,10 +119,9 @@ for aid in list(SOURCES.keys()) + [REPO_ID]:
     zips = sorted(f for f in os.listdir(d) if f.endswith(".zip"))
     write_index(d, [(z, z) for z in zips] + [("..", "../")])
 
-# root index.html -> links to each addon folder + addons.xml
-root_links = [(aid + "/", aid + "/") for aid in sorted(list(SOURCES.keys()) + [REPO_ID]) if os.path.isdir(os.path.join(OUT, aid))]
-root_links += [("addons.xml", "addons.xml"), ("addons.xml.md5", "addons.xml.md5")]
-write_index(OUT, root_links)
+# root index.html -> show only the repository addon (like jurialmunkey);
+# the addon folders still exist and are fetched by Kodi via direct URLs, not by browsing.
+write_index(OUT, [(REPO_ID + "/", REPO_ID + "/")])
 if os.path.isdir(STAGE):
     shutil.rmtree(STAGE, ignore_errors=True)
 print("BASEURL =", BASEURL)
