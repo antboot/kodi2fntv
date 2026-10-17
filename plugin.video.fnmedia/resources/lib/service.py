@@ -336,6 +336,41 @@ def _prewarm_loop(monitor, player):
             monitor.waitForAbort(60)
 
 
+def _check_skin_prompt(monitor):
+    """检测并提示用户是否需要安装配套的 Arctic Fuse 3 皮肤"""
+    SKIN_ID = "skin.arctic.fuse.3"
+    flag_file = util.data_file("skin_prompted.flag")
+    if os.path.exists(flag_file):
+        return
+
+    # 等待 Kodi GUI 界面完全就绪
+    import xbmcgui
+    for _ in range(15):
+        if monitor.abortRequested():
+            return
+        if xbmc.getCondVisibility("System.HasAddon(%s)" % SKIN_ID):
+            return
+        if xbmcgui.getCurrentWindowId() > 0:
+            break
+        time.sleep(1)
+
+    if monitor.abortRequested() or xbmc.getCondVisibility("System.HasAddon(%s)" % SKIN_ID):
+        return
+
+    try:
+        try:
+            with open(flag_file, "w") as f:
+                f.write(str(time.time()))
+        except Exception:
+            pass
+
+        dialog = xbmcgui.Dialog()
+        if dialog.yesno("飞牛影视 (fntv)", "检测到尚未安装配套的 Arctic Fuse 3 皮肤，是否立即从仓库安装？"):
+            xbmc.executebuiltin("InstallAddon(%s)" % SKIN_ID)
+    except Exception as e:
+        util.log("check_skin_prompt error: %s" % e, xbmc.LOGWARNING)
+
+
 def run():
     monitor = xbmc.Monitor()
     player = FnPlayer()
@@ -345,6 +380,8 @@ def run():
     threading.Thread(target=_enrich_loop, args=(monitor,), daemon=True).start()
     # 常驻整库预热（构建海报墙描述符缓存）——同样独立线程错峰执行
     threading.Thread(target=_prewarm_loop, args=(monitor, player), daemon=True).start()
+    # 提示是否安装配套皮肤
+    threading.Thread(target=_check_skin_prompt, args=(monitor,), daemon=True).start()
 
     # 启动时若发现遗留的 pending（上次 Kodi 被强退/断电），补报最后一次已知位置。
     # 取 ts（周期回传落盘的真实位置）而非 ts0（起播位置）：0.7.17 用 ts0，
