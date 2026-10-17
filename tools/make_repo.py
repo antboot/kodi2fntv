@@ -13,6 +13,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs")
 STAGE = os.path.join(ROOT, ".repo_stage")
 BASEURL = (sys.argv[1] if len(sys.argv) > 1 else "https://huahn3.github.io/kodi2fntv").rstrip("/")
+DATAURL = (sys.argv[2] if len(sys.argv) > 2 else "https://raw.githubusercontent.com/huahn3/kodi2fntv/main/docs").rstrip("/")
 
 # addon id -> source directory
 SOURCES = {
@@ -32,7 +33,7 @@ SOURCES = {
 }
 
 REPO_ID = "repository.fuse.media"
-REPO_VER = "1.0.1"
+REPO_VER = "1.0.2"
 
 EXCLUDE = ["--exclude", ".git", "--exclude", ".github", "--exclude", ".gitignore",
            "--exclude", ".gitattributes", "--exclude", ".agents", "--exclude", ".DS_Store",
@@ -89,7 +90,7 @@ repo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <platform>all</platform>
     </extension>
 </addon>
-''' % (REPO_ID, REPO_VER, BASEURL, BASEURL)
+''' % (REPO_ID, REPO_VER, DATAURL, DATAURL)
 open(os.path.join(repo_dir, "addon.xml"), "w", encoding="utf-8").write(repo_xml)
 os.makedirs(os.path.join(OUT, REPO_ID))
 subprocess.run(["zip", "-rq", os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"), REPO_ID], cwd=STAGE, check=True)
