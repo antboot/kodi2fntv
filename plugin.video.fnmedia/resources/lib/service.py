@@ -312,6 +312,11 @@ def _prewarm_loop(monitor, player):
             done = desc.prewarm_scopes(client)
             if done:
                 util.log('整库预热完成: %s' % '、'.join(done))
+                try:
+                    from resources.lib import skin_sync
+                    skin_sync.sync_home_widgets()
+                except Exception as e:
+                    util.log('同步皮肤小组件异常: %s' % e, xbmc.LOGDEBUG)
                 continue
             if time.time() - player.last_stop_ts < HEAVY_IDLE_S:
                 continue   # 重活等空闲窗口（last_stop_ts=0 的开机场景不受限）
@@ -334,6 +339,40 @@ def _prewarm_loop(monitor, player):
         except Exception as e:
             util.log('整库预热异常: %s' % e, xbmc.LOGDEBUG)
             monitor.waitForAbort(60)
+
+
+def _check_config_prompt(monitor):
+    """检测是否已配置飞牛服务器，未配置时弹窗提示配置"""
+    if util.get_setting("server"):
+        return
+    flag_file = util.data_file("config_prompted.flag")
+    if os.path.exists(flag_file):
+        return
+
+    import xbmcgui
+    for _ in range(15):
+        if monitor.abortRequested():
+            return
+        if util.get_setting("server"):
+            return
+        if xbmcgui.getCurrentWindowId() > 0:
+            break
+        time.sleep(1)
+
+    if monitor.abortRequested() or util.get_setting("server"):
+        return
+
+    try:
+        try:
+            with open(flag_file, "w") as f:
+                f.write(str(time.time()))
+        except Exception:
+            pass
+
+        from resources.lib import skin_sync
+        skin_sync.prompt_first_run_setup()
+    except Exception as e:
+        util.log("check_config_prompt error: %s" % e, xbmc.LOGWARNING)
 
 
 def _check_skin_prompt(monitor):
@@ -380,8 +419,20 @@ def run():
     threading.Thread(target=_enrich_loop, args=(monitor,), daemon=True).start()
     # 常驻整库预热（构建海报墙描述符缓存）——同样独立线程错峰执行
     threading.Thread(target=_prewarm_loop, args=(monitor, player), daemon=True).start()
-    # 提示是否安装配套皮肤
+    # 提示是否配置服务器及安装配套皮肤
+    threading.Thread(target=_check_config_prompt, args=(monitor,), daemon=True).start()
     threading.Thread(target=_check_skin_prompt, args=(monitor,), daemon=True).start()
+
+    def _initial_skin_sync():
+        monitor.waitForAbort(4)
+        if monitor.abortRequested():
+            return
+        try:
+            from resources.lib import skin_sync
+            skin_sync.sync_home_widgets()
+        except Exception as e:
+            util.log("initial_skin_sync error: %s" % e, xbmc.LOGDEBUG)
+    threading.Thread(target=_initial_skin_sync, daemon=True).start()
 
     # 启动时若发现遗留的 pending（上次 Kodi 被强退/断电），补报最后一次已知位置。
     # 取 ts（周期回传落盘的真实位置）而非 ts0（起播位置）：0.7.17 用 ts0，

@@ -99,11 +99,15 @@ def check_hash(hashname, hashvalue=None):
 
 
 def load_filecontent(filename=None):
+    if not filename:
+        return ''
+    content = ''
     try:
         vfs_file = xbmcvfs.File(filename)
         content = vfs_file.read()
-    finally:
         vfs_file.close()
+    except Exception:
+        pass
     return content
 
 

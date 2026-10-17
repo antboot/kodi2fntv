@@ -40,6 +40,19 @@ def router():
 
     util.log('router action=%s params=%s' % (action, params))
 
+    # 检查是否已配置服务器，未配置时弹窗引导
+    if not util.get_setting('server'):
+        from resources.lib import skin_sync
+        skin_sync.prompt_first_run_setup()
+        xbmcplugin.endOfDirectory(handle, succeeded=False)
+        return
+
+    if action == 'sync_widgets':
+        from resources.lib import skin_sync
+        skin_sync.sync_home_widgets(force=True)
+        xbmcplugin.endOfDirectory(handle, succeeded=True)
+        return
+
     if action == 'play':
         player.play(handle, params)
     elif action == 'source':

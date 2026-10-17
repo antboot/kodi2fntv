@@ -217,6 +217,15 @@ def root(handle):
         libraries = client.mediadb_list()
     except ApiError as e:
         util.log('mediadb/list 失败: %s' % e.message, xbmc.LOGWARNING)
+        from resources.lib import skin_sync
+        skin_sync.prompt_connection_failure(e.message)
+
+    if libraries:
+        try:
+            from resources.lib import skin_sync
+            skin_sync.sync_home_widgets()
+        except Exception:
+            pass
 
     items = []
     for mdb in libraries:
@@ -259,6 +268,8 @@ def root(handle):
                   _static_item('搜索', 'DefaultAddonsSearch.png'), True))
     items.append((plugin_url({'action': 'refresh'}),
                   _static_item('立即刷新全部媒体库', 'DefaultFolderDownloads.png'), True))
+    items.append((plugin_url({'action': 'sync_widgets'}),
+                  _static_item('同步主页小组件（Arctic Fuse 3）', 'DefaultAddonNone.png'), True))
     items.append((plugin_url({'action': 'relogin'}),
                   _static_item('重新登录（刷新令牌）', 'DefaultUser.png'), True))
 
@@ -381,6 +392,8 @@ def filter_list(handle, params):
             scope = desc.load_scope(key, allow_expired=True)
             if scope is None:
                 message = e.message if isinstance(e, ApiError) else str(e)
+                from resources.lib import skin_sync
+                skin_sync.prompt_connection_failure(message)
                 util.notify('加载失败：%s' % message, error=True)
                 _empty(handle, '加载失败：%s' % message)
                 return
@@ -455,6 +468,8 @@ def recent(handle, params):
         data = client.item_list(ancestor_guid='', page=1, page_size=60,
                                 sort_column='create_time', sort_type='DESC')
     except ApiError as e:
+        from resources.lib import skin_sync
+        skin_sync.prompt_connection_failure(e.message)
         util.notify('加载失败：%s' % e.message, error=True)
         _empty(handle, '加载失败：%s' % e.message)
         return
@@ -477,7 +492,14 @@ def continue_watch(handle, params):
     """
     title = '继续观看'
     client = _prepare()
-    picked = desc.load_progress(client)
+    try:
+        picked = desc.load_progress(client)
+    except Exception as e:
+        message = e.message if isinstance(e, ApiError) else str(e)
+        from resources.lib import skin_sync
+        skin_sync.prompt_connection_failure(message)
+        _empty(handle, '加载失败：%s' % message)
+        return
     if not picked:
         _empty(handle, '暂无观看中的条目（后台预热完成后即出现）')
         return

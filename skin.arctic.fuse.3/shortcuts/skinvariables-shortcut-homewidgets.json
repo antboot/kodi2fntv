@@ -1,38 +1,26 @@
 [
     {
-        "label": "On Deck",
+        "label": "继续观看",
         "icon": "",
-        "path": "special://skin/extras/playlists/InProgressMovies.xsp",
+        "path": "plugin://plugin.video.fnmedia/?action=continue",
         "target": "videos"
     },
     {
-        "label": "In-Progress",
+        "label": "全部电影",
         "icon": "",
-        "path": "special://skin/extras/playlists/InProgressEpisodes.xsp",
+        "path": "plugin://plugin.video.fnmedia/?action=filter&type=Movie&title=全部电影",
         "target": "videos"
     },
     {
-        "label": "New Movies",
+        "label": "全部剧集",
         "icon": "",
-        "path": "special://skin/extras/playlists/NewMovies.xsp",
+        "path": "plugin://plugin.video.fnmedia/?action=filter&type=TV&title=全部剧集",
         "target": "videos"
     },
     {
-        "label": "New Shows",
+        "label": "最近添加",
         "icon": "",
-        "path": "special://skin/extras/playlists/NewShows.xsp",
-        "target": "videos"
-    },
-    {
-        "label": "Recent Shows",
-        "icon": "",
-        "path": "special://skin/extras/playlists/RecentTvShows.xsp",
-        "target": "videos"
-    },
-    {
-        "label": "Top 250",
-        "icon": "",
-        "path": "special://skin/extras/playlists/Top250Movies.xsp",
+        "path": "plugin://plugin.video.fnmedia/?action=recent",
         "target": "videos"
     }
 ]

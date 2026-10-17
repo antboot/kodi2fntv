@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.fnmedia" version="0.7.23" name="fntv" provider-name="fntv-kodi">
+<addon id="plugin.video.fnmedia" version="0.7.24" name="fntv" provider-name="fntv-kodi">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
     </requires>
@@ -14,7 +14,9 @@
         <platform>all</platform>
         <language>zh_CN</language>
         <license>GPL-3.0-only</license>
-        <news>v0.7.22 修复起播崩溃：修复 player.py 中由于提前检查长视频直链寿命而引用未初始化变量 resume_ts 导致的 UnboundLocalError，保障所有电影/剧集正常起播。
+        <news>v0.7.24 皮肤与插件深度融合：①Arctic Fuse 3 皮肤主页小组件全面打通飞牛影视——第 1 项为继续观看，后续项自动按用户在飞牛 NAS 中配置的媒体库（电影、剧集、自定义下载目录等）动态生成，媒体库变动时自动同步重载小组件；②类似 Emby for Kodi 的配对/断连自愈引导：安装或首次启动检测到未配置服务器时自动弹窗引导配置，遇到连接超时、网络中断或鉴权失效时主动弹窗提示并引导重新配对与检查设置。
+v0.7.23 增强配套皮肤关联：安装飞牛影视插件后自动检测并友好提示安装配套 Arctic Fuse 3 皮肤；皮肤与插件实现互相推荐与协同工作。
+v0.7.22 修复起播崩溃：修复 player.py 中由于提前检查长视频直链寿命而引用未初始化变量 resume_ts 导致的 UnboundLocalError，保障所有电影/剧集正常起播。
 v0.7.21 紧急修复：补齐 meta.py 中 _genre_map 所依赖的 _load 函数定义，彻底消除继续观看/渲染列表时的 NameError 报错。
 v0.7.20 架构与稳定性双重优化：①引入 Python 原生 SQLite3 持久化存储层（store.py，开启 WAL 模式多进程并发安全），替代原先散落全盘的数千个 detail_*.json 碎文件与小字典落盘，大幅降低电视盒子 Flash/eMMC 4K 随机读写磨损与遍历延迟，并提供全量详情微秒级迭代（build_genre_index 提速一个数量级），支持旧版 JSON 无缝平滑迁移；②网盘长片中途 403 断流自愈防护：当长视频剩余观看时长明显超出网盘直链有效寿命时，自动走本地代理承接，利用代理内部的 403 重新换链自愈机制保障长电影丝滑播完不闪退；③优化多版本判断与起播等待。
 v0.7.19 修复"继续观看"列表顺序：直接对齐飞牛官方 Web/App 端，调用原生 GET /v/api/v1/play/list 接口，保留服务端严格按最后观看时间维护的倒序列表，跨端一致。
