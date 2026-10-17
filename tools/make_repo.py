@@ -100,6 +100,29 @@ print("packed", REPO_ID + "-" + REPO_VER + ".zip")
 axml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<addons>\n' + "\n".join(blocks) + '\n</addons>\n'
 open(os.path.join(OUT, "addons.xml"), "w", encoding="utf-8").write(axml)
 open(os.path.join(OUT, "addons.xml.md5"), "w").write(hashlib.md5(axml.encode()).hexdigest())
+
+
+def write_index(dirpath, links):
+    """Write an Apache-autoindex-like listing so Kodi's HTTP browser can parse it."""
+    rows = "\n".join('<a href="%s">%s</a>' % (u, n) for n, u in links)
+    html = ('<!DOCTYPE html><html><head><meta charset="utf-8"><title>%s</title></head>'
+            '<body><h1>Index of /%s</h1><hr><pre>%s</pre><hr></body></html>'
+            % (os.path.basename(dirpath) or "", os.path.basename(dirpath) or "", rows))
+    open(os.path.join(dirpath, "index.html"), "w", encoding="utf-8").write(html)
+
+
+# index.html per addon folder -> link to its zip(s)
+for aid in list(SOURCES.keys()) + [REPO_ID]:
+    d = os.path.join(OUT, aid)
+    if not os.path.isdir(d):
+        continue
+    zips = sorted(f for f in os.listdir(d) if f.endswith(".zip"))
+    write_index(d, [(z, z) for z in zips] + [("..", "../")])
+
+# root index.html -> links to each addon folder + addons.xml
+root_links = [(aid + "/", aid + "/") for aid in sorted(list(SOURCES.keys()) + [REPO_ID]) if os.path.isdir(os.path.join(OUT, aid))]
+root_links += [("addons.xml", "addons.xml"), ("addons.xml.md5", "addons.xml.md5")]
+write_index(OUT, root_links)
 if os.path.isdir(STAGE):
     shutil.rmtree(STAGE, ignore_errors=True)
 print("BASEURL =", BASEURL)
