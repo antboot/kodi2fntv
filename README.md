@@ -9,7 +9,7 @@ Arctic Fuse 3 定制皮肤 ＋ 飞牛影视插件 ＋ 全套依赖，装一个�
 [![Kodi](https://img.shields.io/badge/Kodi-21%20Omega-1f9ede?logo=kodi&logoColor=white)](https://kodi.tv)
 ![皮肤](https://img.shields.io/badge/skin.arctic.fuse.3-3.3.12.7-e8a33d)
 ![插件](https://img.shields.io/badge/plugin.video.fnmedia-0.7.26-2ea44f)
-![仓库](https://img.shields.io/badge/repository-1.0.6-8957e5)
+![仓库](https://img.shields.io/badge/repository-1.0.7-8957e5)
 ![License](https://img.shields.io/badge/License-GPL--3.0--only-blue)
 [![下载源](https://img.shields.io/badge/下载源-kodi.qq47.de5.net-success)](https://kodi.qq47.de5.net/)
 
@@ -56,9 +56,9 @@ Arctic Fuse 3 定制皮肤 ＋ 飞牛影视插件 ＋ 全套依赖，装一个�
 
 1. **添加源**
    `设置 → 文件管理器 → 添加源` 输入 `https://kodi.qq47.de5.net/`
-   （备用源：`https://huahn3.github.io/kodi2fntv/`）
+   （备用源：`https://antboot.github.io/kodi2fntv/`）
 
-2. **装仓库**：`设置 → 插件 → 从 zip 文件安装` → 选择该源 → `repository.kodi2fntv.media-1.0.6.zip`（源根目录直接显示）
+2. **装仓库**：`设置 → 插件 → 从 zip 文件安装` → 选择该源 → `repository.kodi2fntv.media-1.0.7.zip`（源根目录直接显示）
 
 3. **装皮肤与插件**：`设置 → 插件 → 从仓库安装` → **Fuse Media Repository** → 安装 *Arctic Fuse 3* 与 *fntv（飞牛影视）*，依赖自动装齐
 

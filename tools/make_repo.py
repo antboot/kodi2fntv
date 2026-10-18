@@ -34,7 +34,7 @@ SOURCES = {
 }
 
 REPO_ID = "repository.kodi2fntv.media"
-REPO_VER = "1.0.6"
+REPO_VER = "1.0.7"
 
 EXCLUDE = ["--exclude", ".git", "--exclude", ".github", "--exclude", ".gitignore",
            "--exclude", ".gitattributes", "--exclude", ".agents", "--exclude", ".DS_Store",
@@ -94,7 +94,7 @@ for aid, src in SOURCES.items():
 
 # repository addon metadata
 repo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="%s" name="Fuse Media Repository" version="%s" provider-name="huahn3">
+<addon id="%s" name="Fuse Media Repository" version="%s" provider-name="antboot">
     <extension point="xbmc.addon.repository" name="Fuse Media Repository">
         <dir>
             <info compressed="false">%s/addons.xml</info>
