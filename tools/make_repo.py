@@ -7,7 +7,7 @@ Usage:
 BASE_URL defaults to https://huahn3.github.io/kodi2fntv
 Run from anywhere; paths are resolved relative to this file.
 """
-import os, re, sys, shutil, subprocess, hashlib
+import os, re, sys, shutil, subprocess, hashlib, zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs")
@@ -50,6 +50,20 @@ def strip_decl(s):
     return re.sub(r'^\s*<\?xml[^>]*\?>\s*', '', s, count=1)
 
 
+def make_zip(basedir, outfile):
+    with zipfile.ZipFile(outfile, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
+        for root, dirs, files in os.walk(basedir):
+            dirs.sort()
+            for fn in sorted(files):
+                full = os.path.join(root, fn)
+                arc = os.path.relpath(full, os.path.dirname(basedir)).replace(os.sep, "/")
+                zi = zipfile.ZipInfo(arc, date_time=(1980, 1, 1, 0, 0, 0))
+                zi.compress_type = zipfile.ZIP_DEFLATED
+                zi.external_attr = 0o100644 << 16
+                with open(full, "rb") as fh:
+                    z.writestr(zi, fh.read())
+
+
 if os.path.isdir(OUT):
     shutil.rmtree(OUT)
 os.makedirs(OUT)
@@ -68,7 +82,7 @@ for aid, src in SOURCES.items():
     subprocess.run(["rsync", "-a"] + EXCLUDE + [src + "/", dst + "/"], check=True)
     zpath = os.path.join(OUT, aid, aid + "-" + ver + ".zip")
     os.makedirs(os.path.dirname(zpath))
-    subprocess.run(["zip", "-rq", zpath, aid], cwd=STAGE, check=True)
+    make_zip(dst, zpath)
     for asset in ["icon.png", "fanart.jpg", "fanart.png"]:
         src_asset = os.path.join(src, asset)
         if not os.path.isfile(src_asset):
@@ -101,7 +115,7 @@ repo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 ''' % (REPO_ID, REPO_VER, DATAURL, DATAURL, DATAURL)
 open(os.path.join(repo_dir, "addon.xml"), "w", encoding="utf-8").write(repo_xml)
 os.makedirs(os.path.join(OUT, REPO_ID))
-subprocess.run(["zip", "-rq", os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"), REPO_ID], cwd=STAGE, check=True)
+make_zip(repo_dir, os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"))
 blocks.append(strip_decl(repo_xml).strip())
 print("packed", REPO_ID + "-" + REPO_VER + ".zip")
 
