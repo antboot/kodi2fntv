@@ -7,7 +7,7 @@ export WRANGLER_SEND_METRICS=false
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DOCS="$ROOT/docs"
-BUCKET="kodi2fntv"
+BUCKET="kodi2fntv-apac"
 MANIFEST="$ROOT/tools/.r2-manifest.tsv"
 
 [ -d "$DOCS" ] || { echo "docs/ not found; run: python3 tools/make_repo.py" >&2; exit 1; }
