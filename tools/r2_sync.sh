@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Incremental sync: docs/ -> Cloudflare R2 bucket (served at https://fntv.huhan1.de5.net/)
+# Incremental sync: docs/ -> Cloudflare R2 bucket (served at https://fntv.qq47.de5.net/)
 # Requires: npx wrangler logged in (npx wrangler login), macOS (md5/stat).
 set -euo pipefail
 export PATH=/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin

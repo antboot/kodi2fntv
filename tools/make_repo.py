@@ -4,7 +4,7 @@
 Usage:
     python3 tools/make_repo.py [BASE_URL]
 
-BASE_URL defaults to https://huahn3.github.io/kodi2fntv
+BASE_URL defaults to https://fntv.qq47.de5.net
 Run from anywhere; paths are resolved relative to this file.
 """
 import os, re, sys, shutil, subprocess, hashlib, zipfile
@@ -12,7 +12,7 @@ import os, re, sys, shutil, subprocess, hashlib, zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs")
 STAGE = os.path.join(ROOT, ".repo_stage")
-BASEURL = (sys.argv[1] if len(sys.argv) > 1 else "https://fntv.huhan1.de5.net").rstrip("/")
+BASEURL = (sys.argv[1] if len(sys.argv) > 1 else "https://fntv.qq47.de5.net").rstrip("/")
 # Where Kodi fetches addons.xml / addons.xml.md5 from.
 DATAURL = (sys.argv[2] if len(sys.argv) > 2 else BASEURL).rstrip("/")
 
