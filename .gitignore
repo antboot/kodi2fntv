@@ -2,3 +2,5 @@
 .DS_Store
 __pycache__/
 *.pyc
+tools/.r2-manifest.tsv
+.wrangler/

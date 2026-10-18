@@ -330,7 +330,7 @@ provider-name="jurialmunkey">
         </assets>
     </extension>
 </addon>
-<addon id="repository.fuse.media" name="Fuse Media Repository" version="1.0.4" provider-name="huahn3">
+<addon id="repository.kodi2fntv.media" name="Fuse Media Repository" version="1.0.4" provider-name="huahn3">
     <extension point="xbmc.addon.repository" name="Fuse Media Repository">
         <dir>
             <info compressed="false">https://fntv.huhan1.de5.net/addons.xml</info>

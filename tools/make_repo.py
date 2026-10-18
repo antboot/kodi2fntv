@@ -33,7 +33,7 @@ SOURCES = {
     "resource.font.robotocjksc": os.path.join(ROOT, "deps", "resource.font.robotocjksc"),
 }
 
-REPO_ID = "repository.fuse.media"
+REPO_ID = "repository.kodi2fntv.media"
 REPO_VER = "1.0.4"
 
 EXCLUDE = ["--exclude", ".git", "--exclude", ".github", "--exclude", ".gitignore",
@@ -116,6 +116,8 @@ repo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 open(os.path.join(repo_dir, "addon.xml"), "w", encoding="utf-8").write(repo_xml)
 os.makedirs(os.path.join(OUT, REPO_ID))
 make_zip(repo_dir, os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"))
+shutil.copy2(os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"),
+             os.path.join(OUT, REPO_ID + "-" + REPO_VER + ".zip"))
 blocks.append(strip_decl(repo_xml).strip())
 print("packed", REPO_ID + "-" + REPO_VER + ".zip")
 
@@ -141,9 +143,9 @@ for aid in list(SOURCES.keys()) + [REPO_ID]:
     zips = sorted(f for f in os.listdir(d) if f.endswith(".zip"))
     write_index(d, [(z, z) for z in zips] + [("..", "../")])
 
-# root index.html -> show only the repository addon (like jurialmunkey);
-# the addon folders still exist and are fetched by Kodi via direct URLs, not by browsing.
-write_index(OUT, [(REPO_ID + "/", REPO_ID + "/")])
+# root index.html -> the repository zip directly (Kodi installs it without entering a folder);
+# addon folders still exist and are fetched by Kodi via direct URLs, not by browsing.
+write_index(OUT, [(REPO_ID + "-" + REPO_VER + ".zip", REPO_ID + "-" + REPO_VER + ".zip")])
 if os.path.isdir(STAGE):
     shutil.rmtree(STAGE, ignore_errors=True)
 print("BASEURL =", BASEURL)
