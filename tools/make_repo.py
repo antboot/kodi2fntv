@@ -4,7 +4,7 @@
 Usage:
     python3 tools/make_repo.py [BASE_URL]
 
-BASE_URL defaults to https://fntv.qq47.de5.net
+BASE_URL defaults to https://kodi.qq47.de5.net
 Run from anywhere; paths are resolved relative to this file.
 """
 import os, re, sys, shutil, subprocess, hashlib, zipfile
@@ -12,7 +12,7 @@ import os, re, sys, shutil, subprocess, hashlib, zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs")
 STAGE = os.path.join(ROOT, ".repo_stage")
-BASEURL = (sys.argv[1] if len(sys.argv) > 1 else "https://fntv.qq47.de5.net").rstrip("/")
+BASEURL = (sys.argv[1] if len(sys.argv) > 1 else "https://kodi.qq47.de5.net").rstrip("/")
 # Where Kodi fetches addons.xml / addons.xml.md5 from.
 DATAURL = (sys.argv[2] if len(sys.argv) > 2 else BASEURL).rstrip("/")
 
@@ -34,7 +34,7 @@ SOURCES = {
 }
 
 REPO_ID = "repository.kodi2fntv.media"
-REPO_VER = "1.0.4"
+REPO_VER = "1.0.6"
 
 EXCLUDE = ["--exclude", ".git", "--exclude", ".github", "--exclude", ".gitignore",
            "--exclude", ".gitattributes", "--exclude", ".agents", "--exclude", ".DS_Store",
@@ -92,9 +92,7 @@ for aid, src in SOURCES.items():
     blocks.append(strip_decl(open(ax, encoding="utf-8", errors="ignore").read()).strip())
     print("packed %s-%s.zip" % (aid, ver))
 
-# repository addon
-repo_dir = os.path.join(STAGE, REPO_ID)
-os.makedirs(repo_dir)
+# repository addon metadata
 repo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="%s" name="Fuse Media Repository" version="%s" provider-name="huahn3">
     <extension point="xbmc.addon.repository" name="Fuse Media Repository">
@@ -113,17 +111,28 @@ repo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
     </extension>
 </addon>
 ''' % (REPO_ID, REPO_VER, DATAURL, DATAURL, DATAURL)
+blocks.append(strip_decl(repo_xml).strip())
+
+# write addons.xml and md5
+axml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<addons>\n' + "\n".join(blocks) + '\n</addons>\n'
+open(os.path.join(OUT, "addons.xml"), "w", encoding="utf-8").write(axml)
+open(os.path.join(OUT, "addons.xml.md5"), "w").write(hashlib.md5(axml.encode()).hexdigest() + "\n")
+
+import gzip
+with gzip.open(os.path.join(OUT, "addons.xml.gz"), "wb") as gz:
+    gz.write(axml.encode("utf-8"))
+
+# package repository addon zip, bundling local addons.xml to eliminate cold-start empty repo issue
+repo_dir = os.path.join(STAGE, REPO_ID)
+os.makedirs(repo_dir, exist_ok=True)
 open(os.path.join(repo_dir, "addon.xml"), "w", encoding="utf-8").write(repo_xml)
-os.makedirs(os.path.join(OUT, REPO_ID))
+shutil.copy2(os.path.join(OUT, "addons.xml"), os.path.join(repo_dir, "addons.xml"))
+shutil.copy2(os.path.join(OUT, "addons.xml.md5"), os.path.join(repo_dir, "addons.xml.md5"))
+os.makedirs(os.path.join(OUT, REPO_ID), exist_ok=True)
 make_zip(repo_dir, os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"))
 shutil.copy2(os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"),
              os.path.join(OUT, REPO_ID + "-" + REPO_VER + ".zip"))
-blocks.append(strip_decl(repo_xml).strip())
-print("packed", REPO_ID + "-" + REPO_VER + ".zip")
-
-axml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<addons>\n' + "\n".join(blocks) + '\n</addons>\n'
-open(os.path.join(OUT, "addons.xml"), "w", encoding="utf-8").write(axml)
-open(os.path.join(OUT, "addons.xml.md5"), "w").write(hashlib.md5(axml.encode()).hexdigest())
+print("packed", REPO_ID + "-" + REPO_VER + ".zip (bundled offline addons.xml)")
 
 
 def write_index(dirpath, links):
