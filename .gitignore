@@ -4,3 +4,6 @@ __pycache__/
 *.pyc
 tools/.r2-manifest.tsv
 .wrangler/
+
+*.zip
+!docs/**/*.zip
