@@ -119,8 +119,9 @@ open(os.path.join(OUT, "addons.xml"), "w", encoding="utf-8").write(axml)
 open(os.path.join(OUT, "addons.xml.md5"), "w").write(hashlib.md5(axml.encode()).hexdigest() + "\n")
 
 import gzip
-with gzip.open(os.path.join(OUT, "addons.xml.gz"), "wb") as gz:
-    gz.write(axml.encode("utf-8"))
+with open(os.path.join(OUT, "addons.xml.gz"), "wb") as raw:
+    with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as gz:
+        gz.write(axml.encode("utf-8"))
 
 # package repository addon zip, bundling local addons.xml to eliminate cold-start empty repo issue
 repo_dir = os.path.join(STAGE, REPO_ID)
@@ -135,12 +136,12 @@ shutil.copy2(os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"),
 print("packed", REPO_ID + "-" + REPO_VER + ".zip (bundled offline addons.xml)")
 
 
-def write_index(dirpath, links):
+def write_index(dirpath, links, note=""):
     """Write an Apache-autoindex-like listing so Kodi's HTTP browser can parse it."""
     rows = "\n".join('<a href="%s">%s</a>' % (u, n) for n, u in links)
     html = ('<!DOCTYPE html><html><head><meta charset="utf-8"><title>%s</title></head>'
-            '<body><h1>Index of /%s</h1><hr><pre>%s</pre><hr></body></html>'
-            % (os.path.basename(dirpath) or "", os.path.basename(dirpath) or "", rows))
+            '<body><h1>Index of /%s</h1><hr><pre>%s</pre><hr>%s</body></html>'
+            % (os.path.basename(dirpath) or "", os.path.basename(dirpath) or "", rows, note))
     open(os.path.join(dirpath, "index.html"), "w", encoding="utf-8").write(html)
 
 
@@ -154,7 +155,14 @@ for aid in list(SOURCES.keys()) + [REPO_ID]:
 
 # root index.html -> the repository zip directly (Kodi installs it without entering a folder);
 # addon folders still exist and are fetched by Kodi via direct URLs, not by browsing.
-write_index(OUT, [(REPO_ID + "-" + REPO_VER + ".zip", REPO_ID + "-" + REPO_VER + ".zip")])
+INSTALL_NOTE = (
+    '<p style="max-width:46em;line-height:1.7">'
+    '提示：装完库后如果「从库安装」提示“无法连接到库”，'
+    '请先到 「插件 → 我的插件 → 插件库」选中本库，按菜单键执行一次「检查更新」，'
+    '等待完成后再次进入「从库安装」即可（无需重启 Kodi）。'
+    '这是 Kodi 安装库后索引尚未拉取时的已知现象。</p>'
+)
+write_index(OUT, [(REPO_ID + "-" + REPO_VER + ".zip", REPO_ID + "-" + REPO_VER + ".zip")], INSTALL_NOTE)
 if os.path.isdir(STAGE):
     shutil.rmtree(STAGE, ignore_errors=True)
 print("BASEURL =", BASEURL)
