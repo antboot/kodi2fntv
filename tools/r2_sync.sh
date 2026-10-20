@@ -51,7 +51,7 @@ while IFS= read -r f; do
     uploaded=$((uploaded+1))
   fi
   printf '%s\t%s\t%s\n' "$key" "$(stat -f%z "$f")" "$md5" >> "$NEW_MANIFEST"
-done < <(find . -type f ! -name '.nojekyll' ! -name '.DS_Store' | sort)
+done < <(find . -type f ! -path './.wrangler/*' ! -name '.nojekyll' ! -name '.DS_Store' | sort)
 
 deleted=0
 for k in ${(k)OLD_MD5}; do
