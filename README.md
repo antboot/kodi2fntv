@@ -8,7 +8,7 @@ Arctic Fuse 3 定制皮肤 ＋ 飞牛影视插件 ＋ 全套依赖，装一个�
 
 [![Kodi](https://img.shields.io/badge/Kodi-21%20Omega-1f9ede?logo=kodi&logoColor=white)](https://kodi.tv)
 ![皮肤](https://img.shields.io/badge/skin.arctic.fuse.3-3.3.12.7-e8a33d)
-![插件](https://img.shields.io/badge/plugin.video.fnmedia-0.7.35-2ea44f)
+![插件](https://img.shields.io/badge/plugin.video.fnmedia-0.7.36-2ea44f)
 ![仓库](https://img.shields.io/badge/repository-git%2Fcf-8957e5)
 ![License](https://img.shields.io/badge/License-GPL--3.0--only-blue)
 [![下载源](https://img.shields.io/badge/下载源-kodi.qq47.de5.net-success)](https://kodi.qq47.de5.net/)

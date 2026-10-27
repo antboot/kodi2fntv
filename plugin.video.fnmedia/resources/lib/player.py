@@ -468,7 +468,7 @@ def play(handle, params):
             import time as _time
             t0 = _time.time()
             try:
-                data = client.stream_list(guid, timeout=20)
+                data = client.stream_list(guid, timeout=60)
                 if data:
                     subs_box['data'] = data
                     subs_box['cost'] = _time.time() - t0
@@ -480,7 +480,10 @@ def play(handle, params):
 
         threading.Thread(target=_refresh_subs, daemon=True).start()
 
-    if not stream_list and source_index == 0 and not cloud_known:
+    if not stream_list and source_index == 0:
+        # 不能按 cloud_known 跳过：cloud_link_cache 只表示"换过链并缓存了直链"，
+        # 本地/NAS 影片只要解析过一次直链也会命中，跳过会让这些条目永远拿不到
+        # 流列表——外挂字幕全无、播放 URL 也缺文件名（与 0.7.33 的刷新分支同源）。
         import threading
         fetch_event = threading.Event()
 
@@ -752,6 +755,17 @@ def play(handle, params):
 
     # 外挂字幕（仅 stream/list 已就绪时）
     try:
+        if not stream_list and fetch_event is not None:
+            # 缓存缺失（首次播放/刚升版本）：等后台补抓一小会儿。服务端已扫描
+            # 的条目秒回，这一轮就能挂上字幕；冷文件超时则下次播放再用。
+            if fetch_event.wait(2.5):
+                stream_list = _get_cached_stream_list(guid) or stream_list
+                if stream_list:
+                    util.log('流列表补抓完成，本轮挂字幕（%d 条外挂）' %
+                             len([s for s in (stream_list.get('subtitle_streams') or [])
+                                  if _to_int(s.get('is_external')) == 1]))
+            else:
+                util.log('流列表未就绪，本轮跳过外挂字幕', xbmc.LOGWARNING)
         if subs_event is not None:
             def _ext_count(data):
                 return len([s for s in ((data or {}).get('subtitle_streams') or [])
