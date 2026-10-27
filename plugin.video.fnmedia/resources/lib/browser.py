@@ -110,14 +110,15 @@ def render_item(client, d, versions=None):
 
     util.apply_video_info(li, infos)
 
-    # 观看进度 → Kodi 进度条与原生"续播/从头开始"框（CFileItem 按 resumetime
-    # 属性判可续播，用户选续播时插件以 resume=true 被调用，player 已支持）
+    # 观看进度 → Kodi 进度条与原生"续播/从头开始"框。必须写进 InfoTagVideo
+    # 的 resumePoint：旧写法 setProperty('totaltime', '0:05:02') 会被 Kodi
+    # 用 atof() 解析成 0，CBookmark.IsPartWay() 要求 total>0，于是进度条恒为
+    # 0% 且原生续播框永不弹出。
     resume_ts = _to_int(d.get('resume_ts'))
     total = _to_int((d.get('infos') or {}).get('duration'))
-    if resume_ts and total and resume_ts < total * 0.95:
-        li.setProperty('resumetime', str(resume_ts))
-        li.setProperty('totaltime', '%d:%02d:%02d' % (
-            total // 3600, (total // 60) % 60, total % 60))
+    has_resume = bool(resume_ts and total and resume_ts < total * 0.95)
+    if has_resume:
+        util.set_resume_point(li, resume_ts, total)
 
     if not d.get('playable'):
         art.setdefault('thumb', 'DefaultFolder.png')
@@ -133,10 +134,18 @@ def render_item(client, d, versions=None):
 
     if d.get('playable'):
         li.setProperty('IsPlayable', 'true')
-        li.addContextMenuItems([
+        menu = [
             ('选择版本播放', 'RunPlugin(%s)' % plugin_url({'action': 'source', 'guid': d['guid']})),
+            ('刷新字幕并播放', 'PlayMedia(%s)' % plugin_url(
+                {'action': 'play', 'guid': d['guid'], 'refresh': '1'})),
             ('标记为已观看', 'RunPlugin(%s)' % plugin_url({'action': 'watched', 'guid': d['guid']})),
-        ])
+        ]
+        if has_resume:
+            # 墙/小组件用 PlayMedia 直接起播，Kodi 原生"从头开始"选择不生效，
+            # 这里给一个显式入口（player 只在 resume=false 时从 0 起播）
+            menu.insert(1, ('从头播放', 'PlayMedia(%s)' % plugin_url(
+                {'action': 'play', 'guid': d['guid'], 'resume': 'false'})))
+        li.addContextMenuItems(menu)
     return li
 
 

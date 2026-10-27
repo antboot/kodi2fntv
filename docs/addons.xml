@@ -40,7 +40,7 @@
         </assets>
     </extension>
 </addon>
-<addon id="plugin.video.fnmedia" version="0.7.26" name="fntv" provider-name="fntv-kodi">
+<addon id="plugin.video.fnmedia" version="0.7.33" name="fntv" provider-name="fntv-kodi">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
     </requires>
@@ -55,7 +55,14 @@
         <platform>all</platform>
         <language>zh_CN</language>
         <license>GPL-3.0-only</license>
-        <news>v0.7.24 皮肤与插件深度融合：①Arctic Fuse 3 皮肤主页小组件全面打通飞牛影视——第 1 项为继续观看，后续项自动按用户在飞牛 NAS 中配置的媒体库（电影、剧集、自定义下载目录等）动态生成，媒体库变动时自动同步重载小组件；②类似 Emby for Kodi 的配对/断连自愈引导：安装或首次启动检测到未配置服务器时自动弹窗引导配置，遇到连接超时、网络中断或鉴权失效时主动弹窗提示并引导重新配对与检查设置。
+        <news>v0.7.33 修复 0.7.32 字幕刷新在部分影片上不生效：0.7.32 用 cloud_known（cloud_link_cache.json 里有该 media_guid）来跳过云盘项，但本地/NAS 影片只要解析过一次直链也会被写进这张表，于是这类影片一条 stream/list 都没发、字幕清单永不刷新（真机：Super Mario 首次播放仅 10ms 起播、缓存 untouched）。现已去掉该跳过条件——只要有条目缓存就并发刷新字幕清单；并新增日志「外挂字幕清单已更新: N → M 条（耗时）」便于核对。真机实测该接口 0.09s、4 条外挂全部挂载。
+v0.7.32 修复 NAS 上新增的外挂字幕不同步：字幕清单和视频流共用 6 小时缓存（stream_list_cache.json），导致新加的字幕要等缓存过期才出现（实测该条目缓存 59 分钟、只有 2 条外挂，服务端已有 4 条）。现对已有缓存的条目每次播放都并发重拉一次 stream/list（已扫描过的条目实测 0.09s，与直链解析并行），起播前最多等 2.5 秒采用新字幕清单，超时/失败沿用缓存不拖慢起播；字幕文件仍按 update_time/file_size/guid 指纹增量下载，服务端删除的轨道同步清理。
+v0.7.31 修复「继续观看」又变成从头播：0.7.30 曾按 Kodi 的 argv[3]（resume:true|false）决定起播点，但墙/小组件走 PlayMedia(path) 起播时条目没有 Kodi 书签，该值恒为 resume:false，与用户主动选「从头开始」无法区分，导致所有入口 seek_to=0。现已回退为 0.7.27 起验证过的策略：NAS 有进度就默认续播，只有列表右键「从头播放」显式传 resume=false 才从 0 起；皮肤无需改动（撤销 0.7.30 的 autoplay 标记）。
+v0.7.30 外挂字幕三项增强：①字幕自动跟随 NAS 变更——每条字幕的 update_time/file_size/guid 记为版本指纹存入 subs.meta.json，指纹不变直接用本地文件，NAS 上改字幕/换文件/新增轨道后下次播放自动重下，已删除的轨道文件同步清理（此前首次下载后永不更新，字幕改了不生效、新加的不出现）；右键新增「刷新字幕并播放」强制重下并作废该条目的流列表缓存；②支持外挂 PGS 位图字幕（.sup）——按 format/codec 识别，落盘保留 .sup，写盘前校验字节以 PG 魔数开头，格式标错/服务端给错内容时宁可不挂这一轨也不给 Kodi 无法解析的文件；③字幕下载并行化——最多 3 线程只下缺失项（115 等网盘对单链路并发敏感，不开更大），.part 原子落盘，返回顺序仍按 Kodi 轨道顺序。
+v0.7.29 字幕面板显示外挂字幕格式：Kodi 的字幕流元数据（JSON-RPC subtitles）只有 language/name，不含 codec/格式，皮肤的字幕列表取不到格式字段；现把 SRT/ASS/VTT 作为显示名 token 写进外挂字幕文件名（如「中文 | VTT The First Slam Dunk 外挂」「中文 | ASS chinese 外挂」），OSD 字幕菜单与 Kodi 原生字幕对话框都能直接看到格式。SSA 统一归一为 ASS（同为 ASS v4 容器，且 "ssa" 在 Kodi 语言表里是 Nilo-Saharan，未知语言时会误判），PGS/Sup 位图仍跳过。内嵌字幕的格式无法显示，属 Kodi 接口限制。
+v0.7.28 修复外挂字幕在 Kodi 里全部显示 UNK、名称是一串 guid（如「UNK | chinese@9d41b34a」）：Kodi 的外挂字幕语言/名称完全由文件名解析（CUtil::GetExternalStreamDetailsFromFilename 从右往左取第一个可识别语言码，其余 token 拼名称，没有语言码即 Unknown），旧实现用「标题@guid8」命名，中文轨既无语言码又带哈希。现改为「标题 token + ISO 639-2B 语言码」命名（fnOS 的 chi/zh/eng/jpn 等映射为 Kodi 码），并按 media_guid 分目录避免不同视频同名轨道互相覆盖；同时修正格式推断——PGS/Sup 位图字幕不再被错当 .srt 落盘挂载，webvtt 等别名正确归为 .vtt。修复后 OSD 显示「中文 - The First Slam Dunk 外挂」这类可读名称，并可按语言自动选轨。
+v0.7.27 修复"继续观看"不接着 NAS 进度、点进去总是从 0 起播：两处根因——①Kodi 20+ 把续播选择以 argv[3] 的 "resume:true/false" 单独传给插件（不再拼进 ?query），而 Arctic Fuse 的墙/小组件点击是 PlayMedia 直接起播、不弹原生续播框，插件此前只认 query 的 resume，导致所有入口 seek_to=0；现改为 NAS 有进度就默认续播，右键新增"从头播放"显式从头；②列表项的 totaltime 写成 "0:05:02" 字符串被 Kodi 用 atof() 解析成 0，CBookmark.IsPartWay() 不成立，续播点无效、进度条恒 0%——改用 InfoTagVideo.setResumePoint() 写数值，并把续播点交给 Kodi 原生定位（ISO 仍由后台服务兜底 seek）。
+v0.7.24 皮肤与插件深度融合：①Arctic Fuse 3 皮肤主页小组件全面打通飞牛影视——第 1 项为继续观看，后续项自动按用户在飞牛 NAS 中配置的媒体库（电影、剧集、自定义下载目录等）动态生成，媒体库变动时自动同步重载小组件；②类似 Emby for Kodi 的配对/断连自愈引导：安装或首次启动检测到未配置服务器时自动弹窗引导配置，遇到连接超时、网络中断或鉴权失效时主动弹窗提示并引导重新配对与检查设置。
 v0.7.23 增强配套皮肤关联：安装飞牛影视插件后自动检测并友好提示安装配套 Arctic Fuse 3 皮肤；皮肤与插件实现互相推荐与协同工作。
 v0.7.22 修复起播崩溃：修复 player.py 中由于提前检查长视频直链寿命而引用未初始化变量 resume_ts 导致的 UnboundLocalError，保障所有电影/剧集正常起播。
 v0.7.21 紧急修复：补齐 meta.py 中 _genre_map 所依赖的 _load 函数定义，彻底消除继续观看/渲染列表时的 NameError 报错。

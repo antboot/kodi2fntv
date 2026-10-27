@@ -2,6 +2,7 @@
 """播放：解析流地址、蓝光多版本选择、外挂字幕、断点续播、进度回传准备"""
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse, unquote, quote
 
 import xbmc
@@ -48,6 +49,13 @@ def _store_stream_list(item_guid, data):
         ordered = sorted(cache.items(), key=lambda kv: kv[1].get('ts', 0))
         cache = dict(ordered[-200:])
     util.save_json(STREAM_CACHE_FILE, cache)
+
+
+def _drop_stream_cache(item_guid):
+    """作废单个条目的 stream/list 缓存（「刷新字幕并播放」用）"""
+    cache = _load_stream_cache()
+    if cache.pop(item_guid, None) is not None:
+        util.save_json(STREAM_CACHE_FILE, cache)
 
 
 def _prepare():
@@ -159,34 +167,244 @@ def _build_vfs_url(playable, file_name):
     return '%s://play/%s?d=%s' % (scheme, name, payload)
 
 
-def _download_subtitles(client, stream_list):
-    """下载外挂字幕到本地临时目录，返回文件路径列表"""
-    paths = []
+# fnOS 字幕 language 字段 → Kodi 可识别的 ISO 639-2B 码
+_SUB_LANG_CODES = {
+    'zh': 'chi', 'chi': 'chi', 'zho': 'chi', 'chs': 'chi', 'cht': 'chi',
+    'zh-cn': 'chi', 'zh-tw': 'chi', 'zh-hans': 'chi', 'zh-hant': 'chi',
+    'cn': 'chi', 'sc': 'chi', 'tc': 'chi',
+    'en': 'eng', 'eng': 'eng',
+    'ja': 'jpn', 'jpn': 'jpn', 'jp': 'jpn',
+    'ko': 'kor', 'kor': 'kor',
+    'fr': 'fre', 'fra': 'fre',
+    'de': 'ger', 'deu': 'ger',
+    'es': 'spa', 'spa': 'spa',
+    'ru': 'rus', 'rus': 'rus',
+    'it': 'ita', 'ita': 'ita',
+    'pt': 'por', 'por': 'por',
+    'ar': 'ara', 'ara': 'ara',
+    'th': 'tha', 'tha': 'tha',
+    'vi': 'vie', 'vie': 'vie',
+    'ms': 'may', 'msa': 'may',
+    'id': 'ind', 'ind': 'ind',
+    'hi': 'hin', 'hin': 'hin',
+    'tr': 'tur', 'tur': 'tur',
+    'pl': 'pol', 'pol': 'pol',
+    'nl': 'dut', 'nld': 'dut',
+    'sv': 'swe', 'swe': 'swe',
+    'da': 'dan', 'dan': 'dan',
+    'fi': 'fin', 'fin': 'fin',
+    'no': 'nor', 'nor': 'nor',
+    'el': 'gre', 'ell': 'gre',
+    'he': 'heb', 'heb': 'heb',
+    'cs': 'cze', 'ces': 'cze',
+    'hu': 'hun', 'hun': 'hun',
+    'uk': 'ukr', 'ukr': 'ukr',
+    'fa': 'per', 'fas': 'per',
+}
+
+
+def _sub_language(sub):
+    """fnOS 的 language 字段转 Kodi 语言码；未知返回空串（宁可不写码也不休假语言）"""
+    code = (sub.get('language') or '').strip().lower()
+    if not code or 'unknow' in code or code in ('und', 'unknown'):
+        return ''
+    mapped = _SUB_LANG_CODES.get(code)
+    if mapped:
+        return mapped
+    return code if len(code) in (2, 3) and code.isalpha() else ''
+
+
+_SUB_FORMATS = {'srt', 'ass', 'vtt', 'sup'}
+
+# 目录内属于"本插件落盘的字幕"，刷新时据此清理不再存在的轨道
+_SUB_EXTS = ('.srt', '.ass', '.vtt', '.sup')
+_SUB_META = 'subs.meta.json'
+
+
+def _sub_format(sub):
+    """字幕容器后缀：优先 format，缺失时按 codec 推断；无法确定返回空串。
+
+    旧实现把不认识的格式一律当 srt 落盘，PGS 位图字节会被存成 .srt，
+    Kodi 按文本解析必然失败。位图字幕只有 PGS（.sup）能作为外挂轨播放，
+    DVD VobSub 等直接跳过。"""
+    fmt = (sub.get('format') or '').strip().lower().lstrip('.')
+    if fmt == 'webvtt':
+        fmt = 'vtt'
+    elif fmt == 'ssa':
+        fmt = 'ass'   # SSA v4 与 ASS 同容器；且 "ssa" 是 Kodi 语言表里的 Nilo-Saharan
+    elif fmt in ('pgs', 'hdmv_pgs'):
+        fmt = 'sup'
+    if fmt in _SUB_FORMATS:
+        return fmt
+    codec = (sub.get('codec_name') or '').strip().lower()
+    if codec in ('ass', 'ssa'):
+        return 'ass'
+    if codec in ('pgs', 'hdmv_pgs_subtitle', 'sup'):
+        return 'sup'
+    if 'webvtt' in codec or codec == 'vtt':
+        return 'vtt'
+    if codec in ('subrip', 'srt', 'mov_text', 'text'):
+        return 'srt'
+    return ''
+
+
+def _sub_title(sub):
+    """字幕标题整理成文件名 token：去掉扩展名与文件名非法字符"""
+    title = (sub.get('title') or '').strip()
+    lower = title.lower()
+    for ext in ('.srt', '.ass', '.ssa', '.vtt', '.sup'):
+        if lower.endswith(ext):
+            title = title[:-len(ext)].strip()
+            break
+    title = ''.join(' ' if (c in '/\\:*?"<>|@' or not c.isprintable()) else c
+                    for c in title)
+    return ' '.join(title.split())[:60]
+
+
+def _sub_signature(sub):
+    """字幕版本指纹：任一字段变化即视为需要重下"""
+    return '%s|%s|%s' % (sub.get('update_time') or '', sub.get('file_size') or '',
+                         sub.get('guid') or '')
+
+
+def _load_sub_meta(tmp):
+    try:
+        with open(os.path.join(tmp, _SUB_META), 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _save_sub_meta(tmp, meta):
+    try:
+        path = os.path.join(tmp, _SUB_META)
+        part = path + '.part'
+        with open(part, 'w', encoding='utf-8') as f:
+            json.dump(meta, f, ensure_ascii=False)
+        os.replace(part, path)
+    except Exception as e:
+        util.debug('字幕元数据写入失败: %s' % e)
+
+
+def _download_one(client, guid, path, fmt):
+    """下载单条字幕并原子落盘；返回是否成功。
+
+    PGS 位图字节必须以 PG 魔数开头，否则说明服务端给的不是外挂字幕
+    （或格式标错），宁可不挂这一轨也不给 Kodi 一个必然解析失败的文件。"""
+    content = client.download_subtitle(guid)
+    if not content:
+        return False
+    if fmt == 'sup' and not content.startswith(b'PG'):
+        util.debug('外挂 PGS 字幕字节非法（缺 PG 魔数），跳过: %s' % guid)
+        return False
+    part = path + '.part'
+    with open(part, 'wb') as f:
+        f.write(content)
+    os.replace(part, path)
+    return True
+
+
+def _download_subtitles(client, stream_list, media_guid='', force=False):
+    """下载外挂字幕到本地临时目录，返回文件路径列表
+
+    Kodi 的外挂字幕语言/名称完全由文件名解析
+    （CUtil::GetExternalStreamDetailsFromFilename）：从右往左取第一个可识别的
+    语言码作为语言，其余 token 拼成名称；没有语言码一律显示 UNK。此前用
+    `<title>@<guid8>` 命名，于是三条中文轨在 OSD 里显示成
+    「UNK | chinese@9d41b34a」。现在按「格式 + 标题 token + ISO 语言码」命名，
+    并按 media_guid 分目录，避免不同视频的同名轨道互相覆盖。
+
+    并发与缓存：目录内 subs.meta.json 记录每条字幕的版本指纹
+    （update_time|file_size|guid），指纹不变直接用本地文件；缺失项最多 3 线程
+    并行下载（115 等网盘对单链路并发敏感，不开更大）。刷新时清理已不存在的
+    轨道文件，避免 OSD 里残留旧字幕。"""
     streams = (stream_list.get('subtitle_streams') or [])
     external = [s for s in streams if _to_int(s.get('is_external')) == 1 and s.get('guid')]
     if not external:
-        return paths
+        return []
 
-    tmp = util.temp_dir()
+    tmp = os.path.join(util.temp_dir(), (media_guid or 'misc')[:16])
+    try:
+        os.makedirs(tmp, exist_ok=True)
+    except Exception:
+        pass
+
+    # 先按流顺序算定文件名，再下载：下载是乱序并发的，最后仍按 Kodi 的
+    # 轨道顺序返回，保证 OSD 里的排列与服务端一致。
+    targets = []
+    used = {}
     for sub in external:
-        guid = sub['guid']
-        fmt = (sub.get('format') or 'srt').lower()
-        if fmt not in ('srt', 'ass', 'ssa', 'vtt'):
-            fmt = 'srt'
-        name = (sub.get('title') or guid)
-        safe = ''.join(c if c.isalnum() or c in '-_' else '_' for c in name)[:60]
-        path = os.path.join(tmp, '%s@%s.%s' % (safe, guid[:8], fmt))
-        if not os.path.isfile(path):
+        fmt = _sub_format(sub)
+        if not fmt:
+            util.debug('跳过不支持的外挂字幕格式: %s %s' % (
+                sub.get('format'), sub.get('codec_name')))
+            continue
+        lang = _sub_language(sub)
+        title = _sub_title(sub)
+        # 格式 token 放最前：Kodi JSON-RPC 的字幕流只有 language/name，
+        # 没有 codec/格式字段（皮肤的字幕面板取不到），写进名称才能显示
+        # 「中文 | ASS chinese 外挂」这样的可读行。
+        tokens = [fmt.upper()]
+        if title:
+            tokens.append(title)
+        key = (lang, title.lower())
+        used[key] = used.get(key, 0) + 1
+        if used[key] > 1:
+            tokens.append('Track %d' % used[key])
+        if lang:
+            tokens.append(lang)   # 语言码必须在最后：Kodi 从右往左扫描
+        targets.append((sub, os.path.join(tmp, '%s.%s' % ('.'.join(tokens), fmt)), fmt))
+
+    meta = _load_sub_meta(tmp)
+    new_meta = {}
+    missing = []
+    for sub, path, fmt in targets:
+        base = os.path.basename(path)
+        sig = _sub_signature(sub)
+        new_meta[base] = sig
+        if not force and os.path.isfile(path) and meta.get(base) == sig:
+            continue
+        missing.append((sub, path, fmt))
+
+    results = {}
+    if missing:
+        with ThreadPoolExecutor(max_workers=min(3, len(missing))) as pool:
+            futures = {
+                pool.submit(_download_one, client, sub['guid'], path, fmt): path
+                for sub, path, fmt in missing
+            }
+            for fut, path in futures.items():
+                base = os.path.basename(path)
+                try:
+                    results[base] = bool(fut.result())
+                except Exception as e:
+                    util.log('字幕下载失败 %s: %s' % (base, e), xbmc.LOGWARNING)
+                    results[base] = False
+
+    paths = []
+    for sub, path, fmt in targets:
+        base = os.path.basename(path)
+        if results.get(base) is False:
+            # 下载失败但目录里有旧文件：继续用旧的（比没有字幕好）
+            if os.path.isfile(path):
+                new_meta[base] = meta.get(base, '')
+                paths.append(path)
+            else:
+                new_meta.pop(base, None)
+            continue
+        if os.path.isfile(path):
+            paths.append(path)
+
+    for name in os.listdir(tmp):
+        if name in new_meta or name == _SUB_META or name.endswith('.part'):
+            continue
+        if name.lower().endswith(_SUB_EXTS):
             try:
-                content = client.download_subtitle(guid)
-                if not content:
-                    continue
-                with open(path, 'wb') as f:
-                    f.write(content)
-            except Exception as e:
-                util.log('字幕下载失败 %s: %s' % (guid, e), xbmc.LOGWARNING)
-                continue
-        paths.append(path)
+                os.remove(os.path.join(tmp, name))
+            except Exception:
+                pass
+    _save_sub_meta(tmp, new_meta)
     return paths
 
 
@@ -221,8 +439,47 @@ def play(handle, params):
     # 会触发服务端"获取文件视频信息"扫描，且云盘项的多版本/字幕信息
     # 通常为空，文件名也能从云链缓存取得。
     cloud_known = (play_info.get('media_guid') or '') in util.load_json_cached(CLOUD_LINK_CACHE_FILE)
+    refresh_subs = (params.get('refresh') or '') == '1'
     stream_list = _get_cached_stream_list(guid) or {}
+    if refresh_subs:
+        # 「刷新字幕并播放」：作废旧缓存并同步重拉一次（后台补抓赶不上本次起播）
+        _drop_stream_cache(guid)
+        try:
+            stream_list = client.stream_list(guid, timeout=15) or {}
+            if stream_list:
+                _store_stream_list(guid, stream_list)
+        except Exception as e:
+            util.log('刷新字幕拉取流列表失败，沿用旧缓存: %s' % e, xbmc.LOGWARNING)
     fetch_event = None
+
+    # 字幕清单新鲜度：视频流缓存 6 小时，但 NAS 上的字幕随时会增删。对已有
+    # 缓存的条目每次播放都并发重拉一次 stream/list（已扫描过的条目实测 ~0.1s），
+    # 起播前最多等 2.5s 取新清单——拿不到就沿用缓存，不拖慢起播。
+    # 注意不能按 cloud_known 跳过：cloud_link_cache 只表示"换过链并缓存了直链"，
+    # 本地/NAS 影片只要解析过一次直链也会命中，跳过会让这类影片的字幕永远不刷新
+    # （真机踩坑：Super Mario 因此一条 stream/list 都没发）。
+    subs_box = {}
+    subs_event = None
+    if stream_list and not refresh_subs:
+        import threading
+        subs_event = threading.Event()
+
+        def _refresh_subs():
+            import time as _time
+            t0 = _time.time()
+            try:
+                data = client.stream_list(guid, timeout=20)
+                if data:
+                    subs_box['data'] = data
+                    subs_box['cost'] = _time.time() - t0
+                    _store_stream_list(guid, data)
+            except Exception as e:
+                util.log('字幕清单刷新失败（沿用缓存）: %s' % e, xbmc.LOGWARNING)
+            finally:
+                subs_event.set()
+
+        threading.Thread(target=_refresh_subs, daemon=True).start()
+
     if not stream_list and source_index == 0 and not cloud_known:
         import threading
         fetch_event = threading.Event()
@@ -475,27 +732,46 @@ def play(handle, params):
     except Exception as e:
         util.log('设置详情标签失败(不影响播放): %s' % e, xbmc.LOGWARNING)
 
-    # 断点续播（服务端记录的播放进度 ts）
+    # 断点续播：NAS 上有进度就默认接着看。
+    # 不能用 argv[3] 的 "resume:true|false" 做决策：插件墙/小组件用
+    # PlayMedia(path) 起播时，条目没有 Kodi 书签，argv[3] 恒为 resume:false
+    # ——这与用户主动选「从头开始」无法区分（0.7.30 据此改过，结果继续观看
+    # 全部从 0 起播）。因此只认显式 resume=false（列表右键「从头播放」）。
     resume_ts = _to_int(play_info.get('ts'))
-
-    # Kodi 的原生"续播/从头开始"提示框基于其播放书签在点击时弹出，插件不弹
-    # 自己的框（0.2.20 双框打扰，实测取消）。用户选"续播"时 Kodi 以 resume=true
-    # 调用插件；"从头开始"/未弹框则不带参数 → 一律从 0 起（绝不默认续播，
-    # 否则会像 0.2.19 一样覆盖用户的"从头开始"选择）。蓝光 ISO Kodi 自身无法
-    # 应用起播位置，续播由 service 的 FnPlayer.onAVStarted 按 pending.seek_to
-    # 落实；普通文件 Kodi 会自行定位，service 的 near-check 会跳过不重复 seek。
+    if total and resume_ts > total * 0.95:
+        resume_ts = 0             # 接近片尾视为看完，不 seek 到结尾
     _choice = (params.get('resume') or '').strip().lower()
-    if _choice:
-        util.log('Kodi 续播选择参数: resume=%s' % _choice)
-    if _choice in ('true', '1', 'yes'):
-        seek_to = resume_ts   # 用户在 Kodi 原生提示框选了续播
-    else:
-        seek_to = 0           # 从头开始 / 未弹框选择
+    seek_to = 0 if _choice in ('false', '0', 'no') else resume_ts
+    if seek_to:
+        # 交给 Kodi 原生定位：解析结果带 resume point 时 CPluginDirectory 会
+        # 强制 STARTOFFSET_RESUME。ISO/BDMV Kodi 不应用该位置，仍由 service
+        # 的 onAVStarted 按 pending.seek_to 兜底，near-check 避免重复 seek。
+        util.set_resume_point(li, seek_to, total)
+    util.log('续播决策: seek_to=%ds resume_ts=%ds resume_param=%s' % (
+        seek_to, resume_ts, _choice or '-'))
 
     # 外挂字幕（仅 stream/list 已就绪时）
     try:
+        if subs_event is not None:
+            def _ext_count(data):
+                return len([s for s in ((data or {}).get('subtitle_streams') or [])
+                            if _to_int(s.get('is_external')) == 1])
+            if subs_event.wait(2.5) and subs_box.get('data'):
+                old_n = _ext_count(stream_list)
+                stream_list = subs_box['data']
+                new_n = _ext_count(stream_list)
+                if new_n != old_n:
+                    util.log('外挂字幕清单已更新: %d → %d 条（%.2fs）' % (
+                        old_n, new_n, subs_box.get('cost') or 0))
+                else:
+                    util.debug('外挂字幕清单无变化（%d 条，%.2fs）' % (
+                        new_n, subs_box.get('cost') or 0))
+            else:
+                util.log('字幕清单刷新超时/失败，沿用缓存（%d 条外挂）'
+                         % _ext_count(stream_list), xbmc.LOGWARNING)
         if stream_list:
-            subtitle_paths = _download_subtitles(client, stream_list)
+            subtitle_paths = _download_subtitles(
+                client, stream_list, media_guid, force=refresh_subs)
             if subtitle_paths:
                 li.setSubtitles(subtitle_paths)
     except Exception as e:
