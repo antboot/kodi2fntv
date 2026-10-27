@@ -79,7 +79,7 @@ def build_fnmedia_homewidgets(client):
         widgets.append({
             "label": title,
             "icon": "",
-            "path": "plugin://%s/?action=filter&mdb=%s&title=%s" % (
+            "path": "plugin://%s/?action=filter&mdb=%s&title=%s&widget=1" % (
                 util.ADDON_ID, guid, quote(title)
             ),
             "target": "videos",

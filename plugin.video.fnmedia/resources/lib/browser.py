@@ -333,6 +333,7 @@ def refresh(handle, params):
 # ------------------------------------------------------------------ 首字母快跳
 
 LETTER_JUMP_MIN = 200     # 墙条数达到该值才预置字母夹，避免小列表噪音
+WIDGET_LIMIT = 10         # 首页小组件只渲染前 N 条：横排一次只看到 3-4 个
 
 
 def _letter_of(d):
@@ -422,6 +423,21 @@ def filter_list(handle, params):
     else:
         content = 'movies'
     versions = desc.load_versions()   # guid→版本数（service 后台扫描，多版本标记）
+
+    # 首页小组件（widget=1）：只渲染前 WIDGET_LIMIT 条。小组件是横排，一次只看得
+    # 到 3-4 个，把整墙 500+ 条全构造出来纯属浪费——低端设备（webOS 电视等）每次
+    # 回首页都要为每个库付一遍 ListItem 构造 + 上千张图片代理转发的代价。
+    # 末尾补一个"查看全部"条目，点进去才走完整墙（或分页）。
+    if (params.get('widget') or '') == '1':
+        total = len(descs)
+        items = [(d.get('url', ''), render_item(client, d, versions), bool(d.get('folder')))
+                 for d in descs[:WIDGET_LIMIT]]
+        more = dict((k, v) for k, v in params.items() if k in ('mdb', 'type', 'title'))
+        items.append((plugin_url(more),
+                      _static_item('查看全部（%d）' % total, 'DefaultFolder.png'), True))
+        _end(handle, items, content=content, title=title or '媒体库')
+        util.debug('小组件直出 %s：%d/%d 条' % (title or wanted_mdb[:12], len(descs[:WIDGET_LIMIT]), total))
+        return
 
     # 首字母快跳：仅聚合大墙（全部电影/全部剧集，wanted_type 非空；单个
     # 库的墙保持纯净）预置字母夹行；带 letter 时过滤
