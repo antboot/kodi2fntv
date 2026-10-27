@@ -8,8 +8,8 @@ Arctic Fuse 3 定制皮肤 ＋ 飞牛影视插件 ＋ 全套依赖，装一个�
 
 [![Kodi](https://img.shields.io/badge/Kodi-21%20Omega-1f9ede?logo=kodi&logoColor=white)](https://kodi.tv)
 ![皮肤](https://img.shields.io/badge/skin.arctic.fuse.3-3.3.12.7-e8a33d)
-![插件](https://img.shields.io/badge/plugin.video.fnmedia-0.7.26-2ea44f)
-![仓库](https://img.shields.io/badge/repository-1.0.7-8957e5)
+![插件](https://img.shields.io/badge/plugin.video.fnmedia-0.7.33-2ea44f)
+![仓库](https://img.shields.io/badge/repository-git%2Fcf-8957e5)
 ![License](https://img.shields.io/badge/License-GPL--3.0--only-blue)
 [![下载源](https://img.shields.io/badge/下载源-kodi.qq47.de5.net-success)](https://kodi.qq47.de5.net/)
 
@@ -58,9 +58,9 @@ Arctic Fuse 3 定制皮肤 ＋ 飞牛影视插件 ＋ 全套依赖，装一个�
    `设置 → 文件管理器 → 添加源` 输入 `https://kodi.qq47.de5.net/`
    （备用源：`https://antboot.github.io/kodi2fntv/`）
 
-2. **装仓库**：`设置 → 插件 → 从 zip 文件安装` → 选择该源 → `repository.kodi2fntv.media-1.0.7.zip`（源根目录直接显示）
+2. **装仓库**：`设置 → 插件 → 从 zip 文件安装` → 选择该源 → `repository.kodi2fntv.cf-1.0.0.zip`（Cloudflare 源，根目录直接显示；用 GitHub 源则装 `repository.kodi2fntv.git-1.0.0.zip`，两个库内容完全一样，装一个即可）
 
-3. **装皮肤与插件**：`设置 → 插件 → 从仓库安装` → **Fuse Media Repository** → 安装 *Arctic Fuse 3* 与 *fntv（飞牛影视）*，依赖自动装齐
+3. **装皮肤与插件**：`设置 → 插件 → 从仓库安装` → **Fuse Media Repository (Cloudflare)** → 安装 *Arctic Fuse 3* 与 *fntv（飞牛影视）*，依赖自动装齐
 
 > 💡 插件零外部依赖（纯 Python 标准库），并有**配对向导**：首次启动检测到未配置服务器会自动弹窗引导。
 
@@ -152,7 +152,7 @@ Arctic Fuse 3 定制皮肤 ＋ 飞牛影视插件 ＋ 全套依赖，装一个�
 
 不用重启，按下面任一步操作即可：
 
-1. `插件 → 我的插件 → 插件库` → 选中 **Fuse Media Repository** → 按菜单键（或长按 / 右键）→ **检查更新**，等待完成后再进「从库安装」；
+1. `插件 → 我的插件 → 插件库` → 选中你装的那个 **Fuse Media Repository (Cloudflare)** 或 **Fuse Media Repository (GitHub)** → 按菜单键（或长按 / 右键）→ **检查更新**，等待完成后再进「从库安装」；
 2. 或在插件浏览器左侧栏直接点 **检查更新**（会刷新所有库）。
 
 若「检查更新」后仍失败，说明是到源的网络问题：可切换网络重试，或在 Kodi 日志中搜 `CRepository:` 查看具体失败原因。

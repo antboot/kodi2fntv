@@ -337,8 +337,26 @@ provider-name="jurialmunkey">
         </assets>
     </extension>
 </addon>
-<addon id="repository.kodi2fntv.media" name="Fuse Media Repository" version="1.0.7" provider-name="antboot">
-    <extension point="xbmc.addon.repository" name="Fuse Media Repository">
+<addon id="repository.kodi2fntv.git" name="Fuse Media Repository (GitHub)" version="1.0.0" provider-name="antboot">
+    <extension point="xbmc.addon.repository" name="Fuse Media Repository (GitHub)">
+        <dir>
+            <info compressed="false">https://antboot.github.io/kodi2fntv/addons.xml</info>
+            <checksum>https://antboot.github.io/kodi2fntv/addons.xml.md5</checksum>
+            <datadir zip="true">https://antboot.github.io/kodi2fntv/</datadir>
+        </dir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en_GB">Fuse Media Repository (GitHub-hosted)</summary>
+        <summary lang="zh_CN">Fuse 媒体仓库（GitHub 托管）</summary>
+        <description lang="en_GB">Arctic Fuse 3 (pure) skin, fnOS media plugin and their dependencies.
+Index and packages served from https://antboot.github.io/kodi2fntv.</description>
+        <description lang="zh_CN">Arctic Fuse 3（纯皮肤）、飞牛影视插件及其全部依赖。
+索引与安装包托管在 https://antboot.github.io/kodi2fntv。</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+<addon id="repository.kodi2fntv.cf" name="Fuse Media Repository (Cloudflare)" version="1.0.0" provider-name="antboot">
+    <extension point="xbmc.addon.repository" name="Fuse Media Repository (Cloudflare)">
         <dir>
             <info compressed="false">https://kodi.qq47.de5.net/addons.xml</info>
             <checksum>https://kodi.qq47.de5.net/addons.xml.md5</checksum>
@@ -346,10 +364,12 @@ provider-name="jurialmunkey">
         </dir>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary lang="en_GB">Fuse Media Repository</summary>
-        <summary lang="zh_CN">Fuse 媒体仓库</summary>
-        <description lang="en_GB">Arctic Fuse 3 (pure) skin, fnOS media plugin and their dependencies.</description>
-        <description lang="zh_CN">Arctic Fuse 3（纯皮肤）、飞牛影视插件及其全部依赖。</description>
+        <summary lang="en_GB">Fuse Media Repository (Cloudflare-hosted)</summary>
+        <summary lang="zh_CN">Fuse 媒体仓库（Cloudflare 托管）</summary>
+        <description lang="en_GB">Arctic Fuse 3 (pure) skin, fnOS media plugin and their dependencies.
+Index and packages served from https://kodi.qq47.de5.net.</description>
+        <description lang="zh_CN">Arctic Fuse 3（纯皮肤）、飞牛影视插件及其全部依赖。
+索引与安装包托管在 https://kodi.qq47.de5.net。</description>
         <platform>all</platform>
     </extension>
 </addon>

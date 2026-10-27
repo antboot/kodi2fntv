@@ -13,8 +13,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs")
 STAGE = os.path.join(ROOT, ".repo_stage")
 BASEURL = (sys.argv[1] if len(sys.argv) > 1 else "https://kodi.qq47.de5.net").rstrip("/")
-# Where Kodi fetches addons.xml / addons.xml.md5 from.
-DATAURL = (sys.argv[2] if len(sys.argv) > 2 else BASEURL).rstrip("/")
 
 # addon id -> source directory
 SOURCES = {
@@ -33,8 +31,17 @@ SOURCES = {
     "resource.font.robotocjksc": os.path.join(ROOT, "deps", "resource.font.robotocjksc"),
 }
 
-REPO_ID = "repository.kodi2fntv.media"
-REPO_VER = "1.0.7"
+REPO_VER = "1.0.0"
+
+# Two repository variants carry the same payload but a different index host.
+# They use distinct addon ids so the source is readable from the name instead of
+# being encoded in the version number (1.0.7 / 1.0.8 were indistinguishable).
+GITHUB_URL = (sys.argv[2] if len(sys.argv) > 2
+              else "https://antboot.github.io/kodi2fntv").rstrip("/")
+REPOS = [
+    ("repository.kodi2fntv.git", GITHUB_URL, "GitHub"),
+    ("repository.kodi2fntv.cf", BASEURL, "Cloudflare"),
+]
 
 EXCLUDE = ["--exclude", ".git", "--exclude", ".github", "--exclude", ".gitignore",
            "--exclude", ".gitattributes", "--exclude", ".agents", "--exclude", ".DS_Store",
@@ -93,9 +100,10 @@ for aid, src in SOURCES.items():
     print("packed %s-%s.zip" % (aid, ver))
 
 # repository addon metadata
-repo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="%s" name="Fuse Media Repository" version="%s" provider-name="antboot">
-    <extension point="xbmc.addon.repository" name="Fuse Media Repository">
+def repo_xml(rid, url, tag):
+    return '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="%s" name="Fuse Media Repository (%s)" version="%s" provider-name="antboot">
+    <extension point="xbmc.addon.repository" name="Fuse Media Repository (%s)">
         <dir>
             <info compressed="false">%s/addons.xml</info>
             <checksum>%s/addons.xml.md5</checksum>
@@ -103,15 +111,20 @@ repo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         </dir>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary lang="en_GB">Fuse Media Repository</summary>
-        <summary lang="zh_CN">Fuse 媒体仓库</summary>
-        <description lang="en_GB">Arctic Fuse 3 (pure) skin, fnOS media plugin and their dependencies.</description>
-        <description lang="zh_CN">Arctic Fuse 3（纯皮肤）、飞牛影视插件及其全部依赖。</description>
+        <summary lang="en_GB">Fuse Media Repository (%s-hosted)</summary>
+        <summary lang="zh_CN">Fuse 媒体仓库（%s 托管）</summary>
+        <description lang="en_GB">Arctic Fuse 3 (pure) skin, fnOS media plugin and their dependencies.
+Index and packages served from %s.</description>
+        <description lang="zh_CN">Arctic Fuse 3（纯皮肤）、飞牛影视插件及其全部依赖。
+索引与安装包托管在 %s。</description>
         <platform>all</platform>
     </extension>
 </addon>
-''' % (REPO_ID, REPO_VER, DATAURL, DATAURL, DATAURL)
-blocks.append(strip_decl(repo_xml).strip())
+''' % (rid, tag, REPO_VER, tag, url, url, url, tag, tag, url, url)
+
+
+for rid, url, tag in REPOS:
+    blocks.append(strip_decl(repo_xml(rid, url, tag)).strip())
 
 # write addons.xml and md5
 axml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<addons>\n' + "\n".join(blocks) + '\n</addons>\n'
@@ -123,17 +136,18 @@ with open(os.path.join(OUT, "addons.xml.gz"), "wb") as raw:
     with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as gz:
         gz.write(axml.encode("utf-8"))
 
-# package repository addon zip, bundling local addons.xml to eliminate cold-start empty repo issue
-repo_dir = os.path.join(STAGE, REPO_ID)
-os.makedirs(repo_dir, exist_ok=True)
-open(os.path.join(repo_dir, "addon.xml"), "w", encoding="utf-8").write(repo_xml)
-shutil.copy2(os.path.join(OUT, "addons.xml"), os.path.join(repo_dir, "addons.xml"))
-shutil.copy2(os.path.join(OUT, "addons.xml.md5"), os.path.join(repo_dir, "addons.xml.md5"))
-os.makedirs(os.path.join(OUT, REPO_ID), exist_ok=True)
-make_zip(repo_dir, os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"))
-shutil.copy2(os.path.join(OUT, REPO_ID, REPO_ID + "-" + REPO_VER + ".zip"),
-             os.path.join(OUT, REPO_ID + "-" + REPO_VER + ".zip"))
-print("packed", REPO_ID + "-" + REPO_VER + ".zip (bundled offline addons.xml)")
+# package repository addon zips, bundling local addons.xml to eliminate cold-start empty repo issue
+for rid, url, tag in REPOS:
+    repo_dir = os.path.join(STAGE, rid)
+    os.makedirs(repo_dir, exist_ok=True)
+    open(os.path.join(repo_dir, "addon.xml"), "w", encoding="utf-8").write(repo_xml(rid, url, tag))
+    shutil.copy2(os.path.join(OUT, "addons.xml"), os.path.join(repo_dir, "addons.xml"))
+    shutil.copy2(os.path.join(OUT, "addons.xml.md5"), os.path.join(repo_dir, "addons.xml.md5"))
+    os.makedirs(os.path.join(OUT, rid), exist_ok=True)
+    make_zip(repo_dir, os.path.join(OUT, rid, rid + "-" + REPO_VER + ".zip"))
+    shutil.copy2(os.path.join(OUT, rid, rid + "-" + REPO_VER + ".zip"),
+                 os.path.join(OUT, rid + "-" + REPO_VER + ".zip"))
+    print("packed", rid + "-" + REPO_VER + ".zip (bundled offline addons.xml)")
 
 
 def write_index(dirpath, links, note=""):
@@ -146,24 +160,27 @@ def write_index(dirpath, links, note=""):
 
 
 # index.html per addon folder -> link to its zip(s)
-for aid in list(SOURCES.keys()) + [REPO_ID]:
+for aid in list(SOURCES.keys()) + [r[0] for r in REPOS]:
     d = os.path.join(OUT, aid)
     if not os.path.isdir(d):
         continue
     zips = sorted(f for f in os.listdir(d) if f.endswith(".zip"))
     write_index(d, [(z, z) for z in zips] + [("..", "../")])
 
-# root index.html -> the repository zip directly (Kodi installs it without entering a folder);
+# root index.html -> the repository zips directly (Kodi installs one without entering a folder);
 # addon folders still exist and are fetched by Kodi via direct URLs, not by browsing.
 INSTALL_NOTE = (
     '<p style="max-width:46em;line-height:1.7">'
-    '提示：装完库后如果「从库安装」提示“无法连接到库”，'
+    '说明：repository.kodi2fntv.git 走 GitHub Pages，repository.kodi2fntv.cf 走 Cloudflare；'
+    '两个库装的插件完全一样，任选其一安装即可，不要同时装。'
+    '已装旧版 repository.kodi2fntv.media（1.0.7 / 1.0.8）的继续可用，也可卸载后换新版。'
+    '装完若「从库安装」提示“无法连接到库”，'
     '请先到 「插件 → 我的插件 → 插件库」选中本库，按菜单键执行一次「检查更新」，'
-    '等待完成后再次进入「从库安装」即可（无需重启 Kodi）。'
-    '这是 Kodi 安装库后索引尚未拉取时的已知现象。</p>'
+    '等待完成后再次进入「从库安装」即可（无需重启 Kodi）。</p>'
 )
-write_index(OUT, [(REPO_ID + "-" + REPO_VER + ".zip", REPO_ID + "-" + REPO_VER + ".zip")], INSTALL_NOTE)
+write_index(OUT, [(rid + "-" + REPO_VER + ".zip", rid + "-" + REPO_VER + ".zip") for rid, _, _ in REPOS],
+            INSTALL_NOTE)
 if os.path.isdir(STAGE):
     shutil.rmtree(STAGE, ignore_errors=True)
-print("BASEURL =", BASEURL)
+print("BASEURL =", BASEURL, "| GITHUB_URL =", GITHUB_URL)
 print("docs/ built, addons:", len(blocks))
