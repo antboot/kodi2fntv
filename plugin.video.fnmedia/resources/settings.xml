@@ -140,6 +140,11 @@
                         <heading>30023</heading>
                     </control>
                 </setting>
+                <setting id="scan_versions" type="boolean" label="30033" help="30034">
+                    <level>2</level>
+                    <default>false</default>
+                    <control type="toggle" />
+                </setting>
             </group>
         </category>
     </section>

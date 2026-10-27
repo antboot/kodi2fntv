@@ -320,11 +320,14 @@ def _prewarm_loop(monitor, player):
                 continue
             if time.time() - player.last_stop_ts < HEAVY_IDLE_S:
                 continue   # 重活等空闲窗口（last_stop_ts=0 的开机场景不受限）
-            # 描述符就绪后补扫版本数（多版本"〔N版本〕"标记的数据源）
-            progress = desc.scan_versions_chunk(client)
-            if progress:
-                util.log('版本扫描: %s' % progress)
-                continue
+            # 描述符就绪后补扫版本数（多版本"〔N版本〕"标记的数据源）。
+            # 逐条 stream/list 会让服务端扫描未缓存的本地文件（机械盘被唤醒），
+            # 默认关闭：版本信息改由播放时顺手写入（desc.note_versions）。
+            if util.get_setting('scan_versions', 'false') == 'true':
+                progress = desc.scan_versions_chunk(client)
+                if progress:
+                    util.log('版本扫描: %s' % progress)
+                    continue
             # 版本扫完后再刷新分类索引（流派 → 条目，本地聚合零 API）
             built = meta.build_genre_index(client)
             if built:

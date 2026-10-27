@@ -136,3 +136,11 @@ msgstr "直链最小剩余有效期（分钟）"
 msgctxt "#30032"
 msgid "Minimum remaining validity for a cloud direct link to be used (115 now issues ~40-min links; the old fixed 1h+ gate sent everything to proxy). 0 disables the gate - links may expire mid-play, restarting playback re-resolves."
 msgstr "网盘直链剩余有效期达到该分钟数才走直链（115 现签发的直链有效期仅约 40 分钟，旧版固定 1 小时门控会把直链全部拦去代理）。0 = 不做门控；直链中途过期播放会卡住，重新播放即可重新解析。"
+
+msgctxt "#30033"
+msgid "Scan Multi-Version Info in Background"
+msgstr "后台扫描多版本信息（会唤醒机械硬盘）"
+
+msgctxt "#30034"
+msgid "When enabled, the background service probes stream/list for every item of every library to count versions. The server may scan uncached local files for that call, which wakes sleeping mechanical disks. Off by default: version counts are recorded when you play a movie, so the version badge appears after its first playback."
+msgstr "开启后 service 会在空闲时逐库、逐条请求 stream/list 统计多版本；服务端对未缓存的本地文件会现场读盘扫描，可能唤醒休眠中的机械硬盘。默认关闭：版本数改为播放时顺手记录，电影首次播放后海报上才会出现「N 版本」标记。"

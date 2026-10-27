@@ -770,6 +770,13 @@ def play(handle, params):
                 util.log('字幕清单刷新超时/失败，沿用缓存（%d 条外挂）'
                          % _ext_count(stream_list), xbmc.LOGWARNING)
         if stream_list:
+            # 顺手把版本信息写进缓存（替代 service 的后台全库 stream/list 扫描，
+            # 后者会让服务端扫描未缓存的本地文件、把机械盘叫醒）
+            try:
+                from resources.lib import desc
+                desc.note_versions(guid, stream_list)
+            except Exception:
+                pass
             subtitle_paths = _download_subtitles(
                 client, stream_list, media_guid, force=refresh_subs)
             if subtitle_paths:

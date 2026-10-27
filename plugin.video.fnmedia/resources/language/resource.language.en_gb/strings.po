@@ -136,3 +136,11 @@ msgstr "Direct-link Min Validity (min)"
 msgctxt "#30032"
 msgid "Minimum remaining validity for a cloud direct link to be used (115 now issues ~40-min links; the old fixed 1h+ gate sent everything to proxy). 0 disables the gate - links may expire mid-play, restarting playback re-resolves."
 msgstr "Minimum remaining validity for a cloud direct link to be used (115 now issues ~40-min links; the old fixed 1h+ gate sent everything to proxy). 0 disables the gate - links may expire mid-play, restarting playback re-resolves."
+
+msgctxt "#30033"
+msgid "Scan Multi-Version Info in Background"
+msgstr "Scan Multi-Version Info in Background"
+
+msgctxt "#30034"
+msgid "When enabled, the background service probes stream/list for every item of every library to count versions. The server may scan uncached local files for that call, which wakes sleeping mechanical disks. Off by default: version counts are recorded when you play a movie, so the version badge appears after its first playback."
+msgstr "When enabled, the background service probes stream/list for every item of every library to count versions. The server may scan uncached local files for that call, which wakes sleeping mechanical disks. Off by default: version counts are recorded when you play a movie, so the version badge appears after its first playback."

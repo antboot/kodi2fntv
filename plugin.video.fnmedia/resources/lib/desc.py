@@ -568,6 +568,34 @@ def _version_label(stream):
     return ' | '.join(parts) if parts else '版本'
 
 
+def note_versions(guid, stream_list):
+    """播放时顺手写入版本缓存（后台全库扫描的替代路径）。
+
+    后台扫描要为每条目单独发一次 stream/list；服务端未缓存的本地文件会
+    因此被现场扫描读盘，机械硬盘随之唤醒。播放本来就要拉一次 stream/list
+    （字幕清单刷新），这里直接复用结果——首次播放后多版本标记自然出现，
+    不必再让 service 在空闲时把整库敲一遍。
+    """
+    if not guid or not isinstance(stream_list, dict):
+        return
+    files = stream_list.get('files') or []
+    streams = stream_list.get('video_streams') or []
+    if not files and not streams:
+        return
+    if files:
+        labels = [_file_label(f.get('file_name') or '') for f in files[:8]]
+    else:
+        labels = [_version_label(s) for s in streams[:8]]
+    try:
+        cache = util.load_json(VERSION_CACHE_FILE) or {}
+        cache[guid] = {'ts': time.time(),
+                       'n': max(len(streams), len(files), 1),
+                       'v': labels}
+        util.save_json(VERSION_CACHE_FILE, cache)
+    except Exception as e:
+        util.debug('版本缓存写入失败: %s' % e)
+
+
 def _version_targets(items):
     """范围内需要探测的 (全部可探测数, 未探测/标签是占位符 guid 列表)——仅电影/其他视频"""
     cache = util.load_json(VERSION_CACHE_FILE) or {}
