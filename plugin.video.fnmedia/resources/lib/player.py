@@ -287,6 +287,23 @@ def _save_sub_meta(tmp, meta):
         util.debug('字幕元数据写入失败: %s' % e)
 
 
+def _fspath(path):
+    """非 ASCII 路径 → bytes。
+
+    webOS 版 Kodi 的 Python 跑在 C locale 下，filesystem encoding 是 ascii：
+    直接 open()/stat() 一个中文文件名会抛
+    `'ascii' codec can't encode characters`（真机：电视上字幕下载全部失败，
+    Mac/手机 locale 是 UTF-8 所以没事）。Linux 上把路径按 UTF-8 编成 bytes
+    交给 os.* 即可绕过编码层，Kodi 侧仍然收到原始 str 路径。"""
+    if isinstance(path, bytes):
+        return path
+    try:
+        path.encode('ascii')
+        return path
+    except UnicodeEncodeError:
+        return path.encode('utf-8')
+
+
 def _download_one(client, guid, path, fmt):
     """下载单条字幕并原子落盘；返回是否成功。
 
@@ -298,10 +315,11 @@ def _download_one(client, guid, path, fmt):
     if fmt == 'sup' and not content.startswith(b'PG'):
         util.debug('外挂 PGS 字幕字节非法（缺 PG 魔数），跳过: %s' % guid)
         return False
-    part = path + '.part'
+    target = _fspath(path)
+    part = target + (b'.part' if isinstance(target, bytes) else '.part')
     with open(part, 'wb') as f:
         f.write(content)
-    os.replace(part, path)
+    os.replace(part, target)
     return True
 
 
@@ -363,7 +381,7 @@ def _download_subtitles(client, stream_list, media_guid='', force=False):
         base = os.path.basename(path)
         sig = _sub_signature(sub)
         new_meta[base] = sig
-        if not force and os.path.isfile(path) and meta.get(base) == sig:
+        if not force and os.path.isfile(_fspath(path)) and meta.get(base) == sig:
             continue
         missing.append((sub, path, fmt))
 
@@ -387,23 +405,28 @@ def _download_subtitles(client, stream_list, media_guid='', force=False):
         base = os.path.basename(path)
         if results.get(base) is False:
             # 下载失败但目录里有旧文件：继续用旧的（比没有字幕好）
-            if os.path.isfile(path):
+            if os.path.isfile(_fspath(path)):
                 new_meta[base] = meta.get(base, '')
                 paths.append(path)
             else:
                 new_meta.pop(base, None)
             continue
-        if os.path.isfile(path):
+        if os.path.isfile(_fspath(path)):
             paths.append(path)
 
-    for name in os.listdir(tmp):
-        if name in new_meta or name == _SUB_META or name.endswith('.part'):
-            continue
-        if name.lower().endswith(_SUB_EXTS):
-            try:
-                os.remove(os.path.join(tmp, name))
-            except Exception:
-                pass
+    # 清理已删除的轨道：用 bytes 目录名 + bytes 文件名，规避 ascii fsencoding
+    try:
+        for bname in os.listdir(os.fsencode(tmp)):
+            name = bname.decode('utf-8', 'replace')
+            if name in new_meta or name == _SUB_META or name.endswith('.part'):
+                continue
+            if name.lower().endswith(_SUB_EXTS):
+                try:
+                    os.remove(os.path.join(os.fsencode(tmp), bname))
+                except Exception:
+                    pass
+    except Exception as e:
+        util.debug('清理旧字幕失败: %s' % e)
     _save_sub_meta(tmp, new_meta)
     return paths
 

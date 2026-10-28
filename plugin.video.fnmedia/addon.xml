@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.fnmedia" version="0.7.36" name="fntv" provider-name="fntv-kodi">
+<addon id="plugin.video.fnmedia" version="0.7.37" name="fntv" provider-name="fntv-kodi">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
     </requires>
@@ -14,7 +14,8 @@
         <platform>all</platform>
         <language>zh_CN</language>
         <license>GPL-3.0-only</license>
-        <news>v0.7.36 修复部分影片在电视上完全拿不到外挂字幕：0.7.33 只修了"字幕清单刷新"这条分支，"缓存缺失时补抓 stream/list"那条分支仍被 cloud_known 挡住——cloud_link_cache 只表示换过链并缓存了直链，本地/NAS 影片解析过一次直链也会命中，于是换设备（Mac→电视）或首次播放时这些条目永远不拉流列表：外挂字幕一条都挂不上，播放 URL 还缺文件名。现补抓不再看 cloud_known，且起播前最多等 2.5 秒，服务端已扫描的条目本轮就能挂上字幕（实测阿凡达：火与烬冷缓存下 1 条 ASS 238KB 正常挂载）；字幕清单刷新超时同步放宽到 60 秒，兼容 4K 原盘冷文件的预扫描。
+        <news>v0.7.37 修复 webOS 电视上外挂字幕一条都挂不上：电视版 Kodi 的 Python 跑在 C locale 下，文件系统编码是 ascii，字幕文件名带中文时 open/stat 直接抛「'ascii' codec can't encode characters」（TV 日志实锤，位置正好落在文件名的中文处）。Mac/手机 locale 是 UTF-8 所以一直正常。现在非 ASCII 路径统一走 UTF-8 bytes 交给 os.*，文件名仍是「格式.标题.语言码」，Kodi 侧收到原始路径不变；顺带把旧轨道清理也改成 bytes 遍历，避免电视上清理失败。
+v0.7.36 修复部分影片在电视上完全拿不到外挂字幕：0.7.33 只修了"字幕清单刷新"这条分支，"缓存缺失时补抓 stream/list"那条分支仍被 cloud_known 挡住——cloud_link_cache 只表示换过链并缓存了直链，本地/NAS 影片解析过一次直链也会命中，于是换设备（Mac→电视）或首次播放时这些条目永远不拉流列表：外挂字幕一条都挂不上，播放 URL 还缺文件名。现补抓不再看 cloud_known，且起播前最多等 2.5 秒，服务端已扫描的条目本轮就能挂上字幕（实测阿凡达：火与烬冷缓存下 1 条 ASS 238KB 正常挂载）；字幕清单刷新超时同步放宽到 60 秒，兼容 4K 原盘冷文件的预扫描。
 v0.7.35 不再让后台把机械硬盘叫醒：service 此前空闲时会逐库、逐条请求 stream/list 统计多版本，服务端对未缓存过的本地文件会现场读盘扫描（真机记录过单个 4K 文件 25 秒的预扫描），这就是"没在看机械盘上的片、盘却被唤醒"的来源。版本信息改为播放时顺手记录（播放本来就要拉一次 stream/list），首次播放后海报上照样出现「N 版本」；后台全库扫描改为高级设置项、默认关闭，需要时可手动打开。仍有一处会读盘：海报/剧照按 w=400/800/1280 请求，服务端首次生成该尺寸时需读原图，属于网页端同样存在的行为，已随图片缓存自然消减。
 v0.7.34 首页小组件只渲染前 10 条：小组件是横排，一屏只看得到 3-4 个，此前每个媒体库小组件都把整墙完整构造一遍（实测 562 条，每条带 thumb/poster 两张图，全部经本地 Python 代理转发）——Mac 上无感，LG webOS 电视每次回首页都要为每个库重付一遍 ListItem 构造和上千张图片代理的代价，是电视端"进首页很慢、像在重建"的主因之一。现小组件路径带 widget=1，只构造前 10 条并在末尾追加「查看全部（N）」入口；完整墙、分页（每页条数）、字母快跳均不受影响。升级后首次打开插件会自动重写皮肤里的小组件路径，无需手工改皮肤设置。
 v0.7.33 修复 0.7.32 字幕刷新在部分影片上不生效：0.7.32 用 cloud_known（cloud_link_cache.json 里有该 media_guid）来跳过云盘项，但本地/NAS 影片只要解析过一次直链也会被写进这张表，于是这类影片一条 stream/list 都没发、字幕清单永不刷新（真机：Super Mario 首次播放仅 10ms 起播、缓存 untouched）。现已去掉该跳过条件——只要有条目缓存就并发刷新字幕清单；并新增日志「外挂字幕清单已更新: N → M 条（耗时）」便于核对。真机实测该接口 0.09s、4 条外挂全部挂载。
