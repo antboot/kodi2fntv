@@ -1,6 +1,6 @@
 ---
 name: fnmedia-dev
-description: 飞牛影视 (fnOS / Trim Media) Kodi 插件开发与维护指南。覆盖真实源码架构、核心业务链路(浏览/播放/回传)、私有API签名协议、本地代理与ISO嗅探、后台预热与多端同步，供AI或开发者快速接手。
+description: 飞牛影视 (fnOS / Trim Media) Kodi 插件开发与维护指南。覆盖源码架构、浏览/播放/回传链路、私有 API 签名、外挂字幕管线、皮肤小组件同步、webOS 电视兼容坑位，以及打包发布（GitHub + Cloudflare R2）流程。
 ---
 
 # 飞牛影视 (fnmedia) Kodi 插件架构与开发维护指南
@@ -37,18 +37,19 @@ graph TD
 
 | 模块文件 | 核心职责 | 关键方法 / 类 | 关键落盘缓存 |
 | :--- | :--- | :--- | :--- |
-| [`addon.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/addon.py) | 插件单次调用的 CLI 路由入口 | `router()`, `get_params()` | 无 |
-| [`resources/lib/browser.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/browser.py) | Kodi 目录视图构建（海报墙、剧集展开、搜索、继续观看、刷新菜单） | `root()`, `filter_list()`, `tv_detail()`, `season_detail()`, `continue_watch()`, `refresh()` | 无（依赖 desc/meta 缓存） |
-| [`resources/lib/desc.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/desc.py) | 媒体描述符生成、多层级收纳、范围缓存与 TTL 预热管理 | `build_item()`, `build_scope()`, `prewarm_scopes()`, `load_progress()` | `scope_*.json`, `watch_recent.json`, `scope_refresh.json` |
-| [`resources/lib/player.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/player.py) | 播放决策管线：多版本询问、直链与代理分流、外挂字幕、断点恢复 | `play()`, `select_source()`, `_pick_file_name()`, `_build_vfs_url()` | `pending.json`, `stream_list_cache.json` |
-| [`resources/lib/proxy.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/proxy.py) | 本地多线程 HTTP 代理（解决 Kodi 无法附加 Header 播放及网盘 302 鉴权） | `ThreadingHTTPServer`, `ProxyHandler`, `stream_url()`, `image_url()` | 内存短 TTL，`client_ua.json` |
-| [`resources/lib/service.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/service.py) | 常驻后台进程：周期进度回传（60s 心跳）、异常退出补报、后台错峰预热 | `FnPlayer(xbmc.Player)`, `_prewarm_loop()`, `_enrich_loop()` | `pending.json` |
-| [`resources/lib/sniff.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/sniff.py) | 本地 ISO 字节嗅探：区分真实 UDF 镜像与飞牛 mediasrv 抽取的 TS 正片流 | `probe()`, `is_disc_image_name()` | `sniff_cache.json` |
-| [`resources/lib/store.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/store.py) | SQLite 持久化存储引擎（WAL模式）：聚合详情缓存与KV存储，消除碎文件 I/O | `get_detail()`, `store_detail()`, `all_details()`, `get_kv()`, `set_kv()` | `fnmedia.db` |
-| [`resources/lib/meta.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/meta.py) | 详情元数据补全队列消费与流派索引离线构建 | `drain_enrich_queue()`, `build_genre_index()` | `genre_index.json` |
-| [`resources/lib/fnapi/client.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/fnapi/client.py) | 飞牛 RESTful API 客户端，封装登录认证、Token 刷新、分页并行抓取 | `FnClient`, `call()`, `item_list_walk()`, `keep_watching_list()` | 内存短 TTL |
-| [`resources/lib/fnapi/auth.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/fnapi/auth.py) | 飞牛客户端专属的 `Authx` 请求头生成与紧凑 JSON 序列化算法 | `gen_authx()`, `dumps_compact()`, `generate_nonce()` | 无 |
-| [`resources/lib/util.py`](file:///Users/liubo/Desktop/plugin.video.fnmedia/resources/lib/util.py) | 全局设置读写、JSON 原子持久化、内存-磁盘双层缓存、日志工具 | `get_setting()`, `save_json()`, `load_json_cached()`, `ensure_client()` | 各配置与缓存 |
+| [`addon.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/addon.py) | 插件单次调用的 CLI 路由入口 | `router()`, `get_params()` | 无 |
+| [`resources/lib/browser.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/browser.py) | Kodi 目录视图构建（海报墙、剧集展开、搜索、继续观看、刷新菜单） | `root()`, `filter_list()`, `tv_detail()`, `season_detail()`, `continue_watch()`, `refresh()` | 无（依赖 desc/meta 缓存） |
+| [`resources/lib/desc.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/desc.py) | 媒体描述符生成、多层级收纳、范围缓存与 TTL 预热管理 | `build_item()`, `build_scope()`, `prewarm_scopes()`, `load_progress()` | `scope_*.json`, `watch_recent.json`, `scope_refresh.json` |
+| [`resources/lib/player.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/player.py) | 播放决策管线：多版本询问、直链与代理分流、**外挂字幕下载与挂载**、断点恢复 | `play()`, `_download_subtitles()`, `_fspath()`, `_pick_file_name()`, `_build_vfs_url()` | `pending.json`, `stream_list_cache.json`, `temp/fnmedia/<media_guid>/` |
+| [`resources/lib/proxy.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/proxy.py) | 本地多线程 HTTP 代理（解决 Kodi 无法附加 Header 播放及网盘 302 鉴权） | `ThreadingHTTPServer`, `ProxyHandler`, `stream_url()`, `image_url()` | 内存短 TTL，`client_ua.json` |
+| [`resources/lib/service.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/service.py) | 常驻后台：进度回传（60s 心跳）、异常补报、整库预热、详情补全、**按需同步皮肤小组件** | `FnPlayer(xbmc.Player)`, `_prewarm_loop()`, `_enrich_loop()` | `pending.json` |
+| [`resources/lib/skin_sync.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/skin_sync.py) | 把飞牛媒体库写成 Arctic Fuse 3 的主页小组件/子菜单，必要时触发皮肤模板重建 | `build_fnmedia_homewidgets()`, `sync_home_widgets()`, `widgets_generated()`, `sync_skin_preferences()` | `script.skinvariables/nodes/<skin>/skinvariables-shortcut-homewidgets.json` |
+| [`resources/lib/sniff.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/sniff.py) | 本地 ISO 字节嗅探：区分真实 UDF 镜像与飞牛 mediasrv 抽取的 TS 正片流 | `probe()`, `is_disc_image_name()` | `sniff_cache.json` |
+| [`resources/lib/store.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/store.py) | SQLite 持久化存储引擎（WAL模式）：聚合详情缓存与KV存储，消除碎文件 I/O | `get_detail()`, `store_detail()`, `all_details()`, `get_kv()`, `set_kv()` | `fnmedia.db` |
+| [`resources/lib/meta.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/meta.py) | 详情元数据补全队列消费与流派索引离线构建 | `drain_enrich_queue()`, `build_genre_index()` | `genre_index.json` |
+| [`resources/lib/fnapi/client.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/fnapi/client.py) | 飞牛 RESTful API 客户端，封装登录认证、Token 刷新、分页并行抓取 | `FnClient`, `call()`, `item_list_walk()`, `keep_watching_list()` | 内存短 TTL |
+| [`resources/lib/fnapi/auth.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/fnapi/auth.py) | 飞牛客户端专属的 `Authx` 请求头生成与紧凑 JSON 序列化算法 | `gen_authx()`, `dumps_compact()`, `generate_nonce()` | 无 |
+| [`resources/lib/util.py`](file:///Users/liubo/Desktop/kodi2fntv/plugin.video.fnmedia/resources/lib/util.py) | 全局设置读写、JSON 原子持久化、内存-磁盘双层缓存、日志工具 | `get_setting()`, `save_json()`, `load_json_cached()`, `ensure_client()` | 各配置与缓存 |
 
 ---
 
@@ -208,7 +209,61 @@ sequenceDiagram
 
 ---
 
-## 4. 调试、验证与打包规范
+## 4. 关键坑位（真机验证，改代码前先读）
+
+### 4.1 `cloud_known` 不能当"云端资源"用
+`cloud_link_cache.json` 只表示"换过直链并缓存"，本地/NAS 片解析过一次也会命中。
+用它跳过 `stream/list` 会让这些条目永远拿不到外挂字幕、播放 URL 还缺文件名
+（0.7.32 踩在刷新分支、0.7.36 又踩在缓存缺失的补抓分支）。判断依据只能是
+"缓存里有没有这张片的流列表"，不是它是不是云盘。
+
+### 4.2 webOS 的 Python 文件系统编码是 ascii
+电视版 Kodi 跑在 C locale（`env` 无 `LANG/LC_*`），`sys.getfilesystemencoding()` 为 ascii。
+任何带中文的路径 `open()/stat()/os.replace()` 都会抛
+`'ascii' codec can't encode characters`（真机日志：字幕下载全部失败，位置正好落在
+文件名的中文处；Mac/手机是 UTF-8 所以没事）。非 ASCII 路径必须经
+`player._fspath()` 转 UTF-8 bytes 再交给 `os.*`；`os.listdir` 清理也要用 bytes 形式。
+
+### 4.3 首页小组件必须限流
+小组件路径带 `widget=1`，只渲染前 10 条 + 「查看全部（N）」。整墙直出（562 条 ×
+thumb/poster）在电视上每次回首页都要重付一遍 ListItem 构造 + 上千张图片代理转发。
+完整墙/分页/字母快跳不受影响。
+
+### 4.4 不要在启动路径上 `force` 重建皮肤模板
+`sync_home_widgets(force=True)` 会让 script.skinvariables 把 4 份生成 XML 全量重编，
+电视上每份 9–13 秒、每份结束都 `ReloadSkin`，首页闪约 40 秒
+（"无结果→生成内容→无结果→正常"）。启动时先 `widgets_generated()` 检查皮肤里
+是否已有 `plugin.video.fnmedia`，没有才 force。
+
+### 4.5 后台逐条 `stream/list` 会唤醒机械硬盘
+服务端对未缓存的本地文件会现场扫描（真机记录过 4K 文件 25 秒+）。
+`scan_versions` 设置默认关闭，版本信息改在播放时顺手写 `version_cache.json`
+（`desc.note_versions()`）；需要全库预扫时让用户手动打开。
+
+### 4.6 字幕文件名规则
+`格式.标题.语言码.<ext>`——语言码必须最后（Kodi `CUtil::GetExternalStreamDetailsFromFilename`
+从右往左取第一个可识别语言码），格式 token 必须前置（JSON-RPC 的字幕流没有 codec 字段，
+只能写进名字）；`ssa` 归一成 `ass`（"ssa" 在 Kodi 语言表里是 Nilo-Saharan）。
+
+---
+
+## 5. 调试、验证与打包发布
+
+### 0. 直接进电视看日志（LG webOS）
+
+```bash
+# 设备信息来自 webOS Dev Manager：prisoner@<TV_IP>:9922，密钥 ~/.ssh/lgcx_webos，
+# 密码短语 = Dev Manager 里显示的 Dev Mode passphrase
+ssh -p 9922 -i ~/.ssh/lgcx_webos \
+    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    prisoner@<TV_IP> "grep -a FNMedia /media/developer/apps/usr/palm/applications/org.xbmc.kodi/.kodi/temp/kodi.log | tail -40"
+```
+
+- 日志：`.../org.xbmc.kodi/.kodi/temp/kodi.log`（上一轮 `kodi.old.log`）
+- 插件：`.../org.xbmc.kodi/.kodi/addons/plugin.video.fnmedia/`（属主 6828，**SSH 只读**，
+  prisoner 无法改；升级只能走 Kodi 仓库或 Dev Manager 安装）
+- 缓存：`.../org.xbmc.kodi/.kodi/userdata/addon_data/plugin.video.fnmedia/`
+- 字幕临时目录：`.../kodi/temp/fnmedia/<media_guid16>/`
 
 ### 1. 本地独立环境免 Kodi 调试
 插件代码设计时严格解耦了核心数据逻辑与 Kodi GUI。可以通过 mock `xbmc` 模块在纯 Python 环境中测试 API：
@@ -242,11 +297,50 @@ EOF
 ```
 
 ### 3. 代码自检与插件打包
-在工作区根目录执行：
+在 `plugin.video.fnmedia/` 目录执行：
 ```bash
-./package.sh
+./package.sh        # 语法检查 → 依赖自检 → 打 zip 到仓库根目录
 ```
 该脚本自动执行三道闸门：
 1. **Python 语法检查**（编译所有 `.py` 文件，拦截语法错误）；
 2. **模块依赖自检**（确保内部模块 import 路径无缺失）；
-3. **打包生成 zip**（输出在桌面，并校验 `addon.xml` 中的版本号）。修改代码后**务必抬升 `addon.xml` 中的 version**。
+3. **打包生成 zip**（输出到仓库根目录，并校验 `addon.xml` 中的版本号）。修改代码后**务必抬升 `addon.xml` 中的 version**。
+
+### 4. 发版与仓库发布（GitHub + Cloudflare R2）
+
+```bash
+cd plugin.video.fnmedia
+# 1) 抬 addon.xml 的 version 并在 <news> 顶部写一条新记录
+python3 - <<'PY'
+p='addon.xml'; s=open(p).read()
+s=s.replace('version="0.7.38"','version="0.7.39"',1)   # 改成新版本
+s=s.replace('<news>','<news>v0.7.39 变更说明……\n',1)
+open(p,'w').write(s)
+PY
+./package.sh
+
+# 2) 重建仓库产物（会清空 docs/，两个库变体都在 REPOS 里自动生成）
+cd ..
+python3 tools/make_repo.py
+
+# 3) 推送 + 同步 R2（必须用官方 npm 源，npmmirror 会报 miniflare ETARGET）
+git add -A && git commit -m "feat(plugin): vX — ..." && git push origin main
+npm_config_registry=https://registry.npmjs.org ./tools/r2_sync.sh
+```
+
+发布后校验（两条链路都要一致）：
+
+```bash
+cat docs/addons.xml.md5
+curl -s https://kodi.qq47.de5.net/addons.xml.md5
+curl -s "https://antboot.github.io/kodi2fntv/addons.xml.md5?cb=$(date +%s)"
+curl -s https://kodi.qq47.de5.net/addons.xml | grep -o 'plugin.video.fnmedia" version="[^"]*"'
+```
+
+- 库变体：`repository.kodi2fntv.git`（索引 `antboot.github.io/kodi2fntv`）与
+  `repository.kodi2fntv.cf`（索引 `kodi.qq47.de5.net`），同版本、内容相同；命名由
+  `make_repo.py` 的 `REPOS` 决定，别手工改 zip 名。
+- `kodi.qq47.de5.net` 实际是 **Cloudflare R2**（`server: cloudflare`、`cf-cache-status: DYNAMIC`），
+  `antboot.github.io/kodi2fntv` 才是 GitHub Pages（source = main:/docs）。
+- 装到本机验证：解压 zip → `rsync -a --delete` 到
+  `~/Library/Application Support/Kodi/addons/plugin.video.fnmedia/`；插件 Python 每次调用重新加载，不用重启 Kodi；皮肤改动才需要完全重启。

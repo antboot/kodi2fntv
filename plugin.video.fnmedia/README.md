@@ -108,6 +108,40 @@ service.py ──播放中每 60s / 停止播完──> POST /v/api/v1/play/reco
 5. **回退链**：直链解析/探测失败 → 本地代理（NAS 中转优先，网盘 strm 的
    NAS 400 负缓存后自动转"云链+头注入"转发）。
 
+### 外挂字幕管线（0.7.30–0.7.37）
+
+1. **清单新鲜度**：`stream/list` 不再吃 6 小时视频流缓存。每次播放都并发重拉一次
+   （已扫描条目实测 0.0–0.09s），起播前最多等 2.5s；缓存缺失时同样补抓并等待，
+   拿到就本轮挂字幕。`refresh=1`（右键「刷新字幕并播放」）走同步强制刷新。
+2. **不能用 `cloud_known` 做跳过条件**：`cloud_link_cache.json` 只表示"换过直链并缓存"，
+   本地/NAS 片解析过一次也会命中；两条分支（刷新、补抓）都曾因此整段跳过，
+   表现为某些影片永远没有外挂字幕、播放 URL 还缺文件名。
+3. **命名与缓存**：文件名按「格式.标题 token.ISO 语言码」生成——语言码必须最后
+   （Kodi 从右往左解析），格式 token 前置才能在 OSD 里看到 ASS/VTT；
+   按 `media_guid` 分目录，`subs.meta.json` 记录 `update_time|file_size|guid`
+   指纹，指纹不变直接用本地文件，NAS 上改/换/删字幕自动跟随。
+4. **并发与原子性**：最多 3 线程只下缺失项（115 等网盘对单链路并发敏感）；
+   `.part` 落盘后 `os.replace` 原子替换，失败保留旧文件。
+5. **PGS 位图（.sup）**：按 `format/codec` 识别，落盘前校验 `PG` 魔数，
+   格式标错/内容错时不挂这一轨，避免给 Kodi 无法解析的文件。
+6. **webOS 编码坑**：电视版 Kodi 的 Python 在 C locale 下 filesystem encoding 为
+   ascii，中文文件名会让 `open()/stat()` 抛 `UnicodeEncodeError`。非 ASCII 路径
+   统一经 `player._fspath()` 转 UTF-8 bytes 再交给 `os.*`，Kodi 侧仍收到原始路径。
+
+### 首页小组件限流（0.7.34）
+
+皮肤小组件路径带 `widget=1`（`skin_sync.py`），渲染时只构造前 10 条并追加
+「查看全部（N）」入口。此前每个库的小组件都会把整墙（实测 562 条 × thumb/poster
+两张图）完整构造一遍，电视端每次回首页都要重付一遍 ListItem 构造与上千张图片代理
+转发的代价。完整墙、分页设置、字母快跳不受影响。
+
+### 皮肤小组件同步与启动成本（0.7.38）
+
+`service.py` 启动时只做"节点签名比对 + 按需写入"，只有皮肤里**还没有**飞牛小组件
+（`skin_sync.widgets_generated()` 检查生成 XML）时才 `force` 重建。此前每次开机都
+`force=True`，会让 script.skinvariables 全量重编 4 份 XML（电视上每份 9–13 秒，
+每份结束都 ReloadSkin），首页要闪约 40 秒才稳定。
+
 - 认证：`Authx: nonce=&timestamp=&sign=MD5(api_key_url_nonce_ts_md5(body)_secret)`，与 Web 端一致，签名已通过 TS/Python 双端比对测试
 - 代理：Python `ThreadingHTTPServer`，每请求一线程，HTTP/1.0 短连接，Range/If-Range 透传
 
@@ -117,6 +151,7 @@ service.py ──播放中每 60s / 停止播完──> POST /v/api/v1/play/reco
 - 夸克网盘直链未实现 10MB 分块对齐（Go 版优化），大文件高码率可能偶发卡顿；如遇问题可关闭"云盘直链"走 NAS 转发
 - FN ID 远程登录（5ddd.com 中转）暂不支持，仅支持局域网/直连地址
 - 剧集自动连播依赖 Kodi 播放列表行为，暂未实现整季播放列表
+- webOS 版 Kodi 的 Python 文件系统编码是 ascii（C locale），非 ASCII 文件名必须走 bytes 路径（0.7.37+ 已处理）；CPU 也远弱于桌面，整墙渲染/图片代理的开销会被放大
 
 ## 调试
 
@@ -128,6 +163,10 @@ grep FNMedia ~/.kodi/temp/kodi.log
 
 ## 版本历史
 
+- 0.7.30–0.7.38 字幕与低端设备专项（详细 news 见 `addon.xml`）：
+  - **字幕**：0.7.30 跟随 NAS 变更（`update_time|file_size|guid` 指纹增量）、PGS(.sup)、并行下载；0.7.32–0.7.33 每次播放重拉清单；0.7.36 修 `cloud_known` 阻止补抓流列表（电视无字幕 + URL 缺文件名）；0.7.37 修 webOS ascii 文件系统编码导致中文名字幕写盘失败。
+  - **续播**：0.7.31 回退 `argv[3]` 方案，恢复"默认续播，只认显式从头播放"。
+  - **性能**：0.7.34 首页小组件只渲染前 10 条 +「查看全部」；0.7.35 后台多版本扫描默认关闭（防唤醒机械盘），版本信息改为播放时记录；0.7.38 启动不再强制重建皮肤模板（电视首页 40 秒闪烁）。
 - 0.7.18 全链路审计后修"数据总是旧的"与"观看记录不回传飞牛"。**读路径**：
   范围缓存 TTL 30 分钟→5 分钟；service 预热从"每 20 秒 1 个范围"改为一轮
   连建 3 个、空闲长睡 240s→60s（分片睡以便被刷新请求打断）——新片入库最坏

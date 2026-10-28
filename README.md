@@ -78,7 +78,8 @@ Arctic Fuse 3 定制皮肤 ＋ 飞牛影视插件 ＋ 全套依赖，装一个�
 - **蓝光原盘多版本**：海报标注「〔N版本〕」，起播弹选择框（正片/加长版/导演剪辑版…），也可右键「选择版本播放」
 - **网盘直链统一提速**（115 / 天翼 / 夸克 / 阿里等）：UA 自洽探测、直链有效期门控、**403 断流自愈代理**，长片不闪退
 - **NAS 本地文件**与 **ISO/BDMV 原盘**支持（含 VFS 插件直链取流）
-- **外挂字幕自动下载挂载**；**断点续播**接入 Kodi 原生「续播/从头开始」框
+- **外挂字幕自动跟随 NAS**：每次播放重拉字幕清单，新增/替换/删除自动同步；支持 SRT / ASS / VTT / PGS 位图（.sup）；并行下载、按 `update_time|file_size|guid` 指纹增量更新
+- **断点续播**：默认接着看，只认显式「从头播放」（列表右键）
 
 **🔄 状态同步**
 - 播放中**每 60 秒回传进度**，停止/播完补一次；崩溃/断电最多丢一个间隔
@@ -87,6 +88,8 @@ Arctic Fuse 3 定制皮肤 ＋ 飞牛影视插件 ＋ 全套依赖，装一个�
 
 **🏎️ 性能与体验**
 - 与 Arctic Fuse 3 **深度融合**：皮肤内置飞牛主页小部件/子菜单，插件自动按你的媒体库生成首页行
+- **首页小组件只渲染每个库前 10 条**（横排一屏只看得到 3–4 个），末尾「查看全部」进完整墙——电视端首页加载量降到 1/50
+- **电视端专项优化**：启动不再强制重建皮肤模板；后台多版本扫描默认关闭（避免唤醒机械硬盘），需要时可在高级设置打开
 - SQLite（WAL）持久层 + 图片本地化（海报/背景/logo/剧照/演员头像），电视盒子不磨损闪存
 - 插件与皮肤**互相推荐**；连接超时/鉴权失效会主动提示并引导重新配对
 - 仓库自带**离线 addons.xml**：国内网络装依赖不卡壳
@@ -116,6 +119,8 @@ Arctic Fuse 3 定制皮肤 ＋ 飞牛影视插件 ＋ 全套依赖，装一个�
 | 用户名 / 密码 | 与飞牛 Web 端相同 |
 | 优先使用云盘直链 | 媒体在 115/夸克/阿里云盘时走直链（默认开，更快） |
 | 媒体库根 GUID | 打开「媒体库」为空时才需要，填飞牛 Web 地址里的 `fv_xxxx` |
+| 每页条数 | 默认 0 = 整库直出；低端设备（电视）建议 100–200，降低单次渲染量 |
+| 后台扫描多版本（高级） | 默认关。开启后后台逐条拉流列表统计版本，**可能唤醒机械硬盘**；关闭时版本标记在首次播放后出现 |
 
 ---
 
@@ -137,6 +142,24 @@ Arctic Fuse 3 定制皮肤 ＋ 飞牛影视插件 ＋ 全套依赖，装一个�
 <summary><b>「媒体库」打开是空的？</b></summary>
 
 顶部媒体库发现接口未公开，按插件 README 从飞牛 Web 地址复制 `fv_...` 的 GUID 填入设置即可。
+</details>
+
+<details>
+<summary><b>电视上外挂字幕一条都不显示，电脑上正常？</b></summary>
+
+webOS 版 Kodi 的 Python 跑在 C locale 下，文件系统编码是 ascii，带中文名的字幕文件写盘会失败（日志：`'ascii' codec can't encode characters`）。0.7.37 起非 ASCII 路径统一走 UTF-8 bytes 写入，升级即可；同时 0.7.36 修掉了部分影片因 `cloud_known` 命中而完全不拉流列表的问题。
+</details>
+
+<details>
+<summary><b>电视每次重启 Kodi，首页要闪四次（无结果 → 生成内容 → 无结果 → 正常）？</b></summary>
+
+这是皮肤变量系统（script.skinvariables）在重建生成的皮肤 XML，每份在电视上约 10 秒、每份结束都会 ReloadSkin。0.7.38 起插件不再在每次启动强制重建，只有刚装/刚切皮肤时才重建；媒体库新增或改名仍会重建一次。
+</details>
+
+<details>
+<summary><b>没在看机械硬盘上的片，硬盘却老被唤醒？</b></summary>
+
+插件本身只走飞牛 HTTP 接口，不直连磁盘；但后台"多版本扫描"会逐条请求 `stream/list`，服务端对未缓存的本地文件会现场读盘。0.7.35 起该扫描默认关闭（版本标记改为播放时顺手记录），可在插件设置 → 高级里重新开启。
 </details>
 
 <details>
@@ -175,10 +198,14 @@ screenshots/               README 宣传截图
 ## 🔄 维护者更新流程
 
 ```bash
-python3 tools/make_repo.py              # 重新生成 docs/
+python3 tools/make_repo.py              # 重新生成 docs/（两个库变体 .git / .cf 都在里面）
 git add -A && git commit -m "update repo" && git push
-zsh tools/r2_sync.sh                    # 只上传变化的文件到 R2
+npm_config_registry=https://registry.npmjs.org ./tools/r2_sync.sh   # 增量同步到 Cloudflare R2
 ```
+
+> `r2_sync.sh` 必须用官方 npm 源：默认的 npmmirror 解析 wrangler 依赖会报 `miniflare ETARGET`。
+> 两个库变体由 `make_repo.py` 的 `REPOS` 生成，索引分别指向 `antboot.github.io/kodi2fntv`（.git）和 `kodi.qq47.de5.net`（.cf），不要手工改名。
+> 发布后校验：两个宿主的 `addons.xml.md5` 一致、根 index 列出最新 zip、插件 `addon.xml` 版本与 zip 名一致。
 
 ---
 
