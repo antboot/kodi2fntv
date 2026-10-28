@@ -376,11 +376,14 @@ def _first_run_wizard(monitor):
     if monitor.abortRequested():
         return
 
-    # 若服务器已配置，立即预先生成主页海报墙小组件数据，确保切换皮肤后首页不为空
+    # 若服务器已配置，立即预先生成主页海报墙小组件数据，确保切换皮肤后首页不为空。
+    # 只有皮肤里还没生成飞牛小组件时才强制重建：每次开机都 force=True 会让
+    # script.skinvariables 全量重编 4 份 XML（电视上 ~40s + 4 次 ReloadSkin），
+    # 首页会经历"无结果→生成内容→无结果→正常"四段闪烁。
     from resources.lib import skin_sync
     if util.get_setting("server"):
         try:
-            skin_sync.sync_home_widgets(force=True)
+            skin_sync.sync_home_widgets(force=not skin_sync.widgets_generated())
         except Exception:
             pass
 

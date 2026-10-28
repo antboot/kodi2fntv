@@ -94,6 +94,29 @@ _last_sync_time = 0
 SYNC_COOLDOWN = 15
 
 
+def widgets_generated():
+    """皮肤里已生成的 XML 是否包含飞牛小组件。
+
+    切皮肤/重装皮肤后生成文件可能缺失或仍是默认值，这时才需要强制重建；
+    平时（每次开机）强制重建会让 script.skinvariables 把 4 份生成 XML 全部
+    重编一遍——webOS 电视上每份 9~13 秒、每份结束都 ReloadSkin，首页要闪
+    40 秒才稳定（真机日志 16:32:47/50、16:33:02/05 四次 update_xml）。
+    """
+    try:
+        import glob
+        skin_dir = xbmcvfs.translatePath("special://skin")
+        for path in glob.glob(os.path.join(skin_dir, "1080i", "script-skinvariables-generator*.xml")):
+            try:
+                with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                    if util.ADDON_ID in f.read():
+                        return True
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return False
+
+
 def sync_home_widgets(force=False):
     """把飞牛媒体库与 Arctic Fuse 3 主页小组件同步。
 
